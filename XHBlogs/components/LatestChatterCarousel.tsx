@@ -28,7 +28,7 @@ export default function LatestChatterCarousel({ chatters }: { chatters: any[] })
 
   return (
     // 注意这里：去掉了 md:col-span-8，变成一个纯粹填满父容器的组件
-    <div className="w-full h-full rounded-2xl paper-card border border-[var(--card-border)] shadow-md overflow-hidden relative group min-h-[220px] flex flex-col">
+    <div className="w-full h-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden relative group min-h-[220px] flex flex-col transition-all duration-300 hover:-translate-y-1">
       <Link href={currentChatter.slug === 'none' ? '/chatter' : `/chatter/${currentChatter.slug}`} className="absolute inset-0 z-20" aria-label={`查看杂谈：${currentChatter.title}`} />
 
       <AnimatePresence mode="wait">
@@ -48,7 +48,7 @@ export default function LatestChatterCarousel({ chatters }: { chatters: any[] })
 
       <div className="relative z-10 flex flex-col justify-center p-6 md:p-8 h-full pointer-events-none w-full md:w-[85%]">
         <div className="flex items-end gap-2 mb-2">
-          <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest bg-black/30 px-2 py-1 rounded-md border border-[var(--card-border)] shadow-sm">
+          <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest bg-[color-mix(in_oklab,var(--card)_85%,transparent)] px-2.5 py-1 rounded-md border border-[var(--card-border)]">
             杂谈 · Records
           </span>
           {currentChatter.formattedDate && (

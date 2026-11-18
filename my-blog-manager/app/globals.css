@@ -25,6 +25,8 @@
   --accent-soft: rgba(166, 58, 46, .35);
   --card: #fbf8f1;
   --card-border: rgba(43, 38, 32, .12);
+  --card-shadow: 0 2px 14px -2px rgba(43, 38, 32, .06), 0 1px 3px 0 rgba(43, 38, 32, .04);
+  --card-shadow-hover: 0 10px 28px -4px rgba(43, 38, 32, .13), 0 3px 8px 0 rgba(43, 38, 32, .06);
   --ok: #4a7c59;
   --warn: #9a6b2f;
   --danger: #8c2f26;
@@ -45,6 +47,8 @@
   --accent-soft: rgba(201, 86, 63, .42);
   --card: #1f1b15;
   --card-border: rgba(230, 222, 208, .1);
+  --card-shadow: 0 2px 14px -2px rgba(0, 0, 0, .3), 0 1px 3px 0 rgba(0, 0, 0, .2);
+  --card-shadow-hover: 0 10px 28px -4px rgba(0, 0, 0, .55), 0 3px 8px 0 rgba(0, 0, 0, .3);
   --ok: #7fb98d;
   --warn: #d0a15c;
   --danger: #d4685a;
@@ -65,6 +69,15 @@
   --accent-soft: rgba(214, 121, 106, .3);
   --card: #fffefb;
   --card-border: rgba(58, 55, 51, .09);
+  --card-shadow: 0 3px 0 rgba(58, 55, 51, .06), 0 10px 24px -14px rgba(58, 55, 51, .25);
+  --card-shadow-hover: 0 5px 0 rgba(58, 55, 51, .08), 0 18px 30px -16px rgba(58, 55, 51, .35);
+  --tape-mint: #b6dcc8;
+  --tape-pink: #f3c6c6;
+  --tape-butter: #f2e6ad;
+  --on-tape: #2f4a3c;
+  --quote-bg: rgba(243, 198, 198, .22);
+  --stat-bg: rgba(182, 220, 200, .3);
+  --tag-bg: rgba(242, 230, 173, .6);
   --ok: #5f8f6b;
   --warn: #a97b3a;
   --danger: #b04a3c;
@@ -86,6 +99,15 @@
   --accent-soft: rgba(226, 154, 137, .3);
   --card: #23262c;
   --card-border: rgba(227, 225, 221, .1);
+  --card-shadow: 0 3px 0 rgba(0, 0, 0, .25), 0 12px 22px -16px rgba(0, 0, 0, .6);
+  --card-shadow-hover: 0 5px 0 rgba(0, 0, 0, .3), 0 18px 30px -16px rgba(0, 0, 0, .75);
+  --tape-mint: rgba(122, 190, 158, .3);
+  --tape-pink: rgba(226, 150, 152, .28);
+  --tape-butter: rgba(226, 206, 130, .28);
+  --on-tape: #cfe6da;
+  --quote-bg: rgba(226, 150, 152, .13);
+  --stat-bg: rgba(122, 190, 158, .14);
+  --tag-bg: rgba(226, 206, 130, .22);
   --ok: #8cc29a;
   --warn: #d9b06a;
   --danger: #e08573;
@@ -361,7 +383,8 @@
    ======================================================== */
 @layer base {
   :root {
-    --font-serif: var(--font-serif), "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", serif;
+    --font-serif: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", "STSong", serif;
+    --font-journal: "Kaiti SC", "KaiTi", "STKaiti", "Source Han Serif SC", "Songti SC", serif;
   }
 
   body {
@@ -373,8 +396,9 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* 手账主题：方格纸底纹 */
+  /* 手账主题：方格纸底纹与手写楷体/便签质感 */
   .theme-journal body {
+    font-family: var(--font-journal);
     background-image:
       linear-gradient(var(--grid) 1px, transparent 1px),
       linear-gradient(90deg, var(--grid) 1px, transparent 1px);
@@ -628,18 +652,82 @@ textarea::placeholder {
 }
 
 /* ========================================================
-   7. 纸片卡工具类：92% 纸色微透（纸片压在背景上，缝隙微透）
-   只定义底色与边框；圆角与阴影保留在各处原类上，便于微调。
+   7. 纸片卡与文人/手账质感工具类
    ======================================================== */
 @utility paper-card {
   background-color: color-mix(in oklab, var(--card) 92%, transparent);
   border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+/* 可交互卡片：纸张微浮起与柔和多层弥散投影 */
+@utility paper-card-interactive {
+  background-color: color-mix(in oklab, var(--card) 92%, transparent);
+  border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+  transition: transform 0.28s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.28s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.28s ease;
+}
+
+@utility paper-card-hover {
+  transition: transform 0.28s cubic-bezier(0.23, 1, 0.32, 1), box-shadow 0.28s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.28s ease;
 }
 
 /* 高实底版本：弹窗、确认框等需要压住下层内容的场景 */
 @utility paper-card-strong {
   background-color: color-mix(in oklab, var(--card) 98%, transparent);
   border: 1px solid var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+/* 古风两端渐隐细墨线 */
+@utility rule-fade {
+  height: 1px;
+  width: 100%;
+  background: linear-gradient(90deg, transparent 0%, var(--rule) 20%, var(--rule) 80%, transparent 100%);
+}
+
+/* 宣纸方印小红章（小巧红印点缀） */
+@utility seal-mark {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background-color: var(--accent);
+  vertical-align: middle;
+  box-shadow: 0 0 1px 1px var(--accent-soft);
+  transform: translateY(-1px);
+  transition: transform 0.25s ease, filter 0.25s ease;
+}
+
+/* 和纸胶带贴条（手账风） */
+@utility tape-strip-mint {
+  background-color: var(--tape-mint, #b6dcc8);
+  color: var(--on-tape, #2f4a3c);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+@utility tape-strip-pink {
+  background-color: var(--tape-pink, #f3c6c6);
+  color: var(--on-tape, #2f4a3c);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+@utility tape-strip-butter {
+  background-color: var(--tape-butter, #f2e6ad);
+  color: var(--on-tape, #2f4a3c);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+}
+
+/* 手账荧光笔划线标记 */
+@utility mark-butter {
+  background: linear-gradient(transparent 62%, var(--tape-butter, #f2e6ad) 62%);
+}
+
+@utility mark-pink {
+  background: linear-gradient(transparent 62%, var(--tape-pink, #f3c6c6) 62%);
+}
+
+@utility mark-mint {
+  background: linear-gradient(transparent 62%, var(--tape-mint, #b6dcc8) 62%);
 }
 
 /* ========================================================

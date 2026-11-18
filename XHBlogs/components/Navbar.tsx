@@ -103,15 +103,93 @@ export default function Navbar() {
                 </Link>
               );
             })}
+            {/* 全局搜索快捷入口 */}
+            <button
+              onClick={() => window.dispatchEvent(new CustomEvent('open-global-search'))}
+              className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-[var(--accent)] hover:bg-[color-mix(in_oklab,var(--card)_80%,transparent)] border border-[var(--rule)] transition-all ml-1"
+              title="快捷搜索 (Ctrl + K)"
+            >
+              <svg className="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+              </svg>
+              <span className="text-[11px] opacity-80">搜索</span>
+              <kbd className="hidden lg:inline-block text-[9px] font-mono px-1 py-0.2 bg-[var(--paper-deep)] border border-[var(--card-border)] rounded text-slate-400">⌘K</kbd>
+            </button>
+
             {/* 主题切换：版式 + 明暗 */}
-            <span className="ml-1 pl-4 border-l" style={{ borderColor: 'var(--rule)' }}>
+            <span className="ml-1 pl-3 border-l" style={{ borderColor: 'var(--rule)' }}>
               <NavThemeSwitch />
             </span>
           </nav>
         </div>
       </header>
 
-      {/* 手机端：可拖拽吸附的触发球 */}
+      {/* 手机端：轻量手账式悬浮快捷底栏 (Dock) */}
+      <div className="fixed bottom-3 left-1/2 -translate-x-1/2 z-40 md:hidden w-[92%] max-w-sm">
+        <div className="paper-card-strong border border-[var(--card-border)] rounded-full px-3.5 py-1.5 shadow-xl flex items-center justify-between gap-1">
+          {/* 首页 */}
+          <Link
+            href="/"
+            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+              pathname === '/' ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:text-[var(--accent)]'
+            }`}
+          >
+            首页
+          </Link>
+
+          {/* 杂谈 */}
+          <Link
+            href="/chatter"
+            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+              pathname.startsWith('/chatter') ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:text-[var(--accent)]'
+            }`}
+          >
+            杂谈
+          </Link>
+
+          {/* 说说 */}
+          <Link
+            href="/moments"
+            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+              pathname.startsWith('/moments') ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:text-[var(--accent)]'
+            }`}
+          >
+            说说
+          </Link>
+
+          {/* 搜索 */}
+          <button
+            onClick={() => window.dispatchEvent(new CustomEvent('open-global-search'))}
+            className="p-1.5 rounded-full text-slate-700 dark:text-slate-300 hover:text-[var(--accent)] transition-all flex items-center justify-center"
+            title="全站搜索"
+            aria-label="全站搜索"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+            </svg>
+          </button>
+
+          {/* 罗盘转盘菜单按钮 */}
+          <button
+            onClick={() => setIsMobileMenuOpen(true)}
+            className={`p-1 px-2.5 rounded-full text-xs font-bold flex items-center gap-1 border transition-all ${
+              isMobileMenuOpen
+                ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
+                : 'bg-[var(--paper-deep)] text-[var(--accent)] border-[var(--rule)] hover:scale-105'
+            }`}
+            title="罗盘转盘"
+            aria-label="展开罗盘转盘"
+          >
+            <svg className="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2}>
+              <circle cx="12" cy="12" r="10" />
+              <polygon points="12 2 15 12 12 22 9 12" fill="currentColor" opacity="0.7" />
+            </svg>
+            <span className="text-[10px]">罗盘</span>
+          </button>
+        </div>
+      </div>
+
+      {/* 手机端：可拖拽吸附的右侧触发球 */}
       <div className="md:hidden">
         <motion.button
           drag="y"
@@ -124,16 +202,18 @@ export default function Navbar() {
               setIsMobileMenuOpen(true);
             }
           }}
-          className={`fixed top-1/2 right-0 -translate-y-1/2 w-12 h-28 bg-indigo-500 rounded-l-full shadow-md z-[60] flex items-center justify-center transition-all duration-500 border-y border-l border-[var(--card-border)] touch-none ${isMobileMenuOpen ? 'translate-x-full opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'}`}
+          className={`fixed top-1/2 right-0 -translate-y-1/2 w-10 h-24 bg-[var(--accent)] rounded-l-full shadow-md z-[55] flex items-center justify-center transition-all duration-500 border-y border-l border-[var(--card-border)] touch-none ${isMobileMenuOpen ? 'translate-x-full opacity-0 pointer-events-none' : 'translate-x-0 opacity-100'}`}
+          title="展开罗盘"
+          aria-label="展开罗盘"
         >
-          <div className="flex flex-col gap-1.5 items-center justify-center mr-2">
+          <div className="flex flex-col gap-1.5 items-center justify-center mr-1">
             <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
             <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
             <div className="w-1.5 h-1.5 bg-white rounded-full"></div>
           </div>
         </motion.button>
 
-        {/* 2. 居中展开的巨型全圆转轴 */}
+        {/* 2. 居中展开的日晷复古罗盘转轴 */}
         <AnimatePresence>
           {isMobileMenuOpen && (
             <>
@@ -142,7 +222,7 @@ export default function Navbar() {
                 animate={{ opacity: 1 }}
                 exit={{ opacity: 0 }}
                 onClick={() => setIsMobileMenuOpen(false)}
-                className="fixed inset-0 bg-slate-900/60 z-[65]"
+                className="fixed inset-0 bg-black/50 backdrop-blur-xs z-[65]"
               />
 
               <motion.div
@@ -156,10 +236,10 @@ export default function Navbar() {
                   ref={wheelRef}
                   style={{ rotate: smoothRotation }}
                   onPan={handlePan}
-                  className="w-full h-full rounded-full border border-[var(--card-border)] dark:border-slate-500/50 paper-card shadow-[0_0_50px_rgba(0,0,0,0.3)] pointer-events-auto relative cursor-grab active:cursor-grabbing"
+                  className="w-full h-full rounded-full border-2 border-[var(--rule)] paper-card-strong shadow-2xl pointer-events-auto relative cursor-grab active:cursor-grabbing"
                 >
-                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-slate-100 dark:bg-slate-700 border-4 border-slate-300 dark:border-slate-500 flex items-center justify-center shadow-inner z-10">
-                    <button onClick={() => setIsMobileMenuOpen(false)} className="w-12 h-12 rounded-full bg-indigo-500 flex items-center justify-center text-white font-black shadow-lg hover:bg-red-500 hover:rotate-90 transition-all duration-300 active:scale-95">
+                  <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-20 h-20 rounded-full bg-[var(--paper-deep)] border-2 border-[var(--rule)] flex items-center justify-center shadow-inner z-10">
+                    <button onClick={() => setIsMobileMenuOpen(false)} className="w-12 h-12 rounded-full bg-[var(--accent)] flex items-center justify-center text-white font-black shadow-lg hover:rotate-90 transition-all duration-300 active:scale-95" aria-label="关闭罗盘">
                       ✕
                     </button>
                   </div>
@@ -184,8 +264,8 @@ export default function Navbar() {
                             onClick={() => setIsMobileMenuOpen(false)}
                             className={`flex items-center justify-center w-full h-full rounded-full transition-all duration-300 ${
                               isActive 
-                                ? 'bg-indigo-500 text-white shadow-sm scale-110'
-                                : 'paper-card-strong text-slate-800 dark:text-slate-200 shadow-md hover:scale-110 border border-[var(--card-border)] dark:border-slate-600'
+                                ? 'bg-[var(--accent)] text-white shadow-md scale-110'
+                                : 'paper-card-strong text-[var(--ink)] shadow-md hover:scale-110 border border-[var(--card-border)]'
                             }`}
                           >
                             <span className="text-[11px] font-black">{link.name}</span>

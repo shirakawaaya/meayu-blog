@@ -14,6 +14,7 @@ class MomentPayload(BaseModel):
     content: str
     location: Optional[str] = ""
     images: List[str] = []
+    isPrivate: Optional[bool] = False
 
 
 @router.post("/save")
@@ -44,6 +45,9 @@ def save_moment(payload: MomentPayload):
 
         if payload.location:
             frontmatter_lines.append(f'location: "{payload.location}"')
+
+        if payload.isPrivate:
+            frontmatter_lines.append("private: true")
 
         if payload.images:
             frontmatter_lines.append("images:")

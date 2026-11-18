@@ -27,7 +27,7 @@ export default function LatestMomentsCarousel({ moments }: { moments: any[] }) {
   const cover = current.images && current.images.length > 0 ? current.images[0] : '';
 
   return (
-    <div className="w-full h-full rounded-2xl paper-card border border-[var(--card-border)] shadow-md overflow-hidden relative group min-h-[220px] flex flex-col">
+    <div className="w-full h-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden relative group min-h-[220px] flex flex-col transition-all duration-300 hover:-translate-y-1">
       <Link href="/moments" className="absolute inset-0 z-20" aria-label="查看说说" />
 
       <AnimatePresence mode="wait">
@@ -52,7 +52,7 @@ export default function LatestMomentsCarousel({ moments }: { moments: any[] }) {
 
       <div className="relative z-10 flex flex-col justify-center p-6 md:p-8 h-full pointer-events-none w-full md:w-[85%]">
         <div className="flex items-center gap-2 mb-3">
-          <span className={`text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md border shadow-sm ${cover ? 'text-indigo-300 bg-black/30 border-white/10' : 'text-indigo-600 dark:text-indigo-300 paper-card border-white/20'}`}>
+          <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${cover ? 'text-indigo-300 bg-[color-mix(in_oklab,var(--card)_80%,transparent)] border-white/10' : 'text-indigo-600 dark:text-indigo-300 paper-card border-white/20'}`}>
             说说 · Moments
           </span>
           {current.date && (

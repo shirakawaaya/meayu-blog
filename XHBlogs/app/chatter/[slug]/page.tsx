@@ -23,13 +23,22 @@ import BackButton from '../../../components/BackButton';
 import Comments from '../../../components/Comments';
 import ClientTOC from '../../../components/ClientTOC';
 import CodeCopy from '../../../components/CodeCopy';
+import ReadingProgressBar from '../../../components/ReadingProgressBar';
 
 export async function generateStaticParams() {
   const chattersDirectory = path.join(process.cwd(), 'chatters');
   if (!fs.existsSync(chattersDirectory)) return [];
   const filenames = fs.readdirSync(chattersDirectory);
   return filenames
-    .filter((name) => name.endsWith('.md'))
+    .filter((name) => {
+      if (!name.endsWith('.md')) return false;
+      try {
+        const { data } = matter(fs.readFileSync(path.join(chattersDirectory, name), 'utf8'));
+        return !data.private;
+      } catch {
+        return true;
+      }
+    })
     .map((name) => ({
       slug: name.replace(/\.md$/, ''),
     }));
@@ -48,6 +57,9 @@ const getChatterData = cache(async (slug: string) => {
   const fileContents = fs.readFileSync(fullPath, 'utf8');
 
   let { data, content } = matter(fileContents);
+  if (data.private) {
+    notFound();
+  }
 
   // ==========================================
   // 前台渲染清洗区：终极防吞换行 + 安全保护补丁！（从 Post 完美移植）
@@ -240,6 +252,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
 
   return (
     <div className="min-h-screen relative pb-20">
+      <ReadingProgressBar />
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}

@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { MapPin, MessageSquare, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost, Plus, Image as ImageIcon, X, Send, Link as LinkIcon, Zap, Trash2, AlertTriangle, Loader2, RefreshCw } from 'lucide-react';
+import { MapPin, MessageSquare, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost, Plus, Image as ImageIcon, X, Send, Link as LinkIcon, Zap, Trash2, AlertTriangle, Loader2, RefreshCw, Edit3, Lock } from 'lucide-react';
 import MomentComments from '../../components/MomentComments';
 import { useToast } from '../../components/ToastProvider';
 import { siteConfig } from '../../siteConfig';
@@ -32,7 +32,14 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
   const { operations, addOperation, removeOperation } = useOperations();
 
   const [isPublishOpen, setIsPublishOpen] = useState(false);
-  const [newMoment, setNewMoment] = useState({ content: '', location: '', images: [] as string[] });
+  const [isEditing, setIsEditing] = useState(false);
+  const [newMoment, setNewMoment] = useState({
+    content: '',
+    location: '',
+    images: [] as string[],
+    isPrivate: false,
+    date: ''
+  });
   const [isUploading, setIsUploading] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -43,6 +50,36 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
   const submitLockRef = useRef(false);
   // 本次编辑期间固定的说说 id：重复提交写的始终是同一个文件，不会产生重复内容
   const momentIdRef = useRef<string | null>(null);
+
+  const handleOpenCreate = () => {
+    setIsEditing(false);
+    momentIdRef.current = null;
+    setNewMoment({ content: '', location: '', images: [], isPrivate: false, date: '' });
+    setIsPublishOpen(true);
+  };
+
+  const handleEditClick = (moment: any) => {
+    setIsEditing(true);
+    momentIdRef.current = moment.id;
+    setNewMoment({
+      content: moment.content || '',
+      location: moment.location || '',
+      images: Array.isArray(moment.images) ? [...moment.images] : [],
+      isPrivate: Boolean(moment.isPrivate),
+      date: moment.date || new Date().toLocaleString('sv-SE')
+    });
+    setIsPublishOpen(true);
+  };
+
+  const handleMoveImage = (fromIdx: number, direction: 'left' | 'right') => {
+    const toIdx = direction === 'left' ? fromIdx - 1 : fromIdx + 1;
+    if (toIdx < 0 || toIdx >= newMoment.images.length) return;
+    const newImgs = [...newMoment.images];
+    const temp = newImgs[fromIdx];
+    newImgs[fromIdx] = newImgs[toIdx];
+    newImgs[toIdx] = temp;
+    setNewMoment(prev => ({ ...prev, images: newImgs }));
+  };
 
   // AI 润色（纯文本模式）：结果进对照面板，可编辑后再应用，不直接覆盖原文
   const [isPolishing, setIsPolishing] = useState(false);
@@ -189,21 +226,23 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
     }
     const payload = {
       id: getMomentId(),
-      date: new Date().toLocaleString('sv-SE'),
+      date: (isEditing && newMoment.date) ? newMoment.date : new Date().toLocaleString('sv-SE'),
       content: newMoment.content,
       location: newMoment.location,
-      images: newMoment.images
+      images: newMoment.images,
+      isPrivate: newMoment.isPrivate
     };
     addOperation({
       id: `op-moment-${Date.now()}`,
       type: 'create_moment',
-      label: `[发布说说] ${newMoment.content.slice(0, 12)}...`,
+      label: `[${isEditing ? '编辑说说' : '发布说说'}] ${newMoment.content.slice(0, 12)}...`,
       payload: payload,
       timestamp: new Date().toLocaleString()
     });
     showToast("已加入待保存，点右上角【保存到博客】即可生效", "success");
     setIsPublishOpen(false);
-    setNewMoment({ content: '', location: '', images: [] });
+    setNewMoment({ content: '', location: '', images: [], isPrivate: false, date: '' });
+    setIsEditing(false);
   };
 
   const handleDirectPublish = async () => {
@@ -223,10 +262,11 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
 
       const payload = {
         id: getMomentId(),
-        date: new Date().toLocaleString('sv-SE'),
+        date: (isEditing && newMoment.date) ? newMoment.date : new Date().toLocaleString('sv-SE'),
         content: newMoment.content,
         location: newMoment.location,
-        images: newMoment.images
+        images: newMoment.images,
+        isPrivate: newMoment.isPrivate
       };
       const apiUrl = `http://127.0.0.1:${configData.api_port}/api/moments/save`;
 
@@ -240,10 +280,11 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
 
       const data = await res.json();
       if (data.success) {
-        showToast("发布成功，正在刷新...", "success");
+        showToast(isEditing ? "说说修改成功，正在刷新..." : "发布成功，正在刷新...", "success");
         setIsPublishOpen(false);
-        setNewMoment({ content: '', location: '', images: [] });
+        setNewMoment({ content: '', location: '', images: [], isPrivate: false, date: '' });
         momentIdRef.current = null;
+        setIsEditing(false);
         setTimeout(() => window.location.reload(), 1000);
       } else {
         showToast(`保存失败：${data.message}`, "error");
@@ -350,20 +391,39 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
         </div>
       )}
 
-      {/* 悬浮删除按钮 */}
-      <button
-        onClick={() => handleDeleteClick(moment)}
-        className={`absolute ${moment.isPending ? 'top-10' : 'top-6'} right-6 w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-red-500 hover:text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300 shadow-sm z-10`}
-      >
-        <Trash2 size={14} />
-      </button>
+      {/* 悬浮操作按钮组 */}
+      <div className={`absolute ${moment.isPending ? 'top-10' : 'top-6'} right-6 flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 z-10`}>
+        {!moment.isPending && (
+          <button
+            onClick={() => handleEditClick(moment)}
+            title="编辑说说"
+            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-indigo-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
+          >
+            <Edit3 size={14} />
+          </button>
+        )}
+        <button
+          onClick={() => handleDeleteClick(moment)}
+          title="删除说说"
+          className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-red-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
+        >
+          <Trash2 size={14} />
+        </button>
+      </div>
 
       <div className={`flex items-center gap-4 mb-8 pb-6 border-b border-slate-200/50 dark:border-slate-700/50 relative ${moment.isPending ? 'mt-4' : ''}`}>
         <div className="w-14 h-14 shrink-0 rounded-2xl overflow-hidden shadow-md border-2 border-white dark:border-slate-700">
           <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
         </div>
         <div className="flex flex-col">
-          <h3 className="text-lg font-black text-[var(--accent)] tracking-wide">{authorName}</h3>
+          <div className="flex items-center gap-2">
+            <h3 className="text-lg font-black text-[var(--accent)] tracking-wide">{authorName}</h3>
+            {moment.isPrivate && (
+              <span className="inline-flex items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                <Lock size={10} /> 私密
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-2 text-[11px] text-slate-400 font-bold mt-1"><Clock size={12} /> {timeAgo(moment.date)}</div>
         </div>
       </div>
@@ -405,7 +465,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
 
       <div className="mb-16 flex flex-col items-center gap-8">
         <button
-          onClick={() => setIsPublishOpen(true)}
+          onClick={handleOpenCreate}
           className="group relative px-10 py-3.5 bg-indigo-500 rounded-xl shadow-md text-white font-black text-sm hover:bg-indigo-600 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 overflow-hidden"
         >
           {/* hover 轻微压暗而非提亮，保证浅色主题下白字始终可读 */}
@@ -475,7 +535,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
             >
               <div className="flex justify-between items-center mb-5">
                 <h2 className="text-lg font-black text-[var(--ink)] flex items-center gap-2">
-                  <Sparkles size={18} className="text-indigo-500" /> 发条说说
+                  <Sparkles size={18} className="text-indigo-500" /> {isEditing ? '编辑说说' : '发条说说'}
                 </h2>
                 <button
                   onClick={() => setIsPublishOpen(false)}
@@ -630,20 +690,64 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
               </div>
 
               {newMoment.images.length > 0 && (
-                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 mb-8">
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3 mb-6">
                   {newMoment.images.map((img, idx) => (
                     <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-slate-200 dark:border-slate-700 shadow-sm group">
                       <img src={toPreviewSrc(img)} alt="preview" className="w-full h-full object-cover" />
+                      
+                      {/* 顺序角标 */}
+                      <span className="absolute bottom-1 left-1 w-5 h-5 flex items-center justify-center bg-black/60 text-white text-[10px] font-black rounded pointer-events-none">
+                        {idx + 1}
+                      </span>
+
+                      {/* 左右移动排序按钮 */}
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1.5 pointer-events-none group-hover:pointer-events-auto">
+                        {idx > 0 && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleMoveImage(idx, 'left'); }}
+                            className="w-6 h-6 flex items-center justify-center bg-white/90 text-slate-800 rounded hover:bg-white text-xs font-black shadow-sm"
+                            title="向前移"
+                          >
+                            ‹
+                          </button>
+                        )}
+                        {idx < newMoment.images.length - 1 && (
+                          <button
+                            type="button"
+                            onClick={(e) => { e.stopPropagation(); handleMoveImage(idx, 'right'); }}
+                            className="w-6 h-6 flex items-center justify-center bg-white/90 text-slate-800 rounded hover:bg-white text-xs font-black shadow-sm"
+                            title="向后移"
+                          >
+                            ›
+                          </button>
+                        )}
+                      </div>
+
                       <button
+                        type="button"
                         onClick={(e) => { e.stopPropagation(); setNewMoment(prev => ({ ...prev, images: prev.images.filter((_, i) => i !== idx) })) }}
-                        className="absolute top-1.5 right-1.5 w-6 h-6 flex items-center justify-center bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500"
+                        className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center bg-black/60 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-500 z-10"
+                        title="删除此图"
                       >
-                        <X size={14} />
+                        <X size={13} />
                       </button>
                     </div>
                   ))}
                 </div>
               )}
+
+              {/* 私密设置 */}
+              <label className="flex items-center gap-2 text-xs font-bold text-slate-700 dark:text-slate-300 cursor-pointer select-none mb-6 p-3 bg-black/5 dark:bg-white/5 rounded-xl border border-[var(--card-border)] hover:bg-black/10 transition-colors">
+                <input
+                  type="checkbox"
+                  checked={newMoment.isPrivate}
+                  onChange={(e) => setNewMoment(prev => ({ ...prev, isPrivate: e.target.checked }))}
+                  className="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400 cursor-pointer"
+                />
+                <Lock size={14} className={newMoment.isPrivate ? "text-amber-500" : "text-slate-400"} />
+                <span>仅自己可见（私密说说，博客前台完全隐藏）</span>
+              </label>
 
               <div className="flex flex-col-reverse sm:flex-row gap-3 mt-auto pt-4 border-t border-[var(--rule)]">
                 <button
@@ -658,7 +762,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
                   disabled={isUploading || isSubmitting}
                   className="sm:flex-1 py-3 px-4 rounded-2xl paper-card text-[var(--ink)] text-sm font-bold hover:shadow-md transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
-                  <Send size={15} /> 加入待保存
+                  <Send size={15} /> {isEditing ? '存入待保存' : '加入待保存'}
                 </button>
 
                 <button
@@ -667,7 +771,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
                   className="sm:flex-1 py-3 px-4 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-black shadow-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? <Clock className="animate-spin" size={16} /> : <Zap size={16} />}
-                  立即发布
+                  {isEditing ? '确认修改' : '立即发布'}
                 </button>
               </div>
 

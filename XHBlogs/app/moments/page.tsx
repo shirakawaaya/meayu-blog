@@ -25,6 +25,7 @@ export default function MomentsPage() {
         fileNames.forEach(fileName => {
           const fullPath = path.join(dir, fileName);
           const { data, content } = matter(fs.readFileSync(fullPath, 'utf8'));
+          if (data.private) return;
 
           allMoments.push({
             id: fileName.replace(/\.md$/, ''),

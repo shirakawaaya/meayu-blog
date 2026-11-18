@@ -191,15 +191,15 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: a
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 pt-4 pb-10">
                 {timelinePosts.map((post, idx) => (
                   <motion.div key={post.slug} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3, delay: idx * 0.05 }}>
-                    <div className="paper-card border border-[var(--card-border)] dark:border-slate-700/50 rounded-2xl md:rounded-2xl overflow-hidden shadow-lg flex flex-col h-full group relative hover:-translate-y-1 transition-transform duration-300">
+                    <div className="paper-card border border-[var(--card-border)] rounded-2xl overflow-hidden flex flex-col h-full group relative hover:-translate-y-1 transition-all duration-300">
 
                     <Link href={`/chatter/${post.slug}`} className="block flex-1 flex flex-col cursor-pointer">
                         {/* 图片高度自适应：手机变矮，电脑变高 */}
                         <div className="relative h-28 sm:h-36 md:h-40 overflow-hidden">
-                          <img src={post.cover} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110" />
+                          <img src={post.cover} alt={post.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
                           {/* 日期标签微缩 */}
-                          <span className="absolute bottom-2 left-2 md:bottom-3 md:left-4 text-white/90 text-[9px] md:text-xs font-mono font-bold bg-black/40 px-1.5 py-0.5 md:px-2 md:py-1 rounded flex items-center gap-1">
+                          <span className="absolute bottom-2 left-2 md:bottom-3 md:left-4 text-white/95 text-[9px] md:text-xs font-mono font-bold bg-[color-mix(in_oklab,var(--paper-deep)_85%,transparent)] px-2 py-0.5 md:py-1 rounded flex items-center gap-1 border border-white/10">
                             <Calendar size={10} className="md:w-3 md:h-3"/> {post.type === 'chatter' ? '杂谈 · ' : ''}{post.date.split(' ')[0]}
                           </span>
                         </div>

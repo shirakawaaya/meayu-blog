@@ -16,11 +16,11 @@ export default function ProfileCard({ chatterCount, momentCount, photoCount }: {
   return (
     <div
       onClick={() => router.push('/about')}
-      className="md:col-span-7 rounded-2xl paper-card border border-[var(--card-border)] shadow-md p-5 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-700 hover:scale-[1.01] cursor-pointer group relative overflow-hidden h-full min-h-[220px] md:min-h-[280px]"
+      className="md:col-span-7 rounded-2xl paper-card border border-[var(--card-border)] p-5 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-soft)] cursor-pointer group relative overflow-hidden h-full min-h-[220px] md:min-h-[280px]"
     >
       <div className="flex items-start justify-between relative z-10">
         <div className="flex items-center gap-4 md:gap-6 w-full">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl border-2 border-[var(--accent)] p-1 shadow-lg flex-shrink-0 transition-transform duration-500 group-hover:rotate-3">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl border-2 border-[var(--accent)] p-1 shadow-md flex-shrink-0 transition-transform duration-500 group-hover:rotate-3">
             <img src={siteConfig.avatarUrl} alt="avatar" className="vt-avatar w-full h-full rounded-lg md:rounded-xl object-cover bg-white" />
           </div>
           <div className="flex-1 min-w-0">
@@ -28,8 +28,9 @@ export default function ProfileCard({ chatterCount, momentCount, photoCount }: {
                 1. 增加了 pb-1 (padding-bottom) 给字母降部留空间
                 2. 增加了 leading-snug 确保行高不至于太扁
             */}
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 pb-1 leading-snug tracking-wider transition-colors duration-700 truncate">
-              {siteConfig.authorName}
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 pb-1 leading-snug tracking-wider transition-colors duration-700 truncate flex items-center gap-2">
+              <span>{siteConfig.authorName}</span>
+              <span className="seal-mark rounded-[1px] ml-1" title="印" />
             </h1>
             <p className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300 font-medium leading-relaxed max-w-md transition-colors duration-700 line-clamp-2 md:line-clamp-none">
               {siteConfig.bio}
@@ -42,9 +43,9 @@ export default function ProfileCard({ chatterCount, momentCount, photoCount }: {
         <div className="flex gap-2 sm:gap-6 w-full md:w-auto justify-between sm:justify-around md:justify-start px-2 sm:px-0">
           <StatItem count={chatterCount} label="杂谈" color="text-indigo-600 dark:text-indigo-400" />
           <div className="w-px h-8 md:h-10 bg-slate-300/50 dark:bg-slate-700 hidden md:block"></div>
-          <StatItem count={momentCount} label="说说" color="text-purple-600 dark:text-purple-400" />
+          <StatItem count={momentCount} label="说说" color="text-[var(--ok)]" />
           <div className="w-px h-8 md:h-10 bg-slate-300/50 dark:bg-slate-700 hidden md:block"></div>
-          <StatItem count={photoCount} label="照片" color="text-pink-600 dark:text-pink-400" />
+          <StatItem count={photoCount} label="照片" color="text-[var(--warn)]" />
         </div>
 
         <div className="flex gap-2 md:gap-3 flex-wrap justify-center md:justify-end w-full md:w-auto" onClick={(e) => e.stopPropagation()}>

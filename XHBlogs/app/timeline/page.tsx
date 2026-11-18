@@ -24,6 +24,7 @@ export default function Timeline() {
         const slug = fileName.replace(/\.md$/, '');
         const fullPath = path.join(dir, fileName);
         const { data } = matter(fs.readFileSync(fullPath, 'utf8'));
+        if (data.private) return;
 
         const itemTags = data.tags && Array.isArray(data.tags) ? data.tags : ['未分类'];
         itemTags.forEach((tag: string) => {

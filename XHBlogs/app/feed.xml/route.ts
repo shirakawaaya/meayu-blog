@@ -30,6 +30,7 @@ export async function GET(request: Request) {
       .filter((f) => f.endsWith('.md'))
       .forEach((f) => {
         const { data, content } = matter(fs.readFileSync(path.join(dir, f), 'utf8'));
+        if (data.private) return;
         const slug = f.replace(/\.md$/, '');
         const title = xmlEscape(data.title || '无标题');
         const link = `${base}/chatter/${encodeURIComponent(slug)}`;

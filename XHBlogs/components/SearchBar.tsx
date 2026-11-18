@@ -48,7 +48,7 @@ const Highlight = ({ text = '', query = '' }) => {
 };
 
 const TypeBadge = ({ label }: { label: string }) => (
-  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-1 rounded-md bg-black/5 dark:bg-white/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/10 shrink-0 mt-1">
+  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-[color-mix(in_oklab,var(--accent)_8%,var(--paper))] text-indigo-600 dark:text-indigo-400 border border-indigo-500/15 shrink-0 mt-1">
     {label}
   </span>
 );

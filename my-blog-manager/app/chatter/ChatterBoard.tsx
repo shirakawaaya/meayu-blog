@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { siteConfig } from '../../siteConfig';
-import { Plus, Pencil, Trash2, Search, Sparkles, AlertTriangle, X } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Sparkles, AlertTriangle, X, Lock } from 'lucide-react';
 import { useToast } from '../../components/ToastProvider';
 import { useEscapeClose } from '../../lib/use-escape-close';
 
@@ -14,6 +14,7 @@ type Chatter = {
   tags: string[];
   mood?: string;
   cover?: string;
+  isPrivate?: boolean;
   content: string;
 };
 
@@ -229,8 +230,15 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
 
                 <div className="p-7">
                   <div className="flex items-center justify-between mb-4">
-                    <div className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em] bg-indigo-500/5 dark:bg-indigo-400/10 px-3 py-1 rounded-lg border border-indigo-500/10">
-                      {chatter.date}
+                    <div className="flex items-center gap-2">
+                      <div className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em] bg-indigo-500/5 dark:bg-indigo-400/10 px-3 py-1 rounded-lg border border-indigo-500/10">
+                        {chatter.date}
+                      </div>
+                      {chatter.isPrivate && (
+                        <div className="inline-flex items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                          <Lock size={10} /> 私密
+                        </div>
+                      )}
                     </div>
                     {chatter.mood && (
                       <div className="text-[10px] font-black text-pink-600 dark:text-pink-400 bg-pink-500/5 dark:bg-pink-400/10 px-3 py-1 rounded-lg border border-pink-500/10">

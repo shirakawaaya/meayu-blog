@@ -27,6 +27,7 @@ export default function ChatterPage() {
       const slug = fileName.replace(/\.md$/, '');
       const fileContents = fs.readFileSync(path.join(chattersDirectory, fileName), 'utf8');
       const { data, content } = matter(fileContents);
+      if (data.private) return null;
 
       return {
         slug,
@@ -37,7 +38,7 @@ export default function ChatterPage() {
         cover: data.cover || '',
         content: content.replace(/^#+ .*\n/m, '') // 去除开头的 markdown 标题以优化截取显示
       };
-    }).sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime())); // 按时间倒序
+    }).filter((item): item is NonNullable<typeof item> => Boolean(item)).sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime())); // 按时间倒序
   } catch (e) {
     console.error("读取杂谈文件失败:", e);
   }

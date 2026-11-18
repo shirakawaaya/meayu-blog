@@ -5,6 +5,7 @@ import { ViewTransitions } from 'next-view-transitions';
 import "./globals.css";
 import { ThemeProvider } from "../components/ThemeProvider";
 import Navbar from "../components/Navbar";
+import GlobalSearchModal from "../components/GlobalSearchModal";
 import BackgroundSlideshow from "../components/BackgroundSlideshow";
 import Footer from "../components/Footer";
 import { siteConfig } from "../siteConfig";
@@ -71,6 +72,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               {/* 导航栏放在 layout 里：切页时不再卸载重建，
                   滚动状态与移动端菜单状态得以保留 */}
               <Navbar />
+              <GlobalSearchModal />
 
               <div className="relative z-10 flex-1 flex flex-col">
                 {children}

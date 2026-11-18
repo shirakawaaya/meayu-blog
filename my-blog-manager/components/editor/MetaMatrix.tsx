@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, KeyboardEvent } from 'react';
-import { ImageIcon, Tag, FileText, X, Clock, CloudUpload, Smile, Save, Send } from 'lucide-react';
+import { ImageIcon, Tag, FileText, X, Clock, CloudUpload, Smile, Save, Send, Lock } from 'lucide-react';
 
 interface Props {
   type: 'post' | 'chatter' | 'about';
@@ -9,6 +9,7 @@ interface Props {
   cover: string; setCover: (val: string) => void;
   summary: string; setSummary: (val: string) => void;
   mood?: string; setMood?: (val: string) => void;
+  isPrivate?: boolean; setIsPrivate?: (val: boolean) => void;
   allHistoryPostTags: string[];
   allHistoryChatterTags: string[];
   isLoadingTags: boolean;
@@ -21,6 +22,7 @@ interface Props {
 
 export default function MetaMatrix({
   type, tags, setTags, cover, setCover, summary, setSummary, mood, setMood,
+  isPrivate = false, setIsPrivate,
   allHistoryPostTags, allHistoryChatterTags, isLoadingTags, allHistoryMoods, onSave, isSaving, lastSaved, onOpenImageTool
 }: Props) {
   const [tagInput, setTagInput] = useState('');
@@ -145,6 +147,28 @@ export default function MetaMatrix({
               className="w-full bg-white/10 dark:bg-black/20 rounded-2xl px-6 py-5 text-xs text-slate-800 dark:text-slate-200 border border-[var(--card-border)] outline-none focus:ring-2 focus:ring-emerald-500 resize-none shadow-inner leading-relaxed placeholder:text-slate-500 font-medium"
             />
             <p className="mt-2 text-[9px] text-slate-400 italic px-2">提示：摘要将显示在首页卡片和搜索预览中。</p>
+          </div>
+        )}
+
+        {/* 5. 权限与私密设置 */}
+        {type !== 'about' && setIsPrivate && (
+          <div className="flex flex-col animate-in fade-in slide-in-from-bottom duration-700">
+            <Label icon={Lock} text="可见性 · Visibility" color="border-amber-500" />
+            <label className="flex items-center justify-between p-4 bg-black/5 dark:bg-white/5 rounded-2xl border border-[var(--card-border)] cursor-pointer select-none group hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+              <div className="flex flex-col">
+                <span className="text-xs font-bold text-slate-800 dark:text-slate-200 flex items-center gap-1.5">
+                  <Lock size={13} className={isPrivate ? "text-amber-500" : "text-slate-400"} />
+                  <span>仅自己可见（私密）</span>
+                </span>
+                <span className="text-[10px] text-slate-400 mt-0.5">开启后博客前台完全隐藏，仅控制台可见</span>
+              </div>
+              <input
+                type="checkbox"
+                checked={isPrivate}
+                onChange={(e) => setIsPrivate(e.target.checked)}
+                className="w-4 h-4 rounded border-slate-300 text-amber-500 focus:ring-amber-400 cursor-pointer"
+              />
+            </label>
           </div>
         )}
       </div>

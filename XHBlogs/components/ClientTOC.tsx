@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { useEscapeClose } from '../lib/use-escape-close';
 
 type TocItem = {
   level: number;
@@ -41,6 +43,9 @@ const getDisplayText = (rawText: string) => {
 
 export default function ClientTOC({ toc }: { toc: TocItem[] }) {
   const [activeId, setActiveId] = useState<string>("");
+  const [isMobileOpen, setIsMobileOpen] = useState(false);
+
+  useEscapeClose(isMobileOpen, () => setIsMobileOpen(false));
 
   useEffect(() => {
     const contentDiv = document.getElementById('article-content');
@@ -116,45 +121,118 @@ export default function ClientTOC({ toc }: { toc: TocItem[] }) {
 
     requestAnimationFrame(animation);
     setActiveId(id);
+    setIsMobileOpen(false);
   };
 
   if (!toc || toc.length === 0) return null;
 
   return (
-    <div className="paper-card rounded-2xl p-6 border border-[var(--card-border)] shadow-md sticky top-28 transition-colors duration-700 max-h-[75vh] overflow-y-auto custom-scrollbar">
-      <h3 className="font-black text-slate-900 dark:text-white mb-4 border-l-4 border-indigo-500 pl-2 text-sm uppercase tracking-widest">
-        目录 · Table of Contents
-      </h3>
-      <nav className="flex flex-col gap-2 relative">
-        <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-slate-200 dark:bg-slate-700/50 rounded-full"></div>
+    <>
+      {/* 桌面端常驻侧栏目录 */}
+      <div className="hidden lg:block paper-card rounded-2xl p-6 border border-[var(--card-border)] sticky top-28 transition-colors duration-700 max-h-[75vh] overflow-y-auto custom-scrollbar">
+        <h3 className="font-black text-slate-900 dark:text-white mb-4 border-l-4 border-[var(--accent)] pl-2 text-sm uppercase tracking-widest flex items-center gap-2">
+          <span>目录</span>
+          <span className="text-[10px] text-slate-400 font-normal">TOC</span>
+        </h3>
+        <nav className="flex flex-col gap-2 relative">
+          <div className="absolute left-0 top-0 bottom-0 w-[2px] bg-[var(--rule)] rounded-full"></div>
 
-        {toc.map((item, index) => {
-          // 视觉上：扒掉超链接，完美展示 "3.万度"
-          const displayText = getDisplayText(item.text);
+          {toc.map((item, index) => {
+            const displayText = getDisplayText(item.text);
+            const safeId = getSafeId(item.text);
+            const isActive = activeId === safeId;
 
-          // 底层跳转：生成纯净版的 ID "toc-3万度"，绝对不会找错目标！
-          const safeId = getSafeId(item.text);
-          const isActive = activeId === safeId;
+            return (
+              <button
+                key={index}
+                onClick={(e) => scrollToHeading(e, safeId)}
+                className={`text-left text-sm transition-all duration-300 line-clamp-2 cursor-pointer relative pl-4
+                  ${item.level === 1 ? 'font-bold mt-2' : ''}
+                  ${item.level === 2 ? 'ml-2' : ''}
+                  ${item.level === 3 ? 'ml-4 text-xs' : ''}
+                  ${isActive ? 'text-[var(--accent)] font-bold scale-105 origin-left' : 'text-slate-600 dark:text-slate-400 hover:text-[var(--accent)]'}
+                `}
+              >
+                {isActive && (
+                  <span className="absolute left-[-5px] top-[50%] -translate-y-[50%] w-[6px] h-[6px] rounded-full bg-[var(--accent)] shadow-sm"></span>
+                )}
+                {displayText}
+              </button>
+            );
+          })}
+        </nav>
+      </div>
 
-          return (
-            <button
-              key={index}
-              onClick={(e) => scrollToHeading(e, safeId)}
-              className={`text-left text-sm transition-all duration-300 line-clamp-2 cursor-pointer relative pl-4
-                ${item.level === 1 ? 'font-bold mt-2' : ''}
-                ${item.level === 2 ? 'ml-2' : ''}
-                ${item.level === 3 ? 'ml-4 text-xs' : ''}
-                ${isActive ? 'text-indigo-600 dark:text-indigo-400 font-bold scale-105 origin-left' : 'text-slate-500 hover:text-indigo-500 dark:text-slate-400 dark:hover:text-indigo-400'}
-              `}
-            >
-              {isActive && (
-                <span className="absolute left-[-5px] top-[50%] -translate-y-[50%] w-[6px] h-[6px] rounded-full bg-indigo-500 shadow-sm"></span>
-              )}
-              {displayText}
-            </button>
-          );
-        })}
-      </nav>
-    </div>
+      {/* 移动端悬浮目录按钮（印章小圆纽） */}
+      <div className="lg:hidden">
+        <button
+          onClick={() => setIsMobileOpen(true)}
+          className="fixed bottom-20 right-4 z-40 w-11 h-11 rounded-full paper-card-strong border border-[var(--accent)] text-[var(--accent)] shadow-xl flex items-center justify-center font-bold text-xs tracking-wider transition-all duration-300 hover:scale-105 active:scale-95"
+          title="展开目录"
+          aria-label="展开目录"
+        >
+          <span className="font-serif text-sm">目</span>
+        </button>
+
+        {/* 移动端目录滑出抽屉 */}
+        <AnimatePresence>
+          {isMobileOpen && (
+            <div className="fixed inset-0 z-[80] flex flex-col justify-end">
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsMobileOpen(false)}
+                className="fixed inset-0 bg-black/40 backdrop-blur-xs"
+              />
+
+              <motion.div
+                initial={{ y: '100%' }}
+                animate={{ y: 0 }}
+                exit={{ y: '100%' }}
+                transition={{ type: 'spring', damping: 25, stiffness: 250 }}
+                className="relative paper-card-strong border-t border-[var(--card-border)] rounded-t-3xl p-6 max-h-[70vh] flex flex-col z-10 shadow-2xl"
+              >
+                <div className="flex items-center justify-between pb-4 border-b border-[var(--rule)] mb-3">
+                  <h3 className="font-black text-slate-900 dark:text-white text-base flex items-center gap-2">
+                    <span className="seal-mark rounded-[1px]" />
+                    <span>文章目录</span>
+                  </h3>
+                  <button
+                    onClick={() => setIsMobileOpen(false)}
+                    className="w-7 h-7 rounded-full paper-card flex items-center justify-center text-slate-500 hover:text-slate-800 text-xs font-bold"
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="overflow-y-auto custom-scrollbar flex-1 py-2 flex flex-col gap-2.5">
+                  {toc.map((item, index) => {
+                    const displayText = getDisplayText(item.text);
+                    const safeId = getSafeId(item.text);
+                    const isActive = activeId === safeId;
+
+                    return (
+                      <button
+                        key={index}
+                        onClick={(e) => scrollToHeading(e, safeId)}
+                        className={`text-left text-sm transition-colors py-1.5 px-3 rounded-lg line-clamp-2
+                          ${item.level === 1 ? 'font-bold' : ''}
+                          ${item.level === 2 ? 'pl-5 text-xs' : ''}
+                          ${item.level === 3 ? 'pl-8 text-[11px]' : ''}
+                          ${isActive ? 'bg-[color-mix(in_oklab,var(--accent)_12%,var(--paper))] text-[var(--accent)] font-bold' : 'text-slate-700 dark:text-slate-300 hover:bg-[var(--rule)]'}
+                        `}
+                      >
+                        {displayText}
+                      </button>
+                    );
+                  })}
+                </div>
+              </motion.div>
+            </div>
+          )}
+        </AnimatePresence>
+      </div>
+    </>
   );
 }

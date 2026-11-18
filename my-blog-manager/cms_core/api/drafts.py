@@ -78,6 +78,7 @@ async def save_draft(request: Request):
         "tags": payload.get("tags", []),
         "mood": payload.get("mood", ""),
         "date": payload.get("date", ""),
+        "isPrivate": bool(payload.get("isPrivate", payload.get("private", False))),
         "lastModified": int(time.time() * 1000)
     }
 
@@ -132,7 +133,9 @@ async def get_draft(request: Request):
     file_path = os.path.join(drafts_dir, f"{raw_id}.json")
     if os.path.exists(file_path):
         with open(file_path, "r", encoding="utf-8") as f:
-            return {"success": True, "draft": json.load(f)}
+            d = json.load(f)
+            d["isPrivate"] = bool(d.get("isPrivate", d.get("private", False)))
+            return {"success": True, "draft": d}
 
     # 2. 如果没有草稿，从物理 MD 文件读取并解析
     target_md = None
@@ -180,7 +183,8 @@ async def get_draft(request: Request):
                 "cover": cover,
                 "description": description,
                 "mood": mood,
-                "date": date
+                "date": date,
+                "isPrivate": bool(fm.get("private", False)) if "fm" in locals() and fm else False
             }
             return {"success": True, "draft": draft_data}
         except Exception as e:
@@ -244,22 +248,28 @@ async def sync_local_operations(request: Request):
                 final_id = f"{doc_type}_{int(time.time())}"
 
             # ==========================================
-            # 防吞空行：在交给 markdownify 之前先处理 HTML
+            # 编辑器 Markdown 源码模式会直接交 md 原文（contentFormat=markdown），
+            # 这种内容原样落盘，不再走 HTML→Markdown 的二次转换；
+            # 富文本模式仍旧交 HTML，走下面的 markdownify 流程。
             # ==========================================
-            raw_html = data.get("content", "")
+            if data.get("contentFormat") == "markdown":
+                md_content = str(data.get("content", "")).replace("\r\n", "\n").rstrip() + "\n"
+            else:
+                # 防吞空行：在交给 markdownify 之前先处理 HTML
+                raw_html = data.get("content", "")
 
-            # 1. 拦截带全角空格的空段落与原生空段落
-            # 我们直接把它们替换成带有 HTML 换行符的强硬结构
-            raw_html = re.sub(r'<p>&#12288;<\/p>', '<br><br>', raw_html)
-            raw_html = re.sub(r'<p><\/p>', '<br><br>', raw_html)
+                # 1. 拦截带全角空格的空段落与原生空段落
+                # 我们直接把它们替换成带有 HTML 换行符的强硬结构
+                raw_html = re.sub(r'<p>&#12288;<\/p>', '<br><br>', raw_html)
+                raw_html = re.sub(r'<p><\/p>', '<br><br>', raw_html)
 
-            # 2. 基础转换，保留 img
-            # 保留 br 标签
-            md_content = md(raw_html, heading_style="ATX", keep=['img', 'br'])
+                # 2. 基础转换，保留 img
+                # 保留 br 标签
+                md_content = md(raw_html, heading_style="ATX", keep=['img', 'br'])
 
-            # 3. markdownify 可能会把 <br> 留下来，
-            # 为了让 MD 里出现真实空行，把保留下来的 <br> 替换为 \n\n
-            md_content = re.sub(r'<br\s*\/?>', '\n\n', md_content)
+                # 3. markdownify 可能会把 <br> 留下来，
+                # 为了让 MD 里出现真实空行，把保留下来的 <br> 替换为 \n\n
+                md_content = re.sub(r'<br\s*\/?>', '\n\n', md_content)
             # ==========================================
 
             # 处理日期与精确时间
@@ -283,6 +293,8 @@ async def sync_local_operations(request: Request):
                 "cover": data.get("cover", ""),
                 "description": data.get("description", "")
             }
+            if data.get("isPrivate") or data.get("private"):
+                fm["private"] = True
 
             # AI 摘要：仅杂谈在发布时生成一次并缓存进 frontmatter（about 页不生成）
             if doc_type != "about":

@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { MapPin, MessageSquare, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost } from 'lucide-react';
+import { MapPin, MessageSquare, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost, X } from 'lucide-react';
 import MomentComments from '../../components/MomentComments';
 import { useEscapeClose } from '../../lib/use-escape-close';
 
@@ -25,8 +25,45 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [lightbox, setLightbox] = useState<{ images: string[], index: number } | null>(null);
 
+  const [selectedYear, setSelectedYear] = useState<string>('全部');
+  const [selectedLocation, setSelectedLocation] = useState<string>('');
+
+  const availableYears = useMemo(() => {
+    if (!moments) return [];
+    const set = new Set<string>();
+    moments.forEach((m: any) => {
+      if (m.date) {
+        const y = String(m.date).slice(0, 4);
+        if (/^\d{4}$/.test(y)) set.add(y);
+      }
+    });
+    return Array.from(set).sort((a, b) => Number(b) - Number(a));
+  }, [moments]);
+
+  const availableLocations = useMemo(() => {
+    if (!moments) return [];
+    const counts: Record<string, number> = {};
+    moments.forEach((m: any) => {
+      const loc = (m.location || '').trim();
+      if (loc) {
+        counts[loc] = (counts[loc] || 0) + 1;
+      }
+    });
+    return Object.entries(counts)
+      .sort((a, b) => b[1] - a[1])
+      .map(([loc, count]) => ({ location: loc, count }));
+  }, [moments]);
+
   const processedMoments = useMemo(() => {
     let result = moments ? [...moments] : [];
+
+    if (selectedYear !== '全部') {
+      result = result.filter(m => (m.date || '').startsWith(selectedYear));
+    }
+
+    if (selectedLocation) {
+      result = result.filter(m => (m.location || '').trim() === selectedLocation);
+    }
 
     if (searchQuery.trim()) {
       const query = searchQuery.trim().toLowerCase();
@@ -42,7 +79,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
       return sortOrder === 'desc' ? timeB - timeA : timeA - timeB;
     });
     return result;
-  }, [moments, searchQuery, sortOrder]);
+  }, [moments, searchQuery, sortOrder, selectedYear, selectedLocation]);
 
   // 灯箱支持 Esc 关闭（此前只能点背景退出）
   useEscapeClose(!!lightbox, () => setLightbox(null));
@@ -97,58 +134,82 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
     );
   };
 
-  const renderMomentCard = (moment: any) => (
-    <motion.div
-      key={moment.id}
-      id={moment.id}
-      layout
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, scale: 0.9 }}
-      transition={{ duration: 0.4, type: 'spring', stiffness: 100 }}
-      className="flex flex-col paper-card rounded-2xl md:rounded-2xl shadow-lg md:shadow-xl border border-[var(--card-border)] p-5 md:p-10 transition-shadow hover:shadow-2xl overflow-hidden relative group w-full"
-    >
-      <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-8 pb-4 md:pb-6 border-b border-slate-200/50 dark:border-slate-700/50 relative">
-        <div className="w-10 h-10 md:w-14 md:h-14 shrink-0 rounded-xl md:rounded-2xl overflow-hidden shadow-sm md:shadow-md border-2 border-white dark:border-slate-700">
-          <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
-        </div>
-        <div className="flex flex-col">
-          <h3 className="text-base md:text-lg font-black text-[var(--accent)] tracking-wide">{authorName}</h3>
-          <div className="flex items-center gap-1.5 md:gap-2 text-[10px] md:text-[11px] text-slate-400 font-bold mt-0.5 md:mt-1"><Clock size={10} className="md:w-3 md:h-3" /> {timeAgo(moment.date)}</div>
-        </div>
-      </div>
+  const renderMomentCard = (moment: any, index: number = 0) => {
+    const tapeColor = index % 3 === 0 ? 'var(--tape-mint, #b6dcc8)' : index % 3 === 1 ? 'var(--tape-pink, #f3c6c6)' : 'var(--tape-butter, #f2e6ad)';
+    const tapeRotate = index % 2 === 0 ? '-rotate-1' : 'rotate-1';
 
-      <p className="text-slate-800 dark:text-slate-200 text-[14px] md:text-[16px] leading-relaxed whitespace-pre-wrap font-medium break-words">{moment.content}</p>
+    return (
+      <motion.div
+        key={moment.id}
+        id={moment.id}
+        layout
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, scale: 0.9 }}
+        transition={{ duration: 0.4, type: 'spring', stiffness: 100 }}
+        className="flex flex-col paper-card rounded-2xl md:rounded-2xl border border-[var(--card-border)] p-5 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-soft)] overflow-hidden relative group w-full"
+      >
+        {/* 手账和纸胶带装饰条 */}
+        <div
+          className={`absolute -top-2 left-1/2 -translate-x-1/2 z-10 w-20 h-4.5 rounded-[1px] opacity-80 shadow-xs transform ${tapeRotate} pointer-events-none border border-black/5`}
+          style={{ backgroundColor: tapeColor }}
+        />
 
-      {renderImages(moment.images)}
-
-      <div className="mt-5 md:mt-10 flex items-center justify-between">
-        <div className="min-w-0 flex-1 pr-2">
-          {moment.location && (
-            <span className="inline-flex items-center gap-1 md:gap-1.5 text-[9px] md:text-[11px] font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 max-w-full truncate border border-indigo-500/10">
-              {/* 就是这里！shrink-0 已经乖乖放进 className 里面了 */}
-              <MapPin size={10} className="md:w-3 md:h-3 shrink-0" />
-              <span className="truncate">{moment.location}</span>
-            </span>
-          )}
-        </div>
-        <button onClick={() => setOpenCommentId(openCommentId === moment.id ? null : moment.id)} className={`w-8 h-8 md:w-10 md:h-10 flex items-center justify-center shrink-0 rounded-full transition-all shadow-sm ${openCommentId === moment.id ? 'bg-indigo-500 text-white rotate-12' : 'paper-card-strong text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
-          <MessageSquare size={14} className="md:w-4 md:h-4" />
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {openCommentId === moment.id && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1, marginTop: 16 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="bg-slate-50/50 rounded-2xl md:rounded-2xl p-4 md:p-6 border border-slate-200/50 dark:border-slate-700/50 relative shadow-inner">
-              <div className="absolute -top-2 right-6 md:right-8 w-4 h-4 bg-slate-50/50 rotate-45 border-l border-t border-slate-200/50"></div>
-              <MomentComments id={`/moments/${moment.id}`} />
+        <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-4 border-b border-[var(--rule)] relative">
+          <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl overflow-hidden shadow-sm border border-[var(--card-border)]">
+            <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+          </div>
+          <div className="flex flex-col">
+            <h3 className="text-sm md:text-base font-black text-[var(--accent)] tracking-wide flex items-center gap-1.5">
+              <span>{authorName}</span>
+              <span className="seal-mark rounded-[1px]" />
+            </h3>
+            <div className="flex items-center gap-1.5 text-[10px] md:text-[11px] text-[var(--ink-faint)] font-bold mt-0.5">
+              <Clock size={10} className="md:w-3 md:h-3" /> {timeAgo(moment.date)}
             </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  );
+          </div>
+        </div>
+
+        <p className="text-slate-800 dark:text-slate-200 text-[14px] md:text-[15px] leading-relaxed whitespace-pre-wrap font-medium break-words">{moment.content}</p>
+
+        {renderImages(moment.images)}
+
+        <div className="mt-4 md:mt-6 flex items-center justify-between">
+          <div className="min-w-0 flex-1 pr-2">
+            {moment.location && (
+              <button
+                type="button"
+                onClick={() => setSelectedLocation(selectedLocation === moment.location ? '' : moment.location)}
+                className={`inline-flex items-center gap-1 text-[9px] md:text-[11px] font-bold px-2.5 py-1 rounded-full transition-all max-w-full truncate border ${
+                  selectedLocation === moment.location
+                    ? 'bg-[var(--accent)] text-white border-[var(--accent)] shadow-xs'
+                    : 'bg-[color-mix(in_oklab,var(--ok)_10%,var(--paper))] text-[var(--ok)] border-[var(--ok)]/15 hover:border-[var(--ok)]/40'
+                }`}
+                title={`按地点「${moment.location}」筛选说说`}
+              >
+                <MapPin size={10} className="md:w-3 md:h-3 shrink-0" />
+                <span className="truncate">{moment.location}</span>
+              </button>
+            )}
+          </div>
+          <button onClick={() => setOpenCommentId(openCommentId === moment.id ? null : moment.id)} className={`w-8 h-8 md:w-9 md:h-9 flex items-center justify-center shrink-0 rounded-full transition-all shadow-sm ${openCommentId === moment.id ? 'bg-[var(--accent)] text-white rotate-12' : 'paper-card-strong text-slate-400 hover:text-[var(--accent)] hover:border-[var(--accent-soft)]'}`}>
+            <MessageSquare size={13} className="md:w-3.5 md:h-3.5" />
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {openCommentId === moment.id && (
+            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1, marginTop: 14 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
+              <div className="bg-[var(--paper-deep)] rounded-xl p-4 md:p-5 border border-[var(--card-border)] relative shadow-inner">
+                <div className="absolute -top-2 right-6 md:right-8 w-4 h-4 bg-[var(--paper-deep)] rotate-45 border-l border-t border-[var(--card-border)]"></div>
+                <MomentComments id={`/moments/${moment.id}`} />
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </motion.div>
+    );
+  };
 
   return (
     <div className="w-[95%] md:w-[90%] max-w-6xl mx-auto py-6 md:py-10 mt-24 md:mt-28 relative z-10 flex-1 flex flex-col min-h-[85vh]">
@@ -174,6 +235,72 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
             <ArrowUpZA size={12} className="md:w-3.5 md:h-3.5"/> 最早
           </button>
         </div>
+
+        {/* 年份时间轴快捷切换 */}
+        {availableYears.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-1.5 md:gap-2 px-2 max-w-2xl">
+            <button
+              onClick={() => setSelectedYear('全部')}
+              className={`px-3.5 py-1 md:py-1.5 rounded-xl text-[11px] md:text-xs font-bold transition-all border ${
+                selectedYear === '全部'
+                  ? 'bg-indigo-500 text-white border-indigo-500 shadow-sm'
+                  : 'paper-card text-[var(--ink-soft)] border-[var(--card-border)] hover:border-indigo-400'
+              }`}
+            >
+              全部年份
+            </button>
+            {availableYears.map(yr => (
+              <button
+                key={yr}
+                onClick={() => setSelectedYear(yr)}
+                className={`px-3.5 py-1 md:py-1.5 rounded-xl text-[11px] md:text-xs font-bold transition-all border ${
+                  selectedYear === yr
+                    ? 'bg-indigo-500 text-white border-indigo-500 shadow-sm'
+                    : 'paper-card text-[var(--ink-soft)] border-[var(--card-border)] hover:border-indigo-400'
+                }`}
+              >
+                {yr} 年
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* 足迹地点聚合 */}
+        {availableLocations.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-1.5 px-2 max-w-2xl">
+            <span className="text-[11px] font-bold text-[var(--ink-faint)] flex items-center gap-1 mr-1">
+              <MapPin size={12} className="text-indigo-500" /> 足迹：
+            </span>
+            {availableLocations.slice(0, 10).map(loc => (
+              <button
+                key={loc.location}
+                onClick={() => setSelectedLocation(selectedLocation === loc.location ? '' : loc.location)}
+                className={`px-2.5 py-1 rounded-lg text-[10px] md:text-[11px] font-bold transition-all border ${
+                  selectedLocation === loc.location
+                    ? 'bg-indigo-500 text-white border-indigo-500 shadow-xs'
+                    : 'bg-black/5 dark:bg-white/5 text-[var(--ink-soft)] border-[var(--card-border)] hover:border-indigo-400'
+                }`}
+              >
+                {loc.location} ({loc.count})
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* 生效筛选标签与一键清除 */}
+        {(selectedYear !== '全部' || selectedLocation) && (
+          <div className="flex items-center gap-2 text-xs text-[var(--ink-soft)] bg-indigo-500/10 border border-indigo-500/20 px-3.5 py-1.5 rounded-xl">
+            <span className="text-[var(--ink-faint)]">当前聚合：</span>
+            {selectedYear !== '全部' && <span className="font-bold text-indigo-600 dark:text-indigo-400">{selectedYear} 年</span>}
+            {selectedLocation && <span className="font-bold text-indigo-600 dark:text-indigo-400">· {selectedLocation}</span>}
+            <button
+              onClick={() => { setSelectedYear('全部'); setSelectedLocation(''); }}
+              className="ml-2 text-indigo-500 hover:text-indigo-600 hover:underline font-bold flex items-center gap-1"
+            >
+              <X size={12} /> 清除聚合
+            </button>
+          </div>
+        )}
       </div>
 
       <LayoutGroup>
@@ -181,12 +308,12 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
           <div className="flex flex-col md:flex-row gap-5 md:gap-8 pb-32 w-full items-start">
             <div className="flex-1 flex flex-col gap-5 md:gap-8 w-full min-w-0">
               <AnimatePresence mode='popLayout'>
-                {processedMoments.filter((_, i) => i % 2 === 0).map(moment => renderMomentCard(moment))}
+                {processedMoments.filter((_, i) => i % 2 === 0).map((moment, i) => renderMomentCard(moment, i * 2))}
               </AnimatePresence>
             </div>
             <div className="flex-1 flex flex-col gap-5 md:gap-8 w-full min-w-0">
               <AnimatePresence mode='popLayout'>
-                {processedMoments.filter((_, i) => i % 2 === 1).map(moment => renderMomentCard(moment))}
+                {processedMoments.filter((_, i) => i % 2 === 1).map((moment, i) => renderMomentCard(moment, i * 2 + 1))}
               </AnimatePresence>
             </div>
           </div>

@@ -43,6 +43,7 @@ export default function ChatterPage() {
         tags: data.tags || [],
         mood: data.mood || '',
         cover: data.cover || '',
+        isPrivate: Boolean(data.private),
         content: content.replace(/^#+ .*\n/m, '')
       };
     }).sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime()));

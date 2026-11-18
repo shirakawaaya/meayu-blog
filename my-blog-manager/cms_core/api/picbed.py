@@ -236,3 +236,137 @@ async def upload_image_local(file: UploadFile = File(...)):
         }
     except Exception as e:
         return {"success": False, "message": f"保存失败: {str(e)}"}
+
+
+# ============================================================
+# 三、孤儿图片扫描与一键清理
+# ------------------------------------------------------------
+# 扫描 public/images/ 中未被任何杂谈、说说、相册、草稿等引用的废弃图片
+# ============================================================
+
+def _collect_all_referenced_content(blog_root: str) -> str:
+    from cms_core.paths import MANAGER_ROOT
+    all_texts = []
+
+    # 1. 扫描博客端常用内容与配置文件
+    scan_dirs = [
+        os.path.join(blog_root, "chatters"),
+        os.path.join(blog_root, "moments"),
+        os.path.join(blog_root, "data"),
+        os.path.join(blog_root, "app"),
+    ]
+    for sdir in scan_dirs:
+        if os.path.exists(sdir):
+            for root, _, files in os.walk(sdir):
+                for f in files:
+                    if f.endswith((".md", ".ts", ".tsx", ".json", ".js")):
+                        try:
+                            with open(os.path.join(root, f), "r", encoding="utf-8", errors="ignore") as fp:
+                                all_texts.append(fp.read())
+                        except Exception:
+                            pass
+
+    # 根目录的 siteConfig.ts
+    for root_file in ["siteConfig.ts", "siteConfig.js"]:
+        cfg_path = os.path.join(blog_root, root_file)
+        if os.path.exists(cfg_path):
+            try:
+                with open(cfg_path, "r", encoding="utf-8", errors="ignore") as fp:
+                    all_texts.append(fp.read())
+            except Exception:
+                pass
+
+    # 2. 扫描管理端草稿箱（未发布的草稿引用的图片保留，避免误删）
+    drafts_dir = os.path.join(MANAGER_ROOT, "manager_data", "drafts")
+    if os.path.exists(drafts_dir):
+        for f in os.listdir(drafts_dir):
+            if f.endswith(".json"):
+                try:
+                    with open(os.path.join(drafts_dir, f), "r", encoding="utf-8", errors="ignore") as fp:
+                        all_texts.append(fp.read())
+                except Exception:
+                    pass
+
+    return "\n".join(all_texts)
+
+
+@router.post("/scan_orphans")
+async def scan_orphan_images():
+    images_dir = _images_dir()
+    if not images_dir or not os.path.exists(images_dir):
+        return {"success": False, "message": "未找到本地图片目录，请先在【设置】中配置博客根目录"}
+
+    blog_root = get_blog_root()
+    all_content = _collect_all_referenced_content(blog_root)
+
+    total_files = []
+    orphans = []
+
+    for filename in os.listdir(images_dir):
+        full_path = os.path.join(images_dir, filename)
+        if not os.path.isfile(full_path):
+            continue
+
+        if filename.startswith(".") or filename in ("README.md", "favicon.ico"):
+            continue
+
+        size = os.path.getsize(full_path)
+        mtime = int(os.path.getmtime(full_path) * 1000)
+        total_files.append(filename)
+
+        if filename not in all_content:
+            orphans.append({
+                "filename": filename,
+                "url": f"/images/{filename}",
+                "size": size,
+                "mtime": mtime
+            })
+
+    orphans.sort(key=lambda x: x["size"], reverse=True)
+    total_orphan_bytes = sum(x["size"] for x in orphans)
+
+    return {
+        "success": True,
+        "totalCount": len(total_files),
+        "orphanCount": len(orphans),
+        "totalOrphanBytes": total_orphan_bytes,
+        "orphans": orphans
+    }
+
+
+@router.post("/delete_orphans")
+async def delete_orphan_images(payload: dict = Body(...)):
+    images_dir = _images_dir()
+    if not images_dir or not os.path.exists(images_dir):
+        return {"success": False, "message": "未找到本地图片目录"}
+
+    filenames = payload.get("filenames", [])
+    if not filenames:
+        return {"success": False, "message": "未提供要删除的文件列表"}
+
+    images_dir_abs = os.path.abspath(images_dir)
+    deleted_count = 0
+    errors = []
+
+    for fname in filenames:
+        safe_name = os.path.basename(fname)
+        if safe_name.startswith(".") or not safe_name:
+            continue
+        target_path = os.path.abspath(os.path.join(images_dir, safe_name))
+        # 严格防穿越校验
+        if not target_path.startswith(images_dir_abs):
+            continue
+
+        if os.path.exists(target_path) and os.path.isfile(target_path):
+            try:
+                os.remove(target_path)
+                deleted_count += 1
+            except Exception as e:
+                errors.append(f"{safe_name}: {str(e)}")
+
+    return {
+        "success": True,
+        "deletedCount": deleted_count,
+        "errors": errors,
+        "message": f"已成功清理 {deleted_count} 张孤儿图片"
+    }

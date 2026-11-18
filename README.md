@@ -31,7 +31,7 @@
 
 **管理端（my-blog-manager，Next.js + FastAPI）**
 
-- 写杂谈（TipTap 富文本，AI 润色带预览确认）、草稿箱（仅杂谈）、说说弹窗直发
+- 写杂谈（TipTap 富文本 + Markdown 源码模式，粘贴 md 自动转富文本，AI 润色带预览确认）、草稿箱（仅杂谈）、说说弹窗直发
 - 设置页：个人名片、视觉背景（全站背景轮播开关）、图库、评论、模型、项目仓库
 - AI 能力：润色与摘要共用一份模型配置（`data/model_config.json`，支持 OpenAI 兼容 / Gemini 原生协议，Key 不出服务端）；杂谈发布时自动生成 80 字摘要写入 frontmatter
 - 图片管理：本地存储 `XHBlogs/public/images/`，上传自动压缩（最长边 2000px + JPEG 85，PNG 透明通道保留）
