@@ -39,6 +39,8 @@ export default function GlobalSearchModal() {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const listRef = useRef<HTMLDivElement>(null);
+  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLElement | null>(null);
   const router = useRouter();
 
   // 快捷键 Ctrl+K / Cmd+K 监听与自定义事件
@@ -46,11 +48,12 @@ export default function GlobalSearchModal() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        setIsOpen((prev) => !prev);
+        if (!isOpen) { triggerRef.current = document.activeElement as HTMLElement; setIsOpen(true); }
+        else setIsOpen(false);
       }
     };
 
-    const handleCustomOpen = () => setIsOpen(true);
+    const handleCustomOpen = () => { triggerRef.current = document.activeElement as HTMLElement; setIsOpen(true); };
 
     window.addEventListener('keydown', handleKeyDown);
     window.addEventListener('open-global-search', handleCustomOpen);
@@ -59,7 +62,7 @@ export default function GlobalSearchModal() {
       window.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('open-global-search', handleCustomOpen);
     };
-  }, []);
+  }, [isOpen]);
 
   // 打开时重置查询：用渲染期调整（React 官方推荐写法），不在 effect 里同步 setState
   const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
@@ -85,13 +88,44 @@ export default function GlobalSearchModal() {
         .catch((err) => { console.error('加载搜索数据失败:', err); setLoadError(true); });
     }
     if (isOpen) {
-      const timer = setTimeout(() => inputRef.current?.focus(), 50);
+      // AnimatePresence 挂载有延迟，轮询等 input 到位后再聚焦（一次性，找到即停）
+      let tries = 0;
+      let timer: ReturnType<typeof setTimeout>;
+      const focusWhenReady = () => {
+        if (inputRef.current) { inputRef.current.focus(); return; }
+        if (tries++ < 10) timer = setTimeout(focusWhenReady, 50);
+      };
+      focusWhenReady();
       return () => clearTimeout(timer);
     }
   }, [isOpen, hasLoaded, loadError, retryTick]);
 
   // Esc 关闭
   useEscapeClose(isOpen, () => setIsOpen(false));
+
+  // 关闭后把焦点还给打开前的元素（主流弹窗礼仪）
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (wasOpenRef.current && !isOpen) {
+      triggerRef.current?.focus?.();
+    }
+    wasOpenRef.current = isOpen;
+  }, [isOpen]);
+
+  // Tab 焦点陷阱：把焦点锁在弹窗内循环
+  const handleTabTrap = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key !== 'Tab' || !panelRef.current) return;
+    const focusables = Array.from(
+      panelRef.current.querySelectorAll<HTMLElement>(
+        'input, button, [href], [tabindex]:not([tabindex="-1"])'
+      )
+    ).filter((el) => !el.hasAttribute('disabled'));
+    if (focusables.length === 0) return;
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
 
   // 搜索匹配过滤
   const results = useMemo<SearchResultItem[]>(() => {
@@ -189,9 +223,11 @@ export default function GlobalSearchModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -12 }}
             transition={{ type: 'spring', damping: 25, stiffness: 280 }}
+            ref={panelRef}
             role="dialog"
             aria-modal="true"
             aria-label="全局搜索"
+            onKeyDown={handleTabTrap}
             className="relative w-full max-w-2xl paper-card-strong rounded-2xl shadow-2xl border border-[var(--card-border)] overflow-hidden z-10 flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >

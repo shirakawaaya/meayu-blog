@@ -203,7 +203,7 @@ export default function RepoSection() {
         </div>
 
         <div className="space-y-8">
-          <div className="bg-[var(--paper-deep)] p-5 rounded-2xl border border-[var(--card-border)] dark:border-[var(--card-border)]">
+          <div className="bg-slate-100/50 dark:bg-white/5 p-5 rounded-2xl border border-[var(--card-border)] dark:border-[var(--card-border)]">
             <div className="flex justify-between items-center mb-3">
                <label className="text-[11px] font-black text-[var(--ink-soft)] dark:text-[var(--ink-soft)] uppercase flex items-center gap-1"><ShieldCheck size={14} className="text-[var(--ink-faint)]" /> 1. 本地博客目录</label>
                <button onClick={testPathConnection} disabled={isCheckingPath} className="text-[10px] paper-card text-[var(--ink-soft)] px-3 py-1 rounded-full font-bold hover:text-[var(--accent)] transition-colors">
@@ -213,7 +213,7 @@ export default function RepoSection() {
             <input type="text" value={deployData.blogPath} onChange={e => setDeployData({...deployData, blogPath: e.target.value})} className="w-full paper-card rounded-xl px-4 py-3 text-xs font-mono text-[var(--ink)] outline-none focus:ring-2 focus:ring-[var(--accent-soft)]/40" placeholder="C:/Workspace/XinghuisamaBlogs/XHBlogs" />
           </div>
 
-          <div className="bg-[var(--paper-deep)] p-5 rounded-2xl border border-[var(--card-border)] dark:border-[var(--card-border)]">
+          <div className="bg-slate-100/50 dark:bg-white/5 p-5 rounded-2xl border border-[var(--card-border)] dark:border-[var(--card-border)]">
             <div className="flex justify-between items-center mb-4">
                <label className="text-[11px] font-black text-[var(--ink-soft)] dark:text-[var(--ink-soft)] uppercase flex items-center gap-1"><GitBranch size={14} className="text-[var(--ink-faint)]" /> 2. GitHub 仓库配置</label>
                <button onClick={testGitConnection} disabled={isCheckingGit} className="text-[10px] paper-card text-[var(--ink-soft)] px-3 py-1 rounded-full font-bold hover:text-[var(--accent)] transition-colors">
@@ -263,23 +263,23 @@ export default function RepoSection() {
 
             {/* 操作按钮区 */}
             <div className="pt-6 border-t border-[var(--card-border)] dark:border-[var(--card-border)] flex flex-col gap-3">
-               <button onClick={() => setModalConfig({isOpen: true, type: 'init'})} disabled={isInitializing} className="ed-btn-quiet !border-[var(--accent)] !text-[var(--accent)] w-full py-3.5 text-sm">
+               <button onClick={() => setModalConfig({isOpen: true, type: 'init'})} disabled={isInitializing} className="ed-btn-quiet w-full py-3.5 text-sm">
                   <Wand2 size={18} className={isInitializing ? "animate-spin" : ""} /> {isInitializing ? "初始化中…" : "初始化仓库环境"}
                </button>
 
                <div className="flex gap-3 flex-col md:flex-row">
-                 <button onClick={() => setModalConfig({isOpen: true, type: 'deploy'})} disabled={isDeploying || isUploading} className="ed-btn-quiet !border-[var(--accent)] !text-[var(--accent)] flex-1 py-3.5 text-sm">
+                 <button onClick={() => setModalConfig({isOpen: true, type: 'deploy'})} disabled={isDeploying || isUploading} className="ed-btn-quiet flex-1 py-3.5 text-sm">
                     <Rocket size={18} className={isDeploying ? "animate-bounce" : ""} /> {isDeploying ? "编译中…" : "编译并发布静态页"}
                  </button>
 
-                 <button onClick={() => setModalConfig({isOpen: true, type: 'upload'})} disabled={isDeploying || isUploading} className="ed-btn-quiet !border-[var(--accent)] !text-[var(--accent)] flex-1 py-3.5 text-sm">
+                 <button onClick={() => setModalConfig({isOpen: true, type: 'upload'})} disabled={isDeploying || isUploading} className="ed-btn-quiet flex-1 py-3.5 text-sm">
                     <CloudUpload size={18} className={isUploading ? "animate-pulse" : ""} /> {isUploading ? "推送中…" : "仅推送源码（Vercel）"}
                  </button>
                </div>
             </div>
           </div>
 
-          <button onClick={handleSaveConfig} disabled={isSaving} className="w-full py-4 bg-[var(--accent)] hover:brightness-110 text-white rounded-2xl text-sm font-black shadow-md active:scale-95 transition-all hover:shadow-2xl hover:-translate-y-1">
+          <button onClick={handleSaveConfig} disabled={isSaving} className="ed-btn w-full py-4 text-sm">
             <Save size={18} className="inline mr-2" /> {isSaving ? "正在保存…" : "保存配置（立即生效）"}
           </button>
         </div>
@@ -296,7 +296,7 @@ export default function RepoSection() {
 
                 {modalConfig.type === 'ssh' && (
                   <>
-                        <div className="w-16 h-16 bg-amber-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6"><Key className="text-amber-500" size={32} /></div>
+                        <div className="w-16 h-16 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] rounded-2xl flex items-center justify-center mx-auto mb-6"><Key className="text-[var(--accent)]" size={32} /></div>
                         <h3 className="text-xl font-black text-[var(--ink)] dark:text-white mb-2">
                           {sshConfig.type === 'static' ? '静态页面仓库' : '源码仓库'}的部署密钥已生成
                         </h3>
@@ -313,15 +313,15 @@ export default function RepoSection() {
 
                         <div className="space-y-3 mb-8">
                             <div className="flex items-center gap-3 text-left paper-card p-3 rounded-2xl">
-                                <div className="w-6 h-6 rounded-full bg-[var(--paper-deep)] text-[var(--ink)] text-[10px] flex items-center justify-center shrink-0 font-bold">1</div>
+                                <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-white/10 text-[var(--ink)] text-[10px] flex items-center justify-center shrink-0 font-bold">1</div>
                                 <p className="text-[11px] font-bold text-[var(--ink-soft)] dark:text-[var(--ink-soft)]">复制上方密钥内容</p>
                             </div>
                             <div className="flex items-center gap-3 text-left paper-card p-3 rounded-2xl">
-                                <div className="w-6 h-6 rounded-full bg-[var(--paper-deep)] text-[var(--ink)] text-[10px] flex items-center justify-center shrink-0 font-bold">2</div>
+                                <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-white/10 text-[var(--ink)] text-[10px] flex items-center justify-center shrink-0 font-bold">2</div>
                                 <p className="text-[11px] font-bold text-[var(--ink-soft)] dark:text-[var(--ink-soft)] flex-1">前往该 GitHub 仓库的 Settings -&gt; Deploy keys 页面</p>
                             </div>
                             <div className="flex items-center gap-3 text-left paper-card p-3 rounded-2xl">
-                                <div className="w-6 h-6 rounded-full bg-[var(--paper-deep)] text-[var(--ink)] text-[10px] flex items-center justify-center shrink-0 font-bold">3</div>
+                                <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-white/10 text-[var(--ink)] text-[10px] flex items-center justify-center shrink-0 font-bold">3</div>
                                 <p className="text-[11px] font-bold text-[var(--ink-soft)] dark:text-[var(--ink-soft)]">添加该密钥并<strong className="ml-1">勾选 Allow write access</strong></p>
                             </div>
                         </div>
@@ -331,7 +331,7 @@ export default function RepoSection() {
 
                 {modalConfig.type === 'init' && (
                     <>
-                        <div className="w-16 h-16 bg-[var(--paper-deep)] rounded-2xl flex items-center justify-center mx-auto mb-6"><Wand2 className="text-[var(--ink)]" size={32} /></div>
+                        <div className="w-16 h-16 bg-slate-100 dark:bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6"><Wand2 className="text-[var(--ink)]" size={32} /></div>
                         <h3 className="text-xl font-black text-[var(--ink)] dark:text-white mb-2">执行自动化改造？</h3>
                         <p className="text-sm text-[var(--ink-faint)] mb-8 leading-relaxed">自动绑定 Git 仓库、安装 gh-pages，并写入部署配置</p>
                         <div className="flex gap-3">
@@ -343,7 +343,7 @@ export default function RepoSection() {
 
                 {modalConfig.type === 'deploy' && (
                     <>
-                        <div className="w-16 h-16 bg-[var(--paper-deep)] rounded-2xl flex items-center justify-center mx-auto mb-6"><Rocket className="text-[var(--ink)]" size={32} /></div>
+                        <div className="w-16 h-16 bg-slate-100 dark:bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6"><Rocket className="text-[var(--ink)]" size={32} /></div>
                         <h3 className="text-xl font-black text-[var(--ink)] dark:text-white mb-2">执行编译并部署？</h3>
                         <p className="text-sm text-[var(--ink-faint)] mb-8 leading-relaxed">打包前端静态文件，推送到「仓库一（静态页面）」。</p>
                         <div className="flex gap-3">
@@ -355,7 +355,7 @@ export default function RepoSection() {
 
                 {modalConfig.type === 'upload' && (
                     <>
-                        <div className="w-16 h-16 bg-[var(--paper-deep)] rounded-2xl flex items-center justify-center mx-auto mb-6"><CloudUpload className="text-[var(--ink)]" size={32} /></div>
+                        <div className="w-16 h-16 bg-slate-100 dark:bg-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6"><CloudUpload className="text-[var(--ink)]" size={32} /></div>
                         <h3 className="text-xl font-black text-[var(--ink)] dark:text-white mb-2">推送源码至 Vercel？</h3>
                         <p className="text-sm text-[var(--ink-faint)] mb-8 leading-relaxed">把本地源码提交并推送到「仓库二（博客源码）」，Vercel 会自动构建。</p>
                         <div className="flex gap-3">

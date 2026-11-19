@@ -1,5 +1,5 @@
 "use client";
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Link } from 'next-view-transitions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { siteConfig } from '../../siteConfig';
@@ -17,12 +17,17 @@ type Chatter = {
 export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
   const [searchQuery, setSearchQuery] = useState("");
   const [activeTag, setActiveTag] = useState("全部");
+  const PAGE_SIZE = 12;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const allTags = useMemo(() => {
     const tags = new Set<string>();
     chatters.forEach(c => c.tags?.forEach(t => tags.add(t)));
     return ["全部", ...Array.from(tags)];
   }, [chatters]);
+
+  // 搜索或标签变化时回到第一页，避免停留在已过滤掉的偏移
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [searchQuery, activeTag]);
 
   const filteredChatters = useMemo(() => {
     if (searchQuery.length > 0 && searchQuery.trim() === "") return [];
@@ -99,7 +104,7 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
       {/* 瀑布流直接设定为 columns-2，减小间距 gap-3 */}
       <motion.div layout className="columns-2 lg:columns-3 gap-3 md:gap-6 space-y-3 md:space-y-6">
         <AnimatePresence mode='popLayout'>
-          {filteredChatters.map((chatter) => (
+          {filteredChatters.slice(0, visibleCount).map((chatter) => (
             <motion.div
               layout
               initial={{ opacity: 0, scale: 0.9 }}
@@ -168,6 +173,17 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
           ))}
         </AnimatePresence>
       </motion.div>
+
+      {visibleCount < filteredChatters.length && (
+        <div className="mt-10 flex justify-center">
+          <button
+            onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+            className="ed-btn-quiet px-8 py-3 text-sm"
+          >
+            加载更多 · 还剩 {filteredChatters.length - visibleCount} 篇
+          </button>
+        </div>
+      )}
     </div>
   );
 }

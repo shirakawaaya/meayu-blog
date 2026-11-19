@@ -109,7 +109,7 @@ export default function AboutClient({
   // 热力图用主题强调色的渐进梯度，而不是原生饱和绿——
   // 整站是纸张/印章主题，亮绿会显得像贴上去的色块。
   const getColorClass = (count: number) => {
-    if (count === 0) return 'bg-[var(--paper-deep)]';
+    if (count === 0) return 'bg-slate-200/70 dark:bg-white/10';
     if (count === 1) return 'bg-[var(--accent-soft)]';
     if (count === 2) return 'bg-[color-mix(in_oklab,var(--accent)_55%,var(--paper))]';
     if (count === 3) return 'bg-[color-mix(in_oklab,var(--accent)_78%,var(--paper))]';
@@ -128,7 +128,7 @@ export default function AboutClient({
     <div className="paper-card rounded-2xl shadow-lg border border-[var(--card-border)] overflow-hidden transition-colors duration-700 relative">
 
       <div className="px-5 sm:px-8 md:px-16 pb-10 md:pb-16 relative">
-        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-slate-800 shadow-lg overflow-hidden -mt-12 md:-mt-16 relative z-20 bg-white">
+        <div className="w-24 h-24 md:w-32 md:h-32 rounded-full border-4 border-white dark:border-slate-800 shadow-lg overflow-hidden mt-3 md:mt-5 relative z-20 bg-white">
           <Avatar src={siteConfig.avatarUrl} name={siteConfig.authorName} className="w-full h-full" />
         </div>
 
@@ -169,9 +169,9 @@ export default function AboutClient({
           {activeTab === 'activity' && (
             <motion.div key="activity" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
 
-              <div className="mb-12 p-5 md:p-8 bg-slate-50/50 rounded-2xl border border-slate-200/50 shadow-inner">
+              <div className="mb-12 p-5 md:p-8 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-[var(--card-border)]">
                 <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2">
-                  <Activity size={20} className="text-green-500" />
+                  <Activity size={20} className="text-[var(--accent)]" />
                   过去一年 {activities.length} 次记录 · Contributions in the last year
                 </h3>
 
@@ -232,7 +232,7 @@ export default function AboutClient({
                 </div>
                 <div className="flex items-center justify-end gap-2 mt-2 text-[10px] md:text-xs font-bold text-slate-500">
                   少
-                  <div className="w-[11px] h-[11px] rounded-[3px] bg-[var(--paper-deep)]"></div>
+                  <div className="w-[11px] h-[11px] rounded-[3px] bg-slate-200/70 dark:bg-white/10"></div>
                   <div className="w-[11px] h-[11px] rounded-[3px] bg-[var(--accent-soft)]"></div>
                   <div className="w-[11px] h-[11px] rounded-[3px] bg-[color-mix(in_oklab,var(--accent)_55%,var(--paper))]"></div>
                   <div className="w-[11px] h-[11px] rounded-[3px] bg-[color-mix(in_oklab,var(--accent)_78%,var(--paper))]"></div>

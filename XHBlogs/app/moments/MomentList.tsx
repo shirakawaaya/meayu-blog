@@ -1,7 +1,7 @@
 "use client";
 
 import type { MomentListItem } from '../../lib/content-types';
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { MapPin, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEscapeClose } from '../../lib/use-escape-close';
@@ -94,6 +94,17 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
     if (!lightbox) return;
     setLightbox({ ...lightbox, index: (lightbox.index - 1 + lightbox.images.length) % lightbox.images.length });
   };
+
+  // 灯箱左右键切换（主流图库标配）
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); setLightbox((cur) => cur ? { ...cur, index: (cur.index - 1 + cur.images.length) % cur.images.length } : cur); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); setLightbox((cur) => cur ? { ...cur, index: (cur.index + 1) % cur.images.length } : cur); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightbox]);
 
   const renderImages = (images: string[]) => {
     if (!images || images.length === 0) return null;
@@ -204,6 +215,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
           <input type="text" placeholder="搜索说说…" value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full paper-card border border-[var(--card-border)] rounded-xl md:rounded-2xl px-5 md:px-6 py-3 md:py-4 pl-12 md:pl-14 text-sm md:text-base text-slate-800 dark:text-white shadow-lg md:shadow-2xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all font-medium relative z-10" />
         </div>
 
+        {processedMoments.length > 0 && (
         <div className="flex paper-card p-1 md:p-1.5 rounded-xl md:rounded-2xl border border-[var(--card-border)] shadow-sm relative z-10">
           <button onClick={() => setSortOrder('desc')} className={`flex items-center gap-1.5 md:gap-2 px-4 md:px-6 py-1.5 md:py-2 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black transition-all duration-300 ${sortOrder === 'desc' ? 'bg-[var(--accent)] text-white shadow-md md:shadow-lg scale-105' : 'text-slate-500 hover:text-[var(--accent)]'}`}>
             <ArrowDownAZ size={12} className="md:w-3.5 md:h-3.5"/> 最新
@@ -212,6 +224,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
             <ArrowUpZA size={12} className="md:w-3.5 md:h-3.5"/> 最早
           </button>
         </div>
+        )}
 
         {/* 年份时间轴快捷切换 */}
         {availableYears.length > 0 && (
@@ -297,8 +310,8 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-12 md:py-24 min-h-[300px] md:min-h-[450px]">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center px-6 md:px-10 py-12 md:py-20 paper-card rounded-2xl border border-[var(--card-border)] shadow-lg max-w-lg w-full mx-auto">
-              <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white mb-2 md:mb-4 tracking-tight">{searchQuery ? "没找到相关记忆" : "还没有说说"}</h2>
-              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-lg leading-relaxed px-2 md:px-4">{searchQuery ? `换个关键词再试试` : `去写下第一条吧`}</p>
+              <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white mb-2 md:mb-4 tracking-tight">{searchQuery ? "没找到相关记忆" : "还没有发布过说说"}</h2>
+              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-lg leading-relaxed px-2 md:px-4">{searchQuery ? `换个关键词再试试` : `这里很快就会有内容`}</p>
             </motion.div>
           </div>
         )}

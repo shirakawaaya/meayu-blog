@@ -42,6 +42,20 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
 
   // 核心破局点：化繁为简！
   const { showToast } = useToast();
+
+  // URL 字段失焦即时校验：就地红字，保存时仍有一次总校验兜底
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+  const validateField = (key: string, val: string) => {
+    let msg = '';
+    if (val && val.trim()) {
+      try { new URL(val.trim()); }
+      catch { msg = '请输入合法的网址（含 http:// 或 https://）'; }
+    }
+    setFieldErrors((prev) => ({ ...prev, [key]: msg }));
+  };
+  const errText = (key: string) => fieldErrors[key] ? (
+    <span className="block mt-1 text-[10px] font-bold text-[var(--danger)]">{fieldErrors[key]}</span>
+  ) : null;
   const handleSaveAll = () => {
     // 暂存前校验 URL 字段，避免写进博客配置后头像/社交图标静默坏掉
     const urlFields: [string, unknown][] = [
@@ -106,10 +120,11 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
               <div className="col-span-1 md:col-span-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1 flex justify-between">
                   <span>网页标签小图标 (Favicon)</span>
+                  {errText('faviconUrl')}
                   {safeData.faviconUrl && <img src={safeData.faviconUrl} alt="favicon" className="w-4 h-4 rounded-full object-cover" />}
                 </label>
                 <div className="flex gap-2 mt-1">
-                  <input type="text" value={safeData.faviconUrl || ''} onChange={e => handleUpdate('faviconUrl', e.target.value)} className="flex-1 paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-soft)]" />
+                  <input type="text" value={safeData.faviconUrl || ''} onChange={e => handleUpdate('faviconUrl', e.target.value)} onBlur={e => validateField('faviconUrl', e.target.value)} className="flex-1 paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-soft)]" />
                   <button onClick={() => openImageTool('faviconUrl')} className="px-4 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] hover:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:hover:bg-[var(--accent)]/40 text-[var(--accent)] dark:text-[var(--accent)] rounded-2xl font-black text-xs transition-colors whitespace-nowrap flex items-center gap-1 shadow-sm">
                     图床
                   </button>
@@ -119,8 +134,9 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
               {/* 头像 URL */}
               <div className="col-span-1 md:col-span-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1">头像 URL (Avatar)</label>
+                  {errText('avatarUrl')}
                 <div className="flex gap-2 mt-1">
-                  <input type="text" value={safeData.avatarUrl || ''} onChange={e => handleUpdate('avatarUrl', e.target.value)} className="flex-1 paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-soft)]" />
+                  <input type="text" value={safeData.avatarUrl || ''} onChange={e => handleUpdate('avatarUrl', e.target.value)} onBlur={e => validateField('avatarUrl', e.target.value)} className="flex-1 paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-soft)]" />
                   <button onClick={() => openImageTool('avatarUrl')} className="px-4 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] hover:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:hover:bg-[var(--accent)]/40 text-[var(--accent)] dark:text-[var(--accent)] rounded-2xl font-black text-xs transition-colors whitespace-nowrap flex items-center gap-1 shadow-sm">
                     图床
                   </button>
@@ -144,7 +160,8 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Google 邮箱/链接</label>
-                  <input type="text" value={safeSocial.google || ''} onChange={e => handleSocialUpdate('google', e.target.value)} className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none" />
+                  <input type="text" value={safeSocial.google || ''} onChange={e => handleSocialUpdate('google', e.target.value)} onBlur={e => validateField('google', e.target.value)} className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none" />
+                  {errText('google')}
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">微信 ID</label>
@@ -156,7 +173,8 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">GitHub 地址</label>
-                  <input type="text" value={safeSocial.github || ''} onChange={e => handleSocialUpdate('github', e.target.value)} className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none" />
+                  <input type="text" value={safeSocial.github || ''} onChange={e => handleSocialUpdate('github', e.target.value)} onBlur={e => validateField('github', e.target.value)} className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none" />
+                  {errText('github')}
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">Gitee 地址</label>

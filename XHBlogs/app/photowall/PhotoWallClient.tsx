@@ -6,10 +6,25 @@ import { useEscapeClose } from '../../lib/use-escape-close';
 
 export default function PhotoWallClient() {
   const [currentAlbum, setCurrentAlbum] = useState<Album | null>(null);
-  const [selectedImage, setSelectedImage] = useState<{url: string, caption?: string} | null>(null);
+  const [lightbox, setLightbox] = useState<{ photos: {url: string, caption?: string}[], index: number } | null>(null);
 
   // 灯箱支持 Esc 关闭
-  useEscapeClose(!!selectedImage, () => setSelectedImage(null));
+  useEscapeClose(!!lightbox, () => setLightbox(null));
+
+  const stepLightbox = (delta: number) => {
+    setLightbox((cur) => cur ? { ...cur, index: (cur.index + delta + cur.photos.length) % cur.photos.length } : cur);
+  };
+
+  // 灯箱左右键切换（主流图库标配）
+  useEffect(() => {
+    if (!lightbox) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowLeft') { e.preventDefault(); stepLightbox(-1); }
+      else if (e.key === 'ArrowRight') { e.preventDefault(); stepLightbox(1); }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [lightbox]);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [activeQuery, setActiveQuery] = useState('');
@@ -83,8 +98,8 @@ export default function PhotoWallClient() {
                       {matchedPhotos.map((photo, index) => (
                         <div
                           key={`search-photo-${index}`}
-                          onClick={() => setSelectedImage(photo)}
-                          role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedImage(photo); } }}
+                          onClick={() => setLightbox({ photos: matchedPhotos, index })}
+                          role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightbox({ photos: matchedPhotos, index }); } }}
                           className="break-inside-avoid relative group rounded-2xl overflow-hidden cursor-zoom-in shadow-lg bg-white/20 border border-[var(--card-border)] transition-transform duration-500 hover:scale-[1.02] hover:shadow-2xl"
                         >
                           <img src={photo.url} alt={photo.caption} className="w-full h-auto object-cover bg-[var(--paper-deep)] transform transition-transform duration-700 group-hover:scale-105" loading="lazy" />
@@ -145,6 +160,13 @@ export default function PhotoWallClient() {
                     没有找到相关照片
                   </div>
                 )}
+
+                {!activeQuery && albums.length === 0 && (
+                  <div className="text-center py-24">
+                    <h2 className="text-xl md:text-2xl font-black text-[var(--ink)] mb-2">还没有照片</h2>
+                    <p className="text-slate-500 font-medium text-sm">相册整理好就会放上来</p>
+                  </div>
+                )}
               </div>
             </div>
           )}
@@ -180,8 +202,8 @@ export default function PhotoWallClient() {
                   <div
                     key={`${photo.url}-${index}`}
                     role="button" tabIndex={0}
-                    onClick={() => setSelectedImage(photo)}
-                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedImage(photo); } }}
+                    onClick={() => setLightbox({ photos: currentAlbum.photos, index })}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setLightbox({ photos: currentAlbum.photos, index }); } }}
                     className="break-inside-avoid relative group rounded-2xl overflow-hidden cursor-zoom-in shadow-lg bg-white/20 border border-[var(--card-border)] transition-transform duration-500 hover:scale-[1.02] hover:shadow-2xl animate-fade-in-up"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
@@ -202,32 +224,63 @@ export default function PhotoWallClient() {
         </div>
       </div>
 
-      {selectedImage && (
+      {lightbox && (
         <div
           className="fixed inset-0 z-[100] bg-black/95 flex flex-col items-center justify-center p-4 sm:p-10 cursor-zoom-out animate-fade-in"
-          onClick={() => setSelectedImage(null)}
+          onClick={() => setLightbox(null)}
+          role="dialog"
+          aria-modal="true"
+          aria-label="照片预览"
         >
           <button
-            onClick={() => setSelectedImage(null)}
+            onClick={() => setLightbox(null)}
             aria-label="关闭大图"
             title="关闭大图"
-            className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full p-2"
+            className="absolute top-6 right-6 text-white/50 hover:text-white transition-colors bg-white/10 hover:bg-white/20 rounded-full p-2 z-10"
           >
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
 
+          {lightbox.photos.length > 1 && (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); stepLightbox(-1); }}
+                aria-label="上一张"
+                title="上一张（←）"
+                className="absolute left-4 md:left-10 top-1/2 -translate-y-1/2 w-11 h-11 md:w-14 md:h-14 grid place-items-center rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors z-10"
+              >
+                <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); stepLightbox(1); }}
+                aria-label="下一张"
+                title="下一张（→）"
+                className="absolute right-4 md:right-10 top-1/2 -translate-y-1/2 w-11 h-11 md:w-14 md:h-14 grid place-items-center rounded-full bg-white/10 hover:bg-white/25 text-white transition-colors z-10"
+              >
+                <svg className="w-6 h-6 md:w-8 md:h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" /></svg>
+              </button>
+            </>
+          )}
+
           <img loading="lazy" decoding="async"
-            src={selectedImage.url}
-            alt={selectedImage.caption || '全屏照片'}
-            className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-lg"
+            src={lightbox.photos[lightbox.index].url}
+            alt={lightbox.photos[lightbox.index].caption || '全屏照片'}
+            className="max-w-full max-h-[82vh] object-contain rounded-lg shadow-lg"
             onClick={(e) => e.stopPropagation()}
           />
 
-          {selectedImage.caption && (
-            <div className="absolute bottom-10 px-6 py-3 bg-white/10 border border-[var(--card-border)] rounded-full text-white text-sm font-medium tracking-wide shadow-lg">
-              {selectedImage.caption}
-            </div>
-          )}
+          <div className="absolute bottom-8 flex flex-col items-center gap-2 pointer-events-none">
+            {lightbox.photos[lightbox.index].caption && (
+              <div className="px-6 py-2.5 bg-black/40 border border-white/10 rounded-full text-white text-sm font-medium tracking-wide">
+                {lightbox.photos[lightbox.index].caption}
+              </div>
+            )}
+            {lightbox.photos.length > 1 && (
+              <div className="px-4 py-1 bg-black/40 border border-white/10 rounded-full text-white/80 text-xs font-black tracking-widest">
+                {lightbox.index + 1} / {lightbox.photos.length}
+              </div>
+            )}
+          </div>
         </div>
       )}
 

@@ -16,6 +16,8 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: T
   // 默认视图模式 ('timeline' | 'card')
   const [viewMode, setViewMode] = useState<'timeline' | 'card'>('timeline');
   const [showScrollTop, setShowScrollTop] = useState(false);
+  const PAGE_SIZE = 12;
+  const [visibleCount, setVisibleCount] = useState(PAGE_SIZE);
 
   const searchContainerRef = useRef<HTMLDivElement>(null);
   const gridScrollRef = useRef<HTMLDivElement>(null);
@@ -59,6 +61,13 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: T
       return selectedTag === 'All' || post.tags?.includes(selectedTag);
     });
   }, [posts, selectedTag]);
+
+  useEffect(() => { setVisibleCount(PAGE_SIZE); }, [selectedTag]);
+  // 全部标签下按可见条数截页；搜索结果不走分页（搜索已有自己的结果区）
+  const paginatedPosts = useMemo(
+    () => selectedTag === 'All' ? timelinePosts.slice(0, visibleCount) : timelinePosts,
+    [timelinePosts, visibleCount, selectedTag]
+  );
 
   const handleGridScroll = () => {
     if (gridScrollRef.current) {
@@ -190,7 +199,7 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: T
             >
               {/* 核心魔法 3：强制手机端 grid-cols-2 双列显示，减小 gap */}
               <div className="grid grid-cols-2 lg:grid-cols-3 gap-3 md:gap-6 pt-4 pb-10">
-                {timelinePosts.map((post, idx) => (
+                {paginatedPosts.map((post, idx) => (
                   <motion.div key={post.slug} initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 0.3, delay: idx * 0.05 }}>
                     <div className="paper-card border border-[var(--card-border)] rounded-2xl overflow-hidden flex flex-col h-full group relative hover:-translate-y-1 transition-all duration-300">
 
@@ -256,7 +265,7 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: T
 
             <div className="relative z-10 flex flex-col gap-16">
               <AnimatePresence mode='popLayout'>
-                {timelinePosts.map((post, index) => (
+                {paginatedPosts.map((post, index) => (
                   <TimelineNode
                     key={post.slug}
                     post={post}
@@ -275,6 +284,17 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: T
         )}
 
       </AnimatePresence>
+
+      {selectedTag === 'All' && visibleCount < timelinePosts.length && (
+        <div className="mt-10 flex justify-center">
+          <button
+            onClick={() => setVisibleCount((n) => n + PAGE_SIZE)}
+            className="ed-btn-quiet px-8 py-3 text-sm"
+          >
+            加载更多 · 还剩 {timelinePosts.length - visibleCount} 篇
+          </button>
+        </div>
+      )}
     </div>
   );
 }
