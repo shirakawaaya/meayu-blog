@@ -44,6 +44,7 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
         <div className="flex items-stretch gap-3 md:gap-4">
           <span className="w-1 md:w-1.5 bg-[var(--accent)] rounded-full shrink-0"></span>
           <div>
+            <span className="ed-label mb-2">杂谈 · Records</span>
             <h1 className="text-3xl md:text-5xl font-black text-[var(--ink)] tracking-tighter leading-none">
               {siteConfig.chatterTitle || "杂谈"}
             </h1>
@@ -74,7 +75,7 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
               onClick={() => setActiveTag(tag)}
               className={`px-3 py-1.5 md:px-5 md:py-2 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black transition-all duration-500 border ${
                 activeTag === tag 
-                ? 'bg-[var(--ink)] text-[var(--paper)] border-[var(--ink)] shadow-md md:shadow-lg scale-105' 
+                ? 'bg-[var(--accent)] text-white border-[var(--accent)] shadow-md md:shadow-lg scale-105' 
                 : 'bg-white/30 text-[var(--ink-soft)] border-white/20 hover:paper-card dark:hover:bg-slate-700/60'
               }`}
             >

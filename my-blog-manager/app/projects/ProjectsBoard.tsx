@@ -4,10 +4,11 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BackButton from '../../components/BackButton';
  import type { Project } from '../../data/projects';
-import { Plus, Trash2, AlertTriangle, Save, Edit3, Sparkles, Code2 } from 'lucide-react';
+import { Plus, Trash2, AlertTriangle, Save, Edit3, Sparkles, Code2, Image as ImageIcon } from 'lucide-react';
 import { useOperations } from '../../context/OperationContext';
 import { useToast } from '../../components/ToastProvider';
 import { useEscapeClose } from '../../lib/use-escape-close';
+import FloatingImageTool from '../../components/editor/FloatingImageTool';
 
  export default function ProjectsBoard({ initialProjects }: { initialProjects: Project[] }) {
   const { addOperation } = useOperations();
@@ -16,6 +17,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
   // 1. 核心状态
   const [editableProjects, setEditableProjects] = useState<Project[]>(initialProjects);
   const [searchQuery, setSearchQuery] = useState("");
+  const [isImgToolOpen, setIsImgToolOpen] = useState(false);
 
   // 2. 弹窗状态
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; id: string | null; name: string | null }>({ isOpen: false, id: null, name: null });
@@ -58,6 +60,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
         githubUrl: data.githubUrl!,
         description: data.description || '暂无描述。',
         icon: data.icon || '',
+        cover: data.cover || '',
         tags: data.tags || ['OpenSource']
       };
       next = [newProj, ...editableProjects];
@@ -116,9 +119,23 @@ import { useEscapeClose } from '../../lib/use-escape-close';
             <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative w-full max-w-md paper-card-strong rounded-2xl border border-[var(--card-border)] p-8 shadow-lg">
                <h2 className="text-2xl font-black mb-6 dark:text-white flex items-center gap-2"><Code2 className="text-[var(--accent)]" /> {projectModal.mode === 'add' ? '新建项目' : '编辑项目'}</h2>
                <div className="space-y-4">
-                 <div className="flex gap-4">
-                    <input type="text" value={projectModal.data.icon || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, icon: e.target.value}})} className="w-20 bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 text-center text-2xl border-none outline-none focus:ring-2 focus:ring-[var(--accent-soft)]" placeholder="图标" />
-                    <input type="text" value={projectModal.data.name || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, name: e.target.value}})} className="flex-1 bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white outline-none focus:ring-2 focus:ring-[var(--accent-soft)] border-none" placeholder="项目名称" />
+                 <input type="text" value={projectModal.data.name || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, name: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white outline-none focus:ring-2 focus:ring-[var(--accent-soft)] border-none" placeholder="项目名称" />
+                 {/* 项目封面：用图床上传，替换旧的 emoji 图标输入 */}
+                 <div className="flex items-center gap-3">
+                   <button type="button" onClick={() => setIsImgToolOpen(true)} className="shrink-0 h-16 w-16 rounded-xl border-2 border-dashed border-[var(--card-border)] hover:border-[var(--accent)] bg-[var(--paper-deep)] flex items-center justify-center overflow-hidden transition-colors">
+                     {projectModal.data.cover
+                       ? <img src={projectModal.data.cover} alt="封面" className="w-full h-full object-cover" />
+                       : <ImageIcon size={22} className="text-[var(--ink-faint)]" />}
+                   </button>
+                   <div className="flex-1 min-w-0">
+                     <p className="text-xs font-bold text-[var(--ink)]">项目封面（可选）</p>
+                     <button type="button" onClick={() => setIsImgToolOpen(true)} className="mt-1 text-[11px] text-[var(--accent)] font-bold hover:underline">
+                       {projectModal.data.cover ? '更换封面' : '点击上传'}
+                     </button>
+                     {projectModal.data.cover && (
+                       <button type="button" onClick={() => setProjectModal({ ...projectModal, data: { ...projectModal.data, cover: '' } })} className="ml-3 mt-1 text-[11px] text-[var(--ink-faint)] hover:text-[var(--danger)]">移除</button>
+                     )}
+                   </div>
                  </div>
                  <input type="text" value={projectModal.data.githubUrl || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, githubUrl: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white outline-none focus:ring-2 focus:ring-[var(--accent-soft)] border-none" placeholder="GitHub URL" />
                  <textarea value={projectModal.data.description || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, description: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white h-24 outline-none resize-none focus:ring-2 focus:ring-[var(--accent-soft)] border-none" placeholder="项目描述..." />
@@ -177,7 +194,11 @@ import { useEscapeClose } from '../../lib/use-escape-close';
 
                 <div className="flex items-start justify-between mb-8 relative z-10">
                   <div className="flex items-center gap-5">
-                    <span className="text-5xl group-hover:scale-110 transition-transform duration-500">{project.icon}</span>
+                    {project.cover ? (
+                      <img src={project.cover} alt="" className="w-14 h-14 rounded-xl object-cover shadow-md shrink-0" />
+                    ) : (
+                      <span className="text-5xl group-hover:scale-110 transition-transform duration-500">{project.icon}</span>
+                    )}
                     <h2 className="text-3xl font-bold text-slate-900 dark:text-white group-hover:text-[var(--accent)] transition-colors">{project.name}</h2>
                   </div>
                   <GithubIcon />
@@ -205,6 +226,15 @@ import { useEscapeClose } from '../../lib/use-escape-close';
           没有找到与「{searchQuery}」匹配的项目
         </div>
       )}
+
+      <FloatingImageTool
+        isOpen={isImgToolOpen}
+        onClose={() => setIsImgToolOpen(false)}
+        onInsert={(url) => {
+          setProjectModal(prev => ({ ...prev, data: { ...prev.data, cover: url } }));
+          setIsImgToolOpen(false);
+        }}
+      />
     </div>
   );
 }

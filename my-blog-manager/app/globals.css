@@ -721,23 +721,6 @@ textarea::placeholder {
   &:hover { border-color: var(--accent); color: var(--accent); background: color-mix(in oklab, var(--accent) 6%, transparent); }
 }
 
-/* 宣纸方印小红章（小巧红印点缀） */
-/* 和纸手帐：带字的方印（与博客端 globals.css 保持同步） */
-@utility seal-stamp {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 1.35rem;
-  height: 1.35rem;
-  background-color: var(--accent);
-  color: #fff;
-  font-size: 0.72rem;
-  font-weight: 700;
-  line-height: 1;
-  border-radius: 3px;
-  box-shadow: 0 1px 3px var(--accent-soft);
-}
-
 .article-body .prose > p:first-child::first-letter,
 .article-body.prose > p:first-child::first-letter {
   font-size: 2.6em;

@@ -92,7 +92,6 @@ export default function Navbar() {
             {siteConfig.navTitle || siteConfig.authorName}
             <span className="text-[var(--accent)] mx-1">{siteConfig.navSuffix || 'の'}</span>
             {siteConfig.navAfter || '拾光集'}
-            <span className="seal-stamp ml-2 align-middle">印</span>
           </Link>
           <nav className="flex items-center gap-5 text-sm font-bold">
             {/* PC端依然使用全量的 navLinks */}

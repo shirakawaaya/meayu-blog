@@ -1,6 +1,7 @@
 "use client";
 
 import type { SettingsSectionProps } from './shared';
+import Avatar from '../Avatar';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 // 引入你的图床工具组件 (请根据你实际的文件夹层级调整相对路径)
@@ -50,9 +51,9 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
 
           {/* 左侧：头像预览区域 */}
           <div className="relative group shrink-0 self-center md:self-start flex flex-col items-center gap-4">
-            <motion.div whileHover={{ rotate: 0, scale: 1.05 }} className="w-40 h-40 rounded-2xl p-1.5 border-2 border-[var(--accent)] shadow-lg rotate-6 transition-all duration-500">
-              <img src={safeData.avatarUrl || ''} alt="Avatar" className="w-full h-full rounded-xl object-cover bg-white dark:bg-slate-900 border-2 border-white dark:border-slate-800" />
-            </motion.div>
+            <div className="w-40 h-40 rounded-2xl p-1.5 border-2 border-[var(--accent)] shadow-sm">
+              <Avatar src={safeData.avatarUrl} name={safeData.authorName || 'Meayu'} className="w-full h-full rounded-xl text-4xl" />
+            </div>
           </div>
 
           {/* 右侧：表单配置区域 */}

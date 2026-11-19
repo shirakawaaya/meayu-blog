@@ -4,7 +4,8 @@ export type Project = {
   id: string;
   name: string;
   description: string;
-  icon: string;
+  icon: string; // 兼容旧数据的 emoji 标识
+  cover?: string; // 项目封面图 URL（优先展示）
   githubUrl: string;
   tags: string[];
 };

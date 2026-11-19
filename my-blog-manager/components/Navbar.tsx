@@ -35,6 +35,25 @@ export default function Navbar() {
   // 防重入：写入是逐条 POST，网络慢时连点会并发跑两轮循环，
   // 同一份内容被写两次（后端按 id 命名，两轮的 id 可能不同）→ 博客端出现重复。
   const writingRef = useRef(false);
+  // 待保存弹窗：点击面板外部关闭（点一次开、再点按钮关的体验太别扭）
+  const opBoxRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (!isOpBoxOpen) return;
+    // 延迟到下一帧注册，避免"打开弹窗"那一次 click 的冒泡事件误判为外部点击
+    let onDown: ((e: MouseEvent) => void) | null = null;
+    const frame = requestAnimationFrame(() => {
+      onDown = (e: MouseEvent) => {
+        if (opBoxRef.current && !opBoxRef.current.contains(e.target as Node)) {
+          setIsOpBoxOpen(false);
+        }
+      };
+      document.addEventListener('mousedown', onDown);
+    });
+    return () => {
+      cancelAnimationFrame(frame);
+      if (onDown) document.removeEventListener('mousedown', onDown);
+    };
+  }, [isOpBoxOpen]);
 
 
   useEffect(() => {
@@ -177,7 +196,7 @@ export default function Navbar() {
               <NavThemeSwitch />
             </span>
 
-            <div className="relative">
+            <div className="relative" ref={opBoxRef}>
               <button
                 onClick={() => setIsOpBoxOpen(!isOpBoxOpen)}
                 title={operations.length > 0 ? `${operations.length} 项改动尚未写入博客` : '所有改动已写入博客'}
@@ -197,7 +216,10 @@ export default function Navbar() {
 
               <AnimatePresence>
                 {isOpBoxOpen && (
-                  <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 mt-3 w-80 paper-card-strong border border-slate-200 dark:border-slate-700 rounded-2xl shadow-lg p-4 z-50 cursor-default">
+                  <>
+                  {/* 透明遮罩：点弹窗外部即关闭，不依赖 document 监听的时序 */}
+                  <div className="fixed left-[-100vw] top-[-100vh] w-[300vw] h-[300vh] z-40" onClick={() => setIsOpBoxOpen(false)} aria-hidden="true" />
+                  <motion.div initial={{ opacity: 0, y: 10, scale: 0.95 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 10, scale: 0.95 }} className="absolute right-0 mt-3 w-80 paper-card-strong border border-[var(--card-border)] rounded-2xl shadow-lg p-4 z-50 cursor-default">
                     <div className="flex justify-between items-center mb-4">
                       <h3 className="text-xs font-black text-slate-400 uppercase tracking-widest">待保存的改动</h3>
                       <button onClick={clearOperations} className="text-[10px] text-red-500 font-bold hover:underline">清空全部</button>
@@ -224,6 +246,7 @@ export default function Navbar() {
                       {isWriting ? <><Loader2 size={14} className="animate-spin" /> 正在保存...</> : "保存到博客"}
                     </button>
                   </motion.div>
+                  </>
                 )}
               </AnimatePresence>
             </div>

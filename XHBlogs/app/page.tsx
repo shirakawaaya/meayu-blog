@@ -4,6 +4,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import { Link } from 'next-view-transitions';
 import { siteConfig } from '../siteConfig';
+import { excerpt } from '../lib/excerpt';
 import ProfileCard from '../components/ProfileCard';
 import { albums } from '../data/albums';
 import { ToastProvider } from '../components/ToastProvider';
@@ -44,7 +45,7 @@ export default function Home() {
         return {
           slug: fileName.replace(/\.md$/, ''),
           title: data.title || '无标题',
-          description: data.description || content.substring(0, 60),
+          description: excerpt(data.description || content, 80),
           cover: cover,
           date: rawDate,
           formattedDate: formatUpdateTime(rawDate)

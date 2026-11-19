@@ -26,6 +26,7 @@ import ClientSocials from '../../../components/ClientSocials';
 import BackButton from '../../../components/BackButton';
 import ClientTOC from '../../../components/ClientTOC';
 import CodeCopy from '../../../components/CodeCopy';
+import Avatar from '../../../components/Avatar';
 import ReadingProgressBar from '../../../components/ReadingProgressBar';
 import ArticleImageZoom from '../../../components/ArticleImageZoom';
 
@@ -331,11 +332,11 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                 <CodeCopy containerId="article-content" />
                 <ArticleImageZoom />
 
-                {/* 文末印章：全文完 */}
+                {/* 文末收尾：编辑式细线 + 结尾标记 */}
                 <div className="mt-14 flex items-center gap-4" aria-hidden="true">
                   <span className="h-px flex-1 bg-[var(--rule)]" />
-                  <span className="seal-stamp">完</span>
                   <span className="text-xs tracking-[0.3em] text-[var(--ink-faint)]">全文完 · 感谢阅读</span>
+                  <span className="text-[var(--accent)] text-xs">■</span>
                   <span className="h-px flex-1 bg-[var(--rule)]" />
                 </div>
               </div>
@@ -366,7 +367,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
 
             <div className="paper-card rounded-2xl p-6 border border-[var(--card-border)] shadow-md text-center">
               <div className="w-20 h-20 mx-auto rounded-full p-1 border-2 border-[var(--accent)] shadow-md mb-4 hover:rotate-3 transition-transform">
-                <img loading="lazy" decoding="async" src={siteConfig.avatarUrl} alt="avatar" className="vt-avatar w-full h-full rounded-full object-cover bg-white" />
+                <Avatar src={siteConfig.avatarUrl} name={siteConfig.authorName} className="w-full h-full rounded-full text-xl" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{siteConfig.authorName}</h3>
               <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium mb-4">{siteConfig.bio}</p>

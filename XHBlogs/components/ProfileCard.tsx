@@ -2,6 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { siteConfig } from '../siteConfig';
+import Avatar from './Avatar';
 import { useToast } from './ToastProvider';
 
 export default function ProfileCard({ chatterCount, momentCount, photoCount }: { chatterCount: number, momentCount: number, photoCount: number }) {
@@ -16,17 +17,12 @@ export default function ProfileCard({ chatterCount, momentCount, photoCount }: {
   return (
     <div
       onClick={() => router.push('/about')}
-      className="md:col-span-7 rounded-2xl paper-card border border-[var(--card-border)] p-5 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-soft)] cursor-pointer group relative overflow-hidden h-full min-h-[220px] md:min-h-[280px] xl:pr-24"
+      className="md:col-span-7 rounded-2xl paper-card border border-[var(--card-border)] p-5 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-soft)] cursor-pointer group relative overflow-hidden h-full min-h-[220px] md:min-h-[280px]"
     >
-      {/* 竖排题字：宽屏时悬在名片右侧，纯装饰 */}
-      <div aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 z-0 hidden -translate-y-1/2 flex-col items-center gap-4 xl:flex">
-        <span className="text-sm tracking-[0.5em] text-[var(--ink-faint)] [writing-mode:vertical-rl]">拾光留档 · 字里行间</span>
-        <span className="seal-stamp">光</span>
-      </div>
       <div className="flex items-start justify-between relative z-10">
         <div className="flex items-center gap-4 md:gap-6 w-full">
           <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl border-2 border-[var(--accent)] p-1 shadow-md flex-shrink-0 transition-transform duration-500 group-hover:rotate-3">
-            {siteConfig.avatarUrl ? <img src={siteConfig.avatarUrl} alt="avatar" className="vt-avatar w-full h-full rounded-lg md:rounded-xl object-cover bg-white" /> : <div className="w-full h-full rounded-lg md:rounded-xl bg-[var(--accent)] text-white flex items-center justify-center text-3xl font-black">{siteConfig.authorName.charAt(0)}</div>}
+            <Avatar src={siteConfig.avatarUrl} name={siteConfig.authorName} className="w-full h-full rounded-lg md:rounded-xl text-3xl" />
           </div>
           <div className="flex-1 min-w-0">
             {/* 核心修复点：
@@ -35,7 +31,6 @@ export default function ProfileCard({ chatterCount, momentCount, photoCount }: {
             */}
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--ink)] mb-1 md:mb-2 pb-1 leading-snug tracking-wider transition-colors duration-700 truncate flex items-center gap-2">
               <span>{siteConfig.authorName}</span>
-              <span className="seal-mark rounded-[1px] ml-1" title="印" />
             </h1>
             <p className="text-xs sm:text-sm md:text-base text-[var(--ink-soft)] font-medium leading-relaxed max-w-md transition-colors duration-700 line-clamp-2 md:line-clamp-none">
               {siteConfig.bio}

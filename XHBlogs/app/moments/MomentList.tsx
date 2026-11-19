@@ -3,7 +3,7 @@
 import type { MomentListItem } from '../../lib/content-types';
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { MapPin, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost, X } from 'lucide-react';
+import { MapPin, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, X } from 'lucide-react';
 import { useEscapeClose } from '../../lib/use-escape-close';
 
 function timeAgo(dateStr: string) {
@@ -297,10 +297,6 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-12 md:py-24 min-h-[300px] md:min-h-[450px]">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center px-6 md:px-10 py-12 md:py-20 paper-card rounded-2xl border border-[var(--card-border)] shadow-lg max-w-lg w-full mx-auto">
-              <div className="w-16 h-16 md:w-24 md:h-24 bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] rounded-2xl md:rounded-2xl flex items-center justify-center mb-6 md:mb-8 relative">
-                <div className="absolute inset-0 bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] blur-2xl rounded-full animate-pulse"></div>
-                <Ghost size={32} className="md:w-12 md:h-12 text-[var(--accent)] relative z-10" strokeWidth={1.5} />
-              </div>
               <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white mb-2 md:mb-4 tracking-tight">{searchQuery ? "没找到相关记忆" : "还没有说说"}</h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-lg leading-relaxed px-2 md:px-4">{searchQuery ? `换个关键词再试试` : `去写下第一条吧`}</p>
             </motion.div>

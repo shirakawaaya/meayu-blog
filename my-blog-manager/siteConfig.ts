@@ -44,7 +44,7 @@ export const siteConfig = {
   counts: {
     photos: 0, // 照片墙数量可以手动写死或动态计算
   },
-  chatterTitle: "Meayu の 拾光集", // 你可以改成任何你喜欢的名字
+  chatterTitle: "杂谈", // 栏目名，与说说页同构
   chatterDescription: "代码与日常碎片的记录",
 
   // 评论（Giscus，基于 GitHub Discussions）

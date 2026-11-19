@@ -4,6 +4,7 @@ import matter from 'gray-matter';
 import type { ChatterListItem } from '../../lib/content-types';
 import ChatterBoard from './ChatterBoard';
 import { siteConfig } from '@/siteConfig';
+import { excerpt } from '../../lib/excerpt';
 
 
 export const metadata = {
@@ -34,11 +35,12 @@ export default function ChatterPage() {
       return {
         slug,
         title: data.title || '',
+        description: excerpt(data.description || content, 80),
         date: data.date || '未知时间',
         tags: data.tags || [],
         mood: data.mood || '',
         cover: data.cover || '',
-        content: content.replace(/^#+ .*\n/m, '') // 去除开头的 markdown 标题以优化截取显示
+        content: content, // 保留原文；摘要由 excerpt 工具剥净 Markdown 后生成
       };
     }).filter((item): item is NonNullable<typeof item> => Boolean(item)).sort((a, b) => (new Date(b.date).getTime() - new Date(a.date).getTime())); // 按时间倒序
   } catch (e) {
