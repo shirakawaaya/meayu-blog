@@ -167,7 +167,7 @@ export default function ClientTOC({ toc }: { toc: TocItem[] }) {
       <div className="lg:hidden">
         <button
           onClick={() => setIsMobileOpen(true)}
-          className="fixed bottom-20 right-4 z-40 w-11 h-11 rounded-full paper-card-strong border border-[var(--accent)] text-[var(--accent)] shadow-xl flex items-center justify-center font-bold text-xs tracking-wider transition-all duration-300 hover:scale-105 active:scale-95"
+          className="fixed bottom-32 right-4 z-40 w-11 h-11 rounded-full paper-card-strong border border-[var(--accent)] text-[var(--accent)] shadow-xl flex items-center justify-center font-bold text-xs tracking-wider transition-all duration-300 hover:scale-105 active:scale-95"
           title="展开目录"
           aria-label="展开目录"
         >

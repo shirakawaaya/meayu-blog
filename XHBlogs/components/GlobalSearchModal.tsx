@@ -11,6 +11,7 @@ type ChatterItem = {
   description: string;
   date: string;
   tags: string[];
+  searchText?: string;
 };
 
 type MomentItem = {
@@ -18,6 +19,7 @@ type MomentItem = {
   date: string;
   content: string;
   location?: string;
+  searchText?: string;
 };
 
 type SearchResultItem =
@@ -30,6 +32,9 @@ export default function GlobalSearchModal() {
   const [chatters, setChatters] = useState<ChatterItem[]>([]);
   const [moments, setMoments] = useState<MomentItem[]>([]);
   const [hasLoaded, setHasLoaded] = useState(false);
+  const [loadError, setLoadError] = useState(false);
+  const [retryTick, setRetryTick] = useState(0);
+  const retryLoad = () => { setLoadError(false); setHasLoaded(false); setRetryTick(v => v + 1); };
   const [selectedIndex, setSelectedIndex] = useState(0);
 
   const inputRef = useRef<HTMLInputElement>(null);
@@ -68,38 +73,35 @@ export default function GlobalSearchModal() {
 
   // 延迟加载搜索索引数据（首次打开时加载）+ 打开后聚焦输入框
   useEffect(() => {
-    if (isOpen && !hasLoaded) {
+    if (isOpen && !hasLoaded && !loadError) {
       fetch('/api/search')
-        .then((res) => res.json())
+        .then((res) => { if (!res.ok) throw new Error('HTTP ' + res.status); return res.json(); })
         .then((data) => {
           if (data.chatters) setChatters(data.chatters);
           if (data.moments) setMoments(data.moments);
+          setLoadError(false);
           setHasLoaded(true);
         })
-        .catch((err) => console.error('加载搜索数据失败:', err));
+        .catch((err) => { console.error('加载搜索数据失败:', err); setLoadError(true); });
     }
     if (isOpen) {
       const timer = setTimeout(() => inputRef.current?.focus(), 50);
       return () => clearTimeout(timer);
     }
-  }, [isOpen, hasLoaded]);
+  }, [isOpen, hasLoaded, loadError, retryTick]);
 
   // Esc 关闭
   useEscapeClose(isOpen, () => setIsOpen(false));
 
   // 搜索匹配过滤
   const results = useMemo<SearchResultItem[]>(() => {
-    const q = query.trim().toLowerCase();
-    if (!q) return [];
+    // 拆多关键词，全部命中才算匹配（"Java 笔记" 要能搜到）
+    const terms = query.trim().toLowerCase().split(/\s+/).filter(Boolean);
+    if (terms.length === 0) return [];
+    const match = (text: string) => terms.every((term) => text.toLowerCase().includes(term));
 
     const chatterMatches: SearchResultItem[] = chatters
-      .filter((c) => {
-        return (
-          c.title.toLowerCase().includes(q) ||
-          c.description.toLowerCase().includes(q) ||
-          c.tags.some((t) => t.toLowerCase().includes(q))
-        );
-      })
+      .filter((c) => match(c.searchText || [c.title, c.description, c.tags.join(' ')].join(' ')))
       .map((c) => ({
         type: 'chatter',
         item: c,
@@ -110,12 +112,7 @@ export default function GlobalSearchModal() {
       }));
 
     const momentMatches: SearchResultItem[] = moments
-      .filter((m) => {
-        return (
-          m.content.toLowerCase().includes(q) ||
-          (m.location && m.location.toLowerCase().includes(q))
-        );
-      })
+      .filter((m) => match(m.searchText || [m.content, m.location || ''].join(' ')))
       .map((m) => ({
         type: 'moment',
         item: m,
@@ -192,6 +189,9 @@ export default function GlobalSearchModal() {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.96, y: -12 }}
             transition={{ type: 'spring', damping: 25, stiffness: 280 }}
+            role="dialog"
+            aria-modal="true"
+            aria-label="全局搜索"
             className="relative w-full max-w-2xl paper-card-strong rounded-2xl shadow-2xl border border-[var(--card-border)] overflow-hidden z-10 flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
@@ -223,7 +223,14 @@ export default function GlobalSearchModal() {
 
             {/* 结果列表区 */}
             <div ref={listRef} className="max-h-[380px] overflow-y-auto custom-scrollbar p-2">
-              {query.trim() === '' ? (
+              {loadError ? (
+                <div className="py-12 text-center">
+                  <p className="text-sm text-[var(--ink-soft)]">搜索索引加载失败</p>
+                  <button onClick={retryLoad} className="mt-3 px-4 py-2 ed-btn-quiet text-xs">点击重试</button>
+                </div>
+              ) : !hasLoaded ? (
+                <div className="py-12 text-center text-sm text-[var(--ink-faint)]">正在载入搜索索引…</div>
+              ) : query.trim() === '' ? (
                 <div className="px-3 py-6">
                   {hotTags.length > 0 && (
                     <div className="mb-6">

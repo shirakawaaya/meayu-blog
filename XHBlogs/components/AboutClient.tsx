@@ -255,7 +255,7 @@ export default function AboutClient({
                         className="flex flex-col md:flex-row md:items-center gap-3 paper-card p-4 rounded-2xl border border-[var(--card-border)] shadow-sm hover:shadow-lg transition-all group-hover:-translate-y-1 cursor-pointer block relative overflow-hidden"
                       >
                         <div className="flex items-center gap-3 w-full md:w-auto">
-                          <Avatar src={siteConfig.avatarUrl} name={siteConfig.authorName} className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white dark:border-slate-700 shadow-sm shrink-0 text-xs" />
+                          <Avatar src={siteConfig.avatarUrl} name={siteConfig.authorName} className="w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-white dark:border-slate-700 shadow-sm shrink-0" />
 
                           <div className="flex flex-col flex-1 min-w-0">
                             <div className="flex items-center gap-2">

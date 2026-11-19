@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEscapeClose } from '../lib/use-escape-close';
 
 /**
@@ -9,6 +9,8 @@ import { useEscapeClose } from '../lib/use-escape-close';
  */
 export default function ArticleImageZoom() {
   const [preview, setPreview] = useState<{ images: string[]; index: number } | null>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  useEffect(() => { if (preview) closeRef.current?.focus(); }, [preview]);
 
   useEscapeClose(!!preview, () => setPreview(null));
 
@@ -18,6 +20,9 @@ export default function ArticleImageZoom() {
     const imgs = Array.from(rootEl.querySelectorAll('img'));
     imgs.forEach((img) => {
       img.style.cursor = 'zoom-in';
+      img.tabIndex = 0;
+      img.setAttribute('role', 'button');
+      img.setAttribute('aria-label', '点击查看大图');
     });
     const onClick = (e: Event) => {
       const target = e.target as HTMLElement;
@@ -73,6 +78,15 @@ export default function ArticleImageZoom() {
         className="max-h-[86vh] max-w-full rounded-lg object-contain shadow-2xl"
         onClick={(e) => e.stopPropagation()}
       />
+      <button
+        ref={closeRef}
+        type="button"
+        aria-label="关闭图片预览"
+        onClick={(e) => { e.stopPropagation(); setPreview(null); }}
+        className="absolute top-4 right-4 grid h-10 w-10 place-items-center rounded-full bg-white/10 text-white transition-colors hover:bg-white/25 text-xl"
+      >
+        ×
+      </button>
       {preview.images.length > 1 && (
         <>
           <button

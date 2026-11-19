@@ -17,7 +17,7 @@
   --paper-deep: #f1efe8;
   --ink: #14110f;
   --ink-soft: #6b6459;
-  --ink-faint: #8c8375;
+  --ink-faint: #7a7062;
   --rule: rgba(20, 17, 15, .18);
   --accent: #2e4e7e;
   --accent-soft: rgba(46, 78, 126, .38);
@@ -1096,4 +1096,18 @@ select:focus-visible {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* 正文表格：编辑风细线 + 宽表横向滚动，避免撑破移动端 */
+.prose { overflow-wrap: break-word; word-break: break-word; }
+.prose table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; display: block; overflow-x: auto; }
+.prose th, .prose td { border: 1px solid var(--card-border); padding: 0.5rem 0.75rem; text-align: left; }
+.prose th { background-color: var(--paper-deep); font-weight: 800; }
+.prose tr:nth-child(even) td { background-color: color-mix(in oklab, var(--paper-deep) 40%, transparent); }
+
+/* 触屏设备：照片图注常驻（无 hover 能力时不能只靠悬停显示） */
+@media (hover: none) {
+  [data-photo-caption] { opacity: 1 !important; }
+  [data-photo-caption] p,
+  [data-photo-caption] span { transform: none !important; }
 }

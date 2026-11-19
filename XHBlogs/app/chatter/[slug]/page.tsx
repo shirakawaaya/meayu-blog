@@ -207,7 +207,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const title = data.title || slug;
   const description = data.summary || siteConfig.bio;
   const url = `${siteConfig.siteUrl}/chatter/${slug}`;
-  const cover = data.cover || siteConfig.defaultPostCover;
+  const cover = data.cover || siteConfig.defaultPostCover || siteConfig.avatarUrl;
 
   return {
     title: `${title} | ${siteConfig.title}`,
@@ -221,6 +221,13 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
       type: 'article',
       publishedTime: data.date,
       images: cover ? [{ url: cover }] : undefined,
+    },
+    // X/Twitter 分享卡片：沿用同一套 OG 数据
+    twitter: {
+      card: 'summary_large_image',
+      title,
+      description,
+      images: cover ? [cover] : undefined,
     },
   };
 }
@@ -367,7 +374,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
 
             <div className="paper-card rounded-2xl p-6 border border-[var(--card-border)] shadow-md text-center">
               <div className="w-20 h-20 mx-auto rounded-full p-1 border-2 border-[var(--accent)] shadow-md mb-4 hover:rotate-3 transition-transform">
-                <Avatar src={siteConfig.avatarUrl} name={siteConfig.authorName} className="w-full h-full rounded-full text-xl" />
+                <Avatar src={siteConfig.avatarUrl} name={siteConfig.authorName} className="w-full h-full rounded-full" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{siteConfig.authorName}</h3>
               <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium mb-4">{siteConfig.bio}</p>

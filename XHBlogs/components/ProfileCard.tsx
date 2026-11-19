@@ -22,7 +22,7 @@ export default function ProfileCard({ chatterCount, momentCount, photoCount }: {
       <div className="flex items-start justify-between relative z-10">
         <div className="flex items-center gap-4 md:gap-6 w-full">
           <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl border-2 border-[var(--accent)] p-1 shadow-md flex-shrink-0 transition-transform duration-500 group-hover:rotate-3">
-            <Avatar src={siteConfig.avatarUrl} name={siteConfig.authorName} className="w-full h-full rounded-lg md:rounded-xl text-3xl" />
+            <Avatar src={siteConfig.avatarUrl} name={siteConfig.authorName} className="w-full h-full rounded-lg md:rounded-xl" />
           </div>
           <div className="flex-1 min-w-0">
             {/* 核心修复点：

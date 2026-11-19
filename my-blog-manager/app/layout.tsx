@@ -37,7 +37,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <ThemeProvider>
           <OperationProvider>
             <ToastProvider>
-              <div id="app-mount-root" className="flex-1 flex flex-col">
+              <div id="app-mount-root" className="flex-1 flex flex-col pb-20 md:pb-0">
                   {/* 导航栏放在 layout 里：切页时不再卸载重建 */}
                   <Navbar />
 

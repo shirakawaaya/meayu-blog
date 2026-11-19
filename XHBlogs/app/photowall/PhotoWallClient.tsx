@@ -84,10 +84,11 @@ export default function PhotoWallClient() {
                         <div
                           key={`search-photo-${index}`}
                           onClick={() => setSelectedImage(photo)}
+                          role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedImage(photo); } }}
                           className="break-inside-avoid relative group rounded-2xl overflow-hidden cursor-zoom-in shadow-lg bg-white/20 border border-[var(--card-border)] transition-transform duration-500 hover:scale-[1.02] hover:shadow-2xl"
                         >
                           <img src={photo.url} alt={photo.caption} className="w-full h-auto object-cover bg-[var(--paper-deep)] transform transition-transform duration-700 group-hover:scale-105" loading="lazy" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-5">
+                          <div data-photo-caption className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-5">
                             <span className="text-[var(--accent)] font-black text-[10px] tracking-widest uppercase mb-1 drop-shadow-md">{photo.albumName}</span>
                             <p className="text-white font-medium text-sm drop-shadow-md translate-y-4 group-hover:translate-y-0 transition-transform duration-500">{photo.caption}</p>
                           </div>
@@ -109,6 +110,7 @@ export default function PhotoWallClient() {
                     <div
                       key={album.id}
                       onClick={() => { setSearchQuery(''); setCurrentAlbum(album); }}
+                      role="button" tabIndex={0} onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSearchQuery(''); setCurrentAlbum(album); } }}
                       className="group cursor-pointer flex flex-col items-center"
                     >
                       <div className="relative w-[85%] aspect-[4/3] mb-8">
@@ -120,7 +122,7 @@ export default function PhotoWallClient() {
                         </div>
                         <div className="absolute inset-0 bg-white dark:bg-slate-200 rounded-[4px] shadow-lg border-[6px] border-white dark:border-slate-200 overflow-hidden z-20 transform group-hover:-translate-y-2 group-hover:scale-105 transition-all duration-500 relative">
                           <img loading="lazy" decoding="async" src={album.cover} alt={album.title} className="w-full h-full object-cover bg-[var(--paper-deep)] transition-transform duration-700 group-hover:scale-105" />
-                          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-5">
+                          <div data-photo-caption className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-5">
                             <span className="text-white font-bold text-lg drop-shadow-md translate-y-2 group-hover:translate-y-0 transition-transform duration-500">{album.photos.length} 张照片</span>
                             <span className="text-[var(--accent)] font-medium text-xs mt-1 drop-shadow-md translate-y-2 group-hover:translate-y-0 transition-transform duration-500 delay-75">点击展开 · Click to Open</span>
                           </div>
@@ -177,12 +179,14 @@ export default function PhotoWallClient() {
                 {currentAlbum.photos.map((photo, index) => (
                   <div
                     key={`${photo.url}-${index}`}
+                    role="button" tabIndex={0}
                     onClick={() => setSelectedImage(photo)}
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setSelectedImage(photo); } }}
                     className="break-inside-avoid relative group rounded-2xl overflow-hidden cursor-zoom-in shadow-lg bg-white/20 border border-[var(--card-border)] transition-transform duration-500 hover:scale-[1.02] hover:shadow-2xl animate-fade-in-up"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
                     <img src={photo.url} alt={photo.caption || '照片'} className="w-full h-auto object-cover bg-[var(--paper-deep)] transform transition-transform duration-700 group-hover:scale-105" loading="lazy" />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-5">
+                    <div data-photo-caption className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-5">
                       {photo.caption && (
                         <p className="text-white font-medium text-sm drop-shadow-md translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
                           {photo.caption}

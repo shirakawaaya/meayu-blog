@@ -66,6 +66,15 @@ function EditorContent() {
   const editorRef = useRef<RichTextEditorHandle>(null);
 
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
+  // 正文每次输入都递增：hasUnsavedChanges 是布尔值，第一次置 true 后不再变化，
+  // 快照 effect 依赖它只会在首次变脏时跑一次，长文后半段无法落盘。用版本号驱动每次停笔刷新。
+  const [contentVersion, setContentVersion] = useState(0);
+  const [charCount, setCharCount] = useState(() => (content || '').replace(/<[^>]*>/g, '').replace(/\s+/g, '').length);
+  const bumpSnapshot = () => {
+    setHasUnsavedChanges(true);
+    setContentVersion(v => v + 1);
+    setCharCount((editorRef.current?.getContent() || '').replace(/<[^>]*>/g, '').replace(/\s+/g, '').length);
+  };
   const [exitModalOpen, setExitModalOpen] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
@@ -198,7 +207,10 @@ function EditorContent() {
           setHistoryPostTags(data.postTags || []);
           setHistoryChatterTags(data.chatterTags || []);
         }
-      } catch (err) { console.error(err); }
+      } catch (err) {
+        console.error(err);
+        showToast('标签历史加载失败，请确认后端已启动', 'warning');
+      }
       finally { setIsLoadingTags(false); }
     };
     fetchTags();
@@ -296,7 +308,7 @@ function EditorContent() {
     }, 1500);
 
     return () => clearTimeout(timer);
-  }, [hasUnsavedChanges, title, tags, cover, summary, mood, isPrivate, snapshotKey]);
+  }, [hasUnsavedChanges, contentVersion, title, tags, cover, summary, mood, isPrivate, snapshotKey]);
 
   const handleRestoreSnapshot = () => {
     if (!snapshotAvailable) return;
@@ -406,6 +418,8 @@ function EditorContent() {
           setExitModalOpen(false);
           router.back();
         }
+      } else {
+        showToast(data.message || '保存失败，请稍后重试', 'error');
       }
     } catch { showToast("保存失败", "error"); }
     finally { setIsSaving(false); }
@@ -581,9 +595,9 @@ function EditorContent() {
             </div>
           </div>
 
-          {/* 编辑器主体：编辑器 + 大纲侧栏 + 信息侧栏 三列并排 */}
-          <div className="flex-1 min-h-0 flex flex-row gap-6">
-          <section className="flex-1 min-w-0 paper-card rounded-2xl border border-[var(--card-border)] flex flex-col overflow-hidden min-[1400px]:min-h-0 min-h-[70vh]">
+          {/* 编辑器主体：编辑器 + 大纲侧栏 + 信息侧栏 三列并排。Zen 模式时容器内只保留编辑器并全屏化，避免挂第二个编辑器实例。 */}
+          <div className={`flex-1 min-h-0 flex flex-row gap-6 ${isZenMode ? 'fixed inset-0 z-[160] bg-[var(--paper)] !p-4 sm:!p-8 !mt-0 !mb-0 !w-full !max-w-none' : ''}`}>
+          <section className={`flex-1 min-w-0 paper-card rounded-2xl border border-[var(--card-border)] flex flex-col overflow-hidden min-[1400px]:min-h-0 min-h-[70vh] ${isZenMode ? '!h-full !min-h-0 pt-16' : ''}`}>
             {/* 本地未保存防丢快照恢复提示 */}
             <AnimatePresence>
               {snapshotAvailable && (
@@ -624,13 +638,13 @@ function EditorContent() {
               onOpenImageTool={() => { setImgToolTarget('editor'); setIsImgToolOpen(true); }}
               onPolishClick={handlePolish}
               isPolishing={isPolishing}
-              onChange={() => { setHasUnsavedChanges(true); bumpOutline(); }}
+              onChange={() => { bumpSnapshot(); bumpOutline(); }}
             />
           </section>
 
           {/* 实时大纲侧栏 */}
           <AnimatePresence>
-            {isOutlineOpen && (
+            {isOutlineOpen && !isZenMode && (
               <motion.aside
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: 260, opacity: 1 }}
@@ -671,7 +685,7 @@ function EditorContent() {
           </AnimatePresence>
 
           <AnimatePresence>
-            {isMetaOpen && (
+            {isMetaOpen && !isZenMode && (
               <motion.aside
                 initial={{ width: 0, opacity: 0 }}
                 animate={{ width: 360, opacity: 1 }}
@@ -692,19 +706,19 @@ function EditorContent() {
         </main>
       </div>
 
-      {/* 全屏专注模式 (Zen Mode) */}
+      {/* 全屏专注模式顶栏：只做状态与退出，编辑器本体由上方主 section 全屏化后共用同一实例 */}
       <AnimatePresence>
         {isZenMode && (
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="fixed inset-0 z-[160] bg-[var(--paper)] flex flex-col p-4 sm:p-8 overflow-y-auto custom-scrollbar"
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            className="fixed top-0 left-0 right-0 z-[170] bg-[var(--paper)] border-b-2 border-[var(--ink)] px-4 sm:px-8 py-3"
           >
-            <div className="w-full max-w-4xl mx-auto flex items-center justify-between pb-4 border-b-2 border-[var(--ink)] mb-8 shrink-0">
+            <div className="w-full max-w-4xl mx-auto flex items-center justify-between">
               <div className="flex items-baseline gap-4">
                 <span className="ed-label">Focus · 专注书写</span>
-                <span className="ed-num text-sm">{content.replace(/<[^>]*>/g, '').replace(/\s+/g, '').length} 字</span>
+                <span className="ed-num text-sm">{charCount} 字</span>
                 {lastSaved && <span className="text-xs text-[var(--ink-faint)]">· 保存于 {lastSaved}</span>}
               </div>
 
@@ -727,20 +741,6 @@ function EditorContent() {
                   <kbd className="ed-num ml-0.5 rounded border border-[var(--card-border)] px-1 py-0.5 text-[9px] bg-[var(--paper-deep)] group-hover:border-[var(--accent)]">Esc</kbd>
                 </button>
               </div>
-            </div>
-
-            <div className="w-full max-w-4xl mx-auto flex-1 flex flex-col paper-card border border-[var(--card-border)] rounded-2xl shadow-xl overflow-hidden min-h-[80vh]">
-              <RichTextEditor
-                ref={editorRef}
-                title={title}
-                setTitle={(val) => { setTitle(val); setHasUnsavedChanges(true); }}
-                initialContent={content}
-                isTitleLocked={docType === 'about'}
-                onOpenImageTool={() => { setImgToolTarget('editor'); setIsImgToolOpen(true); }}
-                onPolishClick={handlePolish}
-                isPolishing={isPolishing}
-                onChange={() => { setHasUnsavedChanges(true); bumpOutline(); }}
-              />
             </div>
           </motion.div>
         )}

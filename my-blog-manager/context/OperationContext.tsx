@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 // 定义操作的类型
 // 操作类型：必须覆盖全仓实际提交的所有 type 值，
@@ -40,9 +40,36 @@ interface OperationContextType {
 }
 
 const OperationContext = createContext<OperationContextType | undefined>(undefined);
+const STORAGE_KEY = 'blog_pending_operations';
+const hydratedKey = '__ops_hydrated';
 
 export function OperationProvider({ children }: { children: React.ReactNode }) {
   const [operations, setOperations] = useState<Operation[]>([]);
+
+  // 从 sessionStorage 恢复待保存队列（刷新不丢）；SSR 时跳过
+  useEffect(() => {
+    try {
+      if (typeof window === 'undefined') return;
+      const raw = sessionStorage.getItem(STORAGE_KEY);
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed)) setOperations(parsed);
+      }
+    } catch { /* 损坏的缓存直接丢弃，从空队列开始 */ }
+    finally {
+      (window as unknown as Record<string, boolean>)[hydratedKey] = true;
+    }
+  }, []);
+
+  // 队列变化即落盘（恢复完成前不写，避免空数组覆盖已存队列）
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!(window as unknown as Record<string, boolean>)[hydratedKey]) return;
+    try {
+      if (operations.length > 0) sessionStorage.setItem(STORAGE_KEY, JSON.stringify(operations));
+      else sessionStorage.removeItem(STORAGE_KEY);
+    } catch { /* 隐私模式/容量满时静默降级为纯内存 */ }
+  }, [operations]);
 
   // 添加操作（如果同类型的操作已存在，则覆盖，防止重复积攒）
   const addOperation = (op: Omit<Operation, 'id' | 'timestamp'> & { id?: string; timestamp?: string }) => {

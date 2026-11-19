@@ -24,7 +24,8 @@ export async function GET(request: Request) {
   const base = (siteConfig.siteUrl || new URL(request.url).origin).replace(/\/+$/, '');
 
   const dir = path.join(process.cwd(), 'chatters');
-  const items: string[] = [];
+  type FeedEntry = { title: string; link: string; description: string; pubDate: string; time: number };
+  const entries: FeedEntry[] = [];
   try {
     fs.readdirSync(dir)
       .filter((f) => f.endsWith('.md'))
@@ -32,19 +33,32 @@ export async function GET(request: Request) {
         const { data, content } = matter(fs.readFileSync(path.join(dir, f), 'utf8'));
         if (data.private) return;
         const slug = f.replace(/\.md$/, '');
-        const title = xmlEscape(data.title || '无标题');
-        const link = `${base}/chatter/${encodeURIComponent(slug)}`;
-        const description = xmlEscape(
-          data.description || content.replace(/[#>*`~\[\]!]/g, '').trim().slice(0, 120)
-        );
-        const pubDate = new Date(data.date || '1970-01-01').toUTCString();
-        items.push(
-          `    <item>\n      <title>${title}</title>\n      <link>${link}</link>\n      <guid isPermaLink="true">${link}</guid>\n      <pubDate>${pubDate}</pubDate>\n      <description>${description}</description>\n    </item>`
-        );
+        const date = data.date || '';
+        entries.push({
+          title: xmlEscape(data.title || '无标题'),
+          link: `${base}/chatter/${encodeURIComponent(slug)}`,
+          description: xmlEscape(
+            data.description || content.replace(/[#>*`~\[\]!]/g, '').trim().slice(0, 120)
+          ),
+          pubDate: new Date(date || '1970-01-01').toUTCString(),
+          time: new Date(date || '1970-01-01').getTime() || 0,
+        });
       });
   } catch {
     // 目录不存在时输出空频道，保持 feed 可访问
   }
+
+  // 按发布日期降序，只取最近 20 篇
+  entries.sort((a, b) => b.time - a.time);
+  const items = entries.slice(0, 20).map(
+    (e) =>
+      `    <item>\n      <title>${e.title}</title>\n      <link>${e.link}</link>\n      <guid isPermaLink="true">${e.link}</guid>\n      <pubDate>${e.pubDate}</pubDate>\n      <description>${e.description}</description>\n    </item>`
+  );
+
+  // lastBuildDate 取最新一篇的发布时间，没有内容时用当前时间
+  const lastBuild = entries.length > 0
+    ? new Date(Math.max(...entries.map((e) => e.time))).toUTCString()
+    : new Date().toUTCString();
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
@@ -53,6 +67,7 @@ export async function GET(request: Request) {
     <link>${base}</link>
     <description>${xmlEscape(siteConfig.bio)}</description>
     <language>zh-CN</language>
+    <lastBuildDate>${lastBuild}</lastBuildDate>
     <atom:link href="${base}/feed.xml" rel="self" type="application/rss+xml"/>
 ${items.join('\n')}
   </channel>

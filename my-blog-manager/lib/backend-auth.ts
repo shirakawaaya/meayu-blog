@@ -49,11 +49,23 @@ export function installBackendAuth(): void {
     if (/^https?:\/\/127\.0\.0\.1:/.test(url)) {
       const token = await loadToken(originalFetch);
       if (token) {
-        const headers = new Headers(
-          init?.headers ?? (input instanceof Request ? input.headers : undefined),
-        );
-        if (!headers.has('X-Local-Token')) headers.set('X-Local-Token', token);
-        return originalFetch(input, { ...init, headers });
+        const withToken = (t: string) => {
+          const headers = new Headers(
+            init?.headers ?? (input instanceof Request ? input.headers : undefined),
+          );
+          headers.set('X-Local-Token', t);
+          return { ...init, headers };
+        };
+        const res = await originalFetch(input, withToken(token));
+        if (res.status === 401) {
+          // 后端重启过，token 换了：清缓存重拉一次，带新 token 重试（避免全站 401 且用户不知刷新可自愈）
+          tokenPromise = null;
+          const fresh = await loadToken(originalFetch);
+          if (fresh && fresh !== token) {
+            return originalFetch(input, withToken(fresh));
+          }
+        }
+        return res;
       }
     }
     return originalFetch(input, init);

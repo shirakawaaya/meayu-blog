@@ -2,7 +2,7 @@
 
 export const siteConfig = {
   // 0. 站点完整地址（RSS / sitemap / 分享链接用；改成本站实际域名）
-  siteUrl: "https://meayu-lomie.github.io/XinghuisamaBlogs",
+  siteUrl: "https://meayu.loc.cc",
 
   // 1. 网站标题与博主信息
   title: "Meayu の 拾光集",
@@ -41,17 +41,9 @@ export const siteConfig = {
     qq: "1124533793",
     wechat: "Meayu",
   },
-  counts: {
-    photos: 0, // 照片墙数量可以手动写死或动态计算
-  },
   chatterTitle: "杂谈", // 栏目名，与说说页同构
   chatterDescription: "代码与日常碎片的记录",
-
-
-  // 评论（Giscus，基于 GitHub Discussions）
-  // 配置步骤：https://giscus.app/zh-CN 填入仓库后，把生成的 repo/repoId/category/categoryId 抄到这里
-  // 前置条件：仓库公开 + 已开启 Discussions + 已安装 giscus App
-  buildDate: "2026-03-23T00:00:00", // 建站日期
+  buildDate: "2026-01-01T00:00:00", // 版权年起始（非真实建站日）
   // 备案信息（页脚展示；留空则不渲染）
   icpConfig: {
     name: "萌ICP备 20260240号",

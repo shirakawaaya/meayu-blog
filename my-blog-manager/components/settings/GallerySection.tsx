@@ -15,6 +15,7 @@ export default function GallerySection({ formData, handleUpdate, pushToQueue }: 
   // 孤儿图片扫描与清理（本地 + R2）
   const [isScanning, setIsScanning] = useState(false);
   const [isCleaning, setIsCleaning] = useState(false);
+  const [pendingDelete, setPendingDelete] = useState<{ keys: string[]; kind: 'local' | 'r2' } | null>(null);
   const [scanResult, setScanResult] = useState<{
     totalCount: number;
     orphanCount: number;
@@ -58,9 +59,8 @@ export default function GallerySection({ formData, handleUpdate, pushToQueue }: 
     }
   };
 
-  const handleDeleteOrphans = async (filenames: string[]) => {
+  const doDeleteOrphans = async (filenames: string[]) => {
     if (filenames.length === 0) return;
-    if (!window.confirm(`确认彻底从硬盘删除选中的 ${filenames.length} 张废弃图片吗？此操作不可撤回！`)) return;
 
     setIsCleaning(true);
     try {
@@ -93,9 +93,19 @@ export default function GallerySection({ formData, handleUpdate, pushToQueue }: 
     }
   };
 
-  const handleDeleteR2Orphans = async (keys: string[]) => {
+  // 自研纸卡确认弹窗，替代原生 window.confirm（桌面壳里更自然）
+  const handleDeleteOrphans = (keys: string[]) => { if (keys.length) setPendingDelete({ keys, kind: 'local' }); };
+  const handleDeleteR2Orphans = (keys: string[]) => { if (keys.length) setPendingDelete({ keys, kind: 'r2' }); };
+  const confirmPendingDelete = async () => {
+    if (!pendingDelete) return;
+    const { keys, kind } = pendingDelete;
+    setPendingDelete(null);
+    if (kind === 'local') await doDeleteOrphans(keys);
+    else await doDeleteR2Orphans(keys);
+  };
+
+  const doDeleteR2Orphans = async (keys: string[]) => {
     if (keys.length === 0) return;
-    if (!window.confirm(`确认从 R2 存储桶彻底删除选中的 ${keys.length} 张图片吗？此操作不可撤回！`)) return;
 
     setIsCleaning(true);
     try {
@@ -433,6 +443,30 @@ export default function GallerySection({ formData, handleUpdate, pushToQueue }: 
           </AnimatePresence>
         </div>
       </motion.section>
+
+      {/* 自研删除确认弹窗 */}
+      <AnimatePresence>
+        {pendingDelete && (
+          <div className="fixed inset-0 z-[210] flex items-center justify-center p-4">
+            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setPendingDelete(null)} className="absolute inset-0 bg-black/60" />
+            <motion.div initial={{ scale: 0.92, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.92, opacity: 0, y: 20 }} className="relative w-full max-w-sm paper-card-strong rounded-2xl border border-[var(--card-border)] p-8 shadow-xl text-center">
+              <div className="w-14 h-14 mx-auto mb-5 rounded-2xl bg-[color-mix(in_oklab,var(--danger)_12%,transparent)] flex items-center justify-center">
+                <Trash2 size={24} className="text-[var(--danger)]" />
+              </div>
+              <h3 className="text-lg font-black text-[var(--ink)] mb-2">确认删除这 {pendingDelete.keys.length} 张图片？</h3>
+              <p className="text-sm text-[var(--ink-soft)] leading-relaxed mb-7">
+                {pendingDelete.kind === 'r2' ? '将从 R2 存储桶彻底删除' : '将从硬盘彻底删除'}，此操作不可撤回。
+              </p>
+              <div className="flex gap-3">
+                <button onClick={() => setPendingDelete(null)} className="ed-btn-quiet flex-1 py-3 text-xs">取消</button>
+                <button onClick={confirmPendingDelete} className="ed-btn flex-1 py-3 text-xs !bg-[var(--danger)]">
+                  <Trash2 size={14} /> 确认删除
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

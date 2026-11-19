@@ -4,6 +4,7 @@ import type { SettingsSectionProps } from './shared';
 import Avatar from '../Avatar';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
+import { useToast } from '../ToastProvider';
 // 引入你的图床工具组件 (请根据你实际的文件夹层级调整相对路径)
 import FloatingImageTool from '../editor/FloatingImageTool';
 
@@ -40,7 +41,21 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
   };
 
   // 核心破局点：化繁为简！
+  const { showToast } = useToast();
   const handleSaveAll = () => {
+    // 暂存前校验 URL 字段，避免写进博客配置后头像/社交图标静默坏掉
+    const urlFields: [string, unknown][] = [
+      ['头像地址', safeData.avatarUrl],
+      ['网站图标', safeData.faviconUrl],
+      ['GitHub', safeSocial.github],
+      ['Google 链接', safeSocial.google],
+    ];
+    for (const [name, val] of urlFields) {
+      if (val && typeof val === 'string' && val.trim()) {
+        try { new URL(val.trim()); }
+        catch { showToast(`${name} 不是合法的网址，请检查后再保存`, 'warning'); return; }
+      }
+    }
     pushToQueue('全量更新个人名片');
   };
 
@@ -52,7 +67,7 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
           {/* 左侧：头像预览区域 */}
           <div className="relative group shrink-0 self-center md:self-start flex flex-col items-center gap-4">
             <div className="w-40 h-40 rounded-2xl p-1.5 border-2 border-[var(--accent)] shadow-sm">
-              <Avatar src={safeData.avatarUrl} name={safeData.authorName || 'Meayu'} className="w-full h-full rounded-xl text-4xl" />
+              <Avatar src={safeData.avatarUrl} name={safeData.authorName || 'Meayu'} className="w-full h-full rounded-xl" />
             </div>
           </div>
 

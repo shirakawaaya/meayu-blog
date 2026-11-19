@@ -11,6 +11,12 @@ export default function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') setIsMobileMenuOpen(false); };
+    window.addEventListener('keydown', onKey);
+    return () => window.removeEventListener('keydown', onKey);
+  }, [isMobileMenuOpen]);
   const pathname = usePathname();
 
   // --- 物理引擎：菜单转动逻辑 ---
@@ -131,7 +137,7 @@ export default function Navbar() {
           {/* 首页 */}
           <Link
             href="/"
-            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+            className={`px-3 min-h-[44px] flex items-center rounded-full text-xs font-bold transition-all ${
               pathname === '/' ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:text-[var(--accent)]'
             }`}
           >
@@ -141,7 +147,7 @@ export default function Navbar() {
           {/* 杂谈 */}
           <Link
             href="/chatter"
-            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+            className={`px-3 min-h-[44px] flex items-center rounded-full text-xs font-bold transition-all ${
               pathname.startsWith('/chatter') ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:text-[var(--accent)]'
             }`}
           >
@@ -151,7 +157,7 @@ export default function Navbar() {
           {/* 说说 */}
           <Link
             href="/moments"
-            className={`px-2.5 py-1 rounded-full text-xs font-bold transition-all ${
+            className={`px-3 min-h-[44px] flex items-center rounded-full text-xs font-bold transition-all ${
               pathname.startsWith('/moments') ? 'bg-[var(--accent)] text-white shadow-sm' : 'text-slate-700 dark:text-slate-300 hover:text-[var(--accent)]'
             }`}
           >
@@ -161,7 +167,7 @@ export default function Navbar() {
           {/* 搜索 */}
           <button
             onClick={() => window.dispatchEvent(new CustomEvent('open-global-search'))}
-            className="p-1.5 rounded-full text-slate-700 dark:text-slate-300 hover:text-[var(--accent)] transition-all flex items-center justify-center"
+            className="min-h-[44px] min-w-[44px] rounded-full text-slate-700 dark:text-slate-300 hover:text-[var(--accent)] transition-all flex items-center justify-center"
             title="全站搜索"
             aria-label="全站搜索"
           >
@@ -173,7 +179,7 @@ export default function Navbar() {
           {/* 罗盘转盘菜单按钮 */}
           <button
             onClick={() => setIsMobileMenuOpen(true)}
-            className={`p-1 px-2.5 rounded-full text-xs font-bold flex items-center gap-1 border transition-all ${
+            className={`min-h-[44px] px-2.5 rounded-full text-xs font-bold flex items-center gap-1 border transition-all ${
               isMobileMenuOpen
                 ? 'bg-[var(--accent)] text-white border-[var(--accent)]'
                 : 'bg-[var(--paper-deep)] text-[var(--accent)] border-[var(--rule)] hover:scale-105'
@@ -231,7 +237,7 @@ export default function Navbar() {
                 animate={{ scale: 1, opacity: 1, rotate: 0 }}
                 exit={{ scale: 0.5, opacity: 0, rotate: 90 }}
                 transition={{ type: 'spring', damping: 20, stiffness: 150 }}
-                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] z-[70] pointer-events-none"
+                className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[min(320px,92vw)] h-[min(320px,92vw)] z-[70] pointer-events-none"
               >
                 <motion.div
                   ref={wheelRef}

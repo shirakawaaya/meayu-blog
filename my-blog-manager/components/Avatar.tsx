@@ -21,10 +21,10 @@ export default function Avatar({
   if (!src || failed) {
     return (
       <div
-        className={`flex items-center justify-center bg-[var(--accent)] text-white font-black ${className}`}
+        className={`flex items-center justify-center bg-[var(--accent)] text-white font-black [container-type:size] ${className}`}
         aria-label={`${name} 的头像`}
       >
-        {initial}
+        <span className="text-[38cqw] leading-none">{initial}</span>
       </div>
     );
   }

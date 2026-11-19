@@ -26,9 +26,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(siteConfig.siteUrl),
   title: siteConfig.title,
   description: siteConfig.bio,
+  // favicon 用本地小图（1KB 级），不再让首屏去拉 R2 的 1.26MB 原图
   icons: {
-    icon: siteConfig.faviconUrl,
-    apple: siteConfig.faviconUrl,
+    icon: [{ url: '/favicon.ico', sizes: 'any' }, { url: '/favicon.png', type: 'image/png' }],
+    apple: '/favicon.png',
   },
   // RSS 自动发现：订阅器与浏览器据此自行找到订阅源，
   // 不必在导航栏摆一个点开只会显示 XML 源码的图标。
@@ -46,6 +47,12 @@ export const metadata: Metadata = {
     siteName: siteConfig.title,
     type: 'website',
     images: [{ url: siteConfig.avatarUrl }],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: siteConfig.title,
+    description: siteConfig.bio,
+    images: [siteConfig.avatarUrl],
   },
 };
 
@@ -69,7 +76,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
           <BackgroundSlideshow images={siteConfig.bgImages} />
         )}
         <ThemeProvider>
-            <div id="app-mount-root" className="flex-1 flex flex-col">
+            <div id="app-mount-root" className="flex-1 flex flex-col pb-20 md:pb-0">
               {/* 导航栏放在 layout 里：切页时不再卸载重建，
                   滚动状态与移动端菜单状态得以保留 */}
               <Navbar />

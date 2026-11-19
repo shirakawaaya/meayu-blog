@@ -62,8 +62,11 @@ function SettingsContent() {
     fetchRealConfig();
   }, [showToast]);
 
+  const [hasUnstashed, setHasUnstashed] = useState(false);
+
   const handleUpdate = (field: string, value: unknown) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    setHasUnstashed(true);
   };
 
 
@@ -78,6 +81,7 @@ function SettingsContent() {
       key: key,
       value: value
     });
+    setHasUnstashed(false);
     showToast(`【${label}】已加入待保存，请在右上角点【保存到博客】`, "success");
   };
 
@@ -93,6 +97,11 @@ function SettingsContent() {
     <div className="min-h-screen relative pb-10">
 
       <div>
+        {hasUnstashed && (
+          <div className="w-[95%] max-w-7xl mx-auto mt-20 mb-[-32px] flex items-center gap-2 px-4 py-2.5 rounded-xl bg-[color-mix(in_oklab,var(--warn)_12%,transparent)] border border-[var(--warn)] text-xs font-bold text-[var(--warn)]">
+            ⚠ 有改动尚未暂存：请先点本分区的「加入待保存」，否则写入的还是上一次暂存的内容。
+          </div>
+        )}
         <main className="w-[95%] max-w-7xl mx-auto mt-24 flex flex-col md:flex-row gap-8 items-start relative z-10">
 
           <div className="w-full md:w-72 shrink-0 flex flex-col gap-4">

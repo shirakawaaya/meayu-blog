@@ -32,6 +32,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       .filter((f) => f.endsWith('.md'))
       .forEach((f) => {
         const { data } = matter(fs.readFileSync(path.join(dir, f), 'utf8'));
+        if (data.private) return; // 私密杂谈不进 sitemap
         chatters.push({
           url: `${base}/chatter/${encodeURIComponent(f.replace(/\.md$/, ''))}`,
           lastModified: data.date ? new Date(data.date) : undefined,

@@ -14,6 +14,7 @@ export function collectTags(): Map<string, { slug: string; title: string; date: 
       .filter((f) => f.endsWith('.md'))
       .forEach((f) => {
         const { data } = matter(fs.readFileSync(path.join(dir, f), 'utf8'));
+        if (data.private) return; // 私密杂谈不进标签系统
         const tags = Array.isArray(data.tags) ? data.tags : [];
         for (const tag of tags) {
           const t = String(tag).trim();

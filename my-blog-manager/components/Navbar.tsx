@@ -108,6 +108,7 @@ export default function Navbar() {
         const configData = await configRes.json();
         const apiBase = `http://127.0.0.1:${configData.api_port}`;
 
+        let hadError = false;
         for (const [index, op] of operations.entries()) {
           let apiUrl = '';
           let body: unknown = {};
@@ -145,21 +146,22 @@ export default function Navbar() {
 
           const data = await res.json();
           if (!data.success) {
-            // 队列是逐条提交的，前面几条可能已经写盘。这里如实说明，避免用户以为全部回滚。
-            showToast(`第 ${index + 1}/${operations.length} 项执行失败：${data.message}；已写入的部分不会回滚，请检查后重试`, "error");
-            return;
+            // 成功的项已逐条出队（见下方），这里只留下失败项；重试不会重复写入已成功项。
+            showToast(`第 ${index + 1} 项执行失败：${data.message}；已写入的不会重复，剩余项请重试`, "error");
+            hadError = true;
+            break;
           }
+          // 单条成功即出队：中途失败时重试只跑剩余项，不重复写入
+          removeOperation(op.id);
           // 后端返回的 message 描述了本次实际写入的结果，不要吞掉
           if (data.message) showToast(`任务已执行：${data.message}`, "success");
         }
 
-        clearOperations();
         setIsOpBoxOpen(false);
-        showToast(`已写入 ${operations.length} 项改动，正在刷新...`, "success");
-
-        setTimeout(() => {
-          window.location.reload();
-        }, 1200);
+        if (!hadError) {
+          showToast(`写入完成，正在刷新...`, "success");
+          setTimeout(() => { window.location.reload(); }, 1200);
+        }
 
     } catch {
       showToast("无法连接到后端，请确认管理端后端在运行", "error");
