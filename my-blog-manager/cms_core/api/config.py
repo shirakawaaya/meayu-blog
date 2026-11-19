@@ -158,8 +158,8 @@ def update_site_config(payload: Dict[str, Any] = Body(...)):
     VALID_ROOT_KEYS = {
         "siteUrl", "title", "authorName", "bio", "avatarUrl", "useGradient", "themeColors",
         "bgImages", "bgEnabled", "defaultPostCover", "photoWallImage", "social",
-        "counts", "chatterTitle", "chatterDescription", "picBedName", "picBedUrl",
-        "picBedToken", "giscusConfig", "buildDate",
+        "counts", "chatterTitle", "chatterDescription",
+        "giscusConfig", "buildDate",
         "icpConfig",
         "faviconUrl",
         "navTitle",

@@ -3,10 +3,11 @@ import io
 import uuid
 import datetime
 
-import httpx
-from fastapi import APIRouter, Body, UploadFile, File, Form
+from fastapi import APIRouter, Body, UploadFile, File
 
 from cms_core.paths import get_blog_root
+from cms_core import r2_client
+from cms_core.api import r2_config as r2cfg
 
 router = APIRouter()
 
@@ -70,81 +71,70 @@ def _compress_image(content: bytes, ext: str) -> tuple[bytes, str]:
 
 
 # ============================================================
-# 一、第三方图床（Lsky Pro）
+# 一、Cloudflare R2 图床（替代已下线的 Lsky Pro）
 # ------------------------------------------------------------
-# 需要用户在设置里填 picBedUrl + picBedToken，
-# 没填时前端会提示"未配置图床 Token"。这部分原样保留。
+# 凭据只存 data/r2_config.json（不入 Git），前端不再经手任何密钥：
+# 前端先问 /storage 决定走 R2 还是本地，再把文件发到对应端点。
+# R2 未启用/未配全时 /storage 返回 local，上传自动落本地目录。
 # ============================================================
 
-@router.post("/test")
-async def test_picbed_connection(payload: dict = Body(...)):
-    url = payload.get("url", "").strip().rstrip('/')
-    token = payload.get("token", "").strip()
+_CONTENT_TYPES = {
+    ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".png": "image/png",
+    ".gif": "image/gif", ".webp": "image/webp", ".svg": "image/svg+xml",
+    ".bmp": "image/bmp", ".ico": "image/x-icon",
+}
 
-    if not url or not token:
-        return {"success": False, "message": "图床 API 地址和 Token 不能为空"}
 
-    test_endpoint = f"{url}/api/v1/profile"
-    if not token.startswith("Bearer "):
-        token = f"Bearer {token}"
-
-    headers = {"Authorization": token, "Accept": "application/json"}
-
-    try:
-        async with httpx.AsyncClient(timeout=8.0) as client:
-            response = await client.get(test_endpoint, headers=headers)
-            if response.status_code != 200:
-                return {"success": False, "message": f"校验失败，服务器返回了 {response.status_code} 错误"}
-
-            data = response.json()
-            if data.get("status") is True:
-                user_email = data.get("data", {}).get("email", "未知用户")
-                return {"success": True, "message": f"连接成功，当前账户：{user_email}"}
-            else:
-                return {"success": False, "message": f"Token 无效: {data.get('message', '未知错误')}"}
-    except Exception as e:
-        return {"success": False, "message": f"网络异常: {str(e)}"}
+@router.get("/storage")
+async def storage_info():
+    """告诉前端当前新图片的上传目标：r2 或 local"""
+    cfg = r2cfg._load_config()
+    configured = r2cfg.is_configured(cfg)
+    return {
+        "success": True,
+        "provider": "r2" if configured else "local",
+        "configured": configured,
+        "publicBaseUrl": cfg.get("publicBaseUrl", "") if configured else "",
+    }
 
 
 @router.post("/upload")
-async def upload_image(
-        file: UploadFile = File(...),
-        url: str = Form(...),
-        token: str = Form(...)
-):
-    url = url.strip().rstrip('/')
-    token = token.strip()
-
-    if not token.startswith("Bearer "):
-        token = f"Bearer {token}"
-
-    upload_endpoint = f"{url}/api/v1/upload"
-    headers = {
-        "Authorization": token,
-        "Accept": "application/json"
-    }
+async def upload_image_r2(file: UploadFile = File(...)):
+    """
+    把图片（先压缩）上传到 Cloudflare R2，返回公开访问 URL。
+    R2 未配置时明确报错，不静默落本地——走哪条路由前端已用 /storage 确认过。
+    """
+    cfg = r2cfg._load_config()
+    if not r2cfg.is_configured(cfg):
+        return {"success": False, "message": "R2 图床还没配置好，请到【设置 → 图库】填写 R2 配置，或关闭 R2 开关走本地存储"}
 
     try:
+        filename = file.filename or "image.png"
+        ext = os.path.splitext(filename)[1].lower()
+        if ext not in ALLOWED_EXT:
+            return {"success": False, "message": f"不支持的文件类型 {ext or '(无扩展名)'}，仅支持 {', '.join(sorted(ALLOWED_EXT))}"}
+
         content = await file.read()
-        files = {'file': (file.filename, content, file.content_type)}
+        if not content:
+            return {"success": False, "message": "文件内容为空"}
+        if len(content) > MAX_SIZE:
+            return {"success": False, "message": "图片超过 20MB，请压缩后再传"}
 
-        async with httpx.AsyncClient(timeout=30.0) as client:
-            response = await client.post(upload_endpoint, headers=headers, files=files)
+        content, ext = _compress_image(content, ext)
 
-            if response.status_code != 200:
-                return {"success": False, "message": f"上传失败，图床返回了 {response.status_code} 错误"}
+        stamp = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
+        rand = uuid.uuid4().hex[:6]
+        key = f"{stamp}_{rand}{ext}"
 
-            data = response.json()
-            # 兼容 Lsky Pro 的返回格式
-            if data.get("status") is True:
-                img_url = data.get("data", {}).get("links", {}).get("url")
-                return {"success": True, "message": "上传成功", "url": img_url}
-            else:
-                return {"success": False, "message": f"图床拒绝接收: {data.get('message', '未知')}"}
-    except httpx.ReadTimeout:
-        return {"success": False, "message": "图片上传超时，请检查网络或图片是否过大"}
+        await r2_client.put_object(cfg, key, content, _CONTENT_TYPES.get(ext, "application/octet-stream"))
+        return {
+            "success": True,
+            "message": "已上传到 R2 图床",
+            "url": r2cfg.public_url(cfg, key),
+            "filename": key,
+        }
     except Exception as e:
-        return {"success": False, "message": f"服务器异常: {str(e)}"}
+        return {"success": False, "message": f"R2 上传失败: {str(e)}"}
 
 
 # ============================================================
@@ -325,12 +315,35 @@ async def scan_orphan_images():
     orphans.sort(key=lambda x: x["size"], reverse=True)
     total_orphan_bytes = sum(x["size"] for x in orphans)
 
+    # R2 桶内孤儿：对象 key 与公开 URL 都不在引用内容里才算孤儿
+    r2_total = 0
+    r2_orphans = []
+    cfg = r2cfg._load_config()
+    if r2cfg.is_configured(cfg):
+        try:
+            objects = await r2_client.list_objects(cfg)
+            r2_total = len(objects)
+            for obj in objects:
+                if obj["key"] not in all_content and r2cfg.public_url(cfg, obj["key"]) not in all_content:
+                    r2_orphans.append({
+                        "filename": obj["key"],
+                        "url": r2cfg.public_url(cfg, obj["key"]),
+                        "size": obj["size"],
+                        "mtime": 0
+                    })
+            r2_orphans.sort(key=lambda x: x["size"], reverse=True)
+        except Exception:
+            pass  # R2 列举失败不阻断本地扫描结果
+
     return {
         "success": True,
         "totalCount": len(total_files),
         "orphanCount": len(orphans),
         "totalOrphanBytes": total_orphan_bytes,
-        "orphans": orphans
+        "orphans": orphans,
+        "r2TotalCount": r2_total,
+        "r2Orphans": r2_orphans,
+        "r2OrphanBytes": sum(x["size"] for x in r2_orphans)
     }
 
 
@@ -369,4 +382,35 @@ async def delete_orphan_images(payload: dict = Body(...)):
         "deletedCount": deleted_count,
         "errors": errors,
         "message": f"已成功清理 {deleted_count} 张孤儿图片"
+    }
+
+
+@router.post("/delete_r2_orphans")
+async def delete_r2_orphan_images(payload: dict = Body(...)):
+    """删除 R2 桶内的孤儿对象（key 列表由扫描结果给出）"""
+    cfg = r2cfg._load_config()
+    if not r2cfg.is_configured(cfg):
+        return {"success": False, "message": "R2 图床未配置"}
+
+    keys = payload.get("filenames", [])
+    if not keys:
+        return {"success": False, "message": "未提供要删除的对象列表"}
+
+    deleted_count = 0
+    errors = []
+    for key in keys:
+        safe_key = str(key).lstrip("/")
+        if not safe_key or ".." in safe_key:
+            continue
+        try:
+            await r2_client.delete_object(cfg, safe_key)
+            deleted_count += 1
+        except Exception as e:
+            errors.append(f"{safe_key}: {str(e)}")
+
+    return {
+        "success": True,
+        "deletedCount": deleted_count,
+        "errors": errors,
+        "message": f"已成功清理 {deleted_count} 张 R2 孤儿图片"
     }

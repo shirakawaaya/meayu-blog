@@ -1,0 +1,12 @@
+# 管理端 Python 后端依赖（launcher.py + cms_core）
+# 安装：pip install -r requirements.txt（Python 3.10+）
+fastapi
+uvicorn[standard]
+pydantic
+httpx
+python-multipart
+markdown
+markdownify
+PyYAML
+Pillow
+pywebview
