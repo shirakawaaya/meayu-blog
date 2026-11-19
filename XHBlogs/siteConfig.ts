@@ -6,7 +6,7 @@ export const siteConfig = {
 
   // 1. 网站标题与博主信息
   title: "Meayu の 拾光集",
-  faviconUrl: "/images/20261007_105536_f21a10.png",
+  faviconUrl: "",
   authorName: "Meayu",
   bio: "随便写点。",
 
@@ -18,23 +18,23 @@ export const siteConfig = {
   navAfter: "拾光集",
 
   // 2. 头像设置 (支持网络链接，或将图片放入 public 文件夹后使用 "/me.jpg")
-  avatarUrl: "/images/20261007_104847_9effec.png",
+  avatarUrl: "",
 
   // 3. 网站背景设置 (二选一)
   // 如果想用纯图片背景，请在下面 bgImage 写路径，并将 useGradient 设为 false
   useGradient: false,
   themeColors: ["#a18cd1", "#fbc2eb", "#a1c4fd", "#c2e9fb"], // 呼吸流动的颜色组合
 // 修改这里：变成图片数组
-  bgImages: ["/images/20261007_015101_7d17f6.jpg", "/images/20261007_103545_a6cf3d.jpg", "/images/20261007_103552_4c1ad2.jpg", "/images/20261007_103601_e178d6.jpg", "/images/20261007_103606_ad0228.jpg", "/images/20261007_103612_195f81.png"],
-  bgEnabled: true, // 全站背景轮播开关（在管理端【视觉背景配置】里切换）
+  bgImages: [],
+  bgEnabled: false, // 全站背景轮播开关（在管理端【视觉背景配置】里切换）
 
   // 4. 文章默认封面图 (当 Markdown 没写 cover 时显示)
-  defaultPostCover: "/images/20261007_103601_e178d6.jpg",
+  defaultPostCover: "",
 
   // 5. 首页照片墙预览图
-  photoWallImage: "/images/20261007_014558_12db85.jpg",
+  photoWallImage: "",
   social: {
-    github: "https://github.com/meayu-lomie",
+    github: "https://github.com/shirakawaaya",
     gitee: "",
     google: "mailto:bilibiliwuwuwu@gmail.com",
     email: "1124533793@qq.com",
@@ -42,7 +42,7 @@ export const siteConfig = {
     wechat: "Meayu",
   },
   counts: {
-    photos: 128, // 照片墙数量可以手动写死或动态计算
+    photos: 0, // 照片墙数量可以手动写死或动态计算
   },
   chatterTitle: "Meayu の 拾光集", // 你可以改成任何你喜欢的名字
   chatterDescription: "代码与日常碎片的记录",

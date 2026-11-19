@@ -10,6 +10,9 @@ import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeKatex from 'rehype-katex';
 import rehypeStringify from 'rehype-stringify';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { sanitizeSchema } from '../../lib/sanitize-schema';
 
 // 引入高亮主题
 import 'highlight.js/styles/atom-one-dark.css';
@@ -45,12 +48,12 @@ function getDirActivities(dirName: string, typeLabel: '杂谈' | '说说', linkP
 export default async function AboutPage() {
   const fullPath = path.join(process.cwd(), 'app', 'about', 'about.md');
   let contentHtml = "博主很懒，还没有写自我介绍…";
-  let coverImage = "/images/20261007_103854_34868a.jpg";
+  let coverImage = "";
 
   try {
     const fileContents = fs.readFileSync(fullPath, 'utf8');
-    // 改为 let，以便进行文本预清洗
-    let { data, content } = matter(fileContents);
+    const { data, content: rawContent } = matter(fileContents);
+    let content = rawContent; // content 后续要做文本预清洗重赋值
     if (data.cover) coverImage = data.cover;
 
     // ==========================================
@@ -78,14 +81,15 @@ export default async function AboutPage() {
       .use(remarkGfm) // 挂载 GFM 解析
       .use(remarkMath)
       .use(remarkRehype, { allowDangerousHtml: true })
+      .use(rehypeRaw)
       // 核心修复：开启自动语言侦测，并限制语言白名单！
-      // @ts-ignore
       .use(rehypeHighlight, {
         detect: true,
         ignoreMissing: true,
         subset: ['cpp', 'c', 'python', 'java', 'javascript', 'typescript', 'go', 'rust', 'bash', 'json', 'html', 'css', 'sql', 'xml']
       })
       .use(rehypeKatex)
+      .use(rehypeSanitize, sanitizeSchema)
       .use(rehypeStringify, { allowDangerousHtml: true })
       .process(content);
 
