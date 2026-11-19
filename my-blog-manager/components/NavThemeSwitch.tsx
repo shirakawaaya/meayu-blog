@@ -1,37 +1,13 @@
 "use client";
 
-import { useTheme, type ThemeStyle } from './ThemeProvider';
+import { useTheme } from './ThemeProvider';
 
-const STYLES: { id: ThemeStyle; label: string }[] = [
-  { id: 'xuan', label: '宣纸' },
-  { id: 'journal', label: '手账' },
-];
-
-/** 控制台导航栏里的主题切换：版式（宣纸/手账）+ 明暗 */
+/** 控制台导航栏里的主题切换：只切明暗（版式固定为宣纸） */
 export default function NavThemeSwitch() {
-  const { isDark, toggleTheme, style, setStyle } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <div className="flex items-center gap-1">
-      {STYLES.map((s) => {
-        const active = style === s.id;
-        return (
-          <button
-            key={s.id}
-            onClick={() => setStyle(s.id)}
-            aria-pressed={active}
-            title={`切换到${s.label}版式`}
-            className="rounded px-2 py-1 text-xs tracking-wider transition-colors duration-200"
-            style={{
-              color: active ? 'var(--accent)' : 'var(--ink-faint)',
-              borderBottom: active ? '1px solid var(--accent)' : '1px solid transparent',
-            }}
-          >
-            {s.label}
-          </button>
-        );
-      })}
-
       <button
         onClick={toggleTheme}
         aria-pressed={isDark}

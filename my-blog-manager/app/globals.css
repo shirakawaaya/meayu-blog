@@ -5,28 +5,26 @@
 
 /* ========================================================
    2. 纸张主题变量层
-   两套主题（宣纸 / 手账）× 昼夜，通过 html 上的 class 切换：
-     .theme-xuan    宣纸·昼      .theme-xuan.dark    宣纸·夜
-     .theme-journal 手账·昼      .theme-journal.dark 手账·夜
-   默认（未加 class）走宣纸·昼，保证首屏不闪。
+   单一主题：宣纸 × 昼夜（2026-11-19 起手帐版式下线），
+   通过 html 上的 .dark class 切明暗；默认走宣纸·昼，保证首屏不闪。
 
    语义色（状态色）：ok 石绿 / warn 赭石 / danger 绛红，
    与纸张同族，避免上游的荧光绿、警示黄、纯红。
    ======================================================== */
 :root,
 .theme-xuan {
-  --paper: #f7f3ea;
-  --paper-deep: #efe9dc;
+  --paper: #faf5ea;
+  --paper-deep: #f2ead8;
   --ink: #2b2620;
   --ink-soft: #6f6558;
   --ink-faint: #776d60;
   --rule: rgba(43, 38, 32, .16);
-  --accent: #a63a2e;
-  --accent-soft: rgba(166, 58, 46, .35);
-  --card: #fbf8f1;
-  --card-border: rgba(43, 38, 32, .12);
-  --card-shadow: 0 2px 14px -2px rgba(43, 38, 32, .06), 0 1px 3px 0 rgba(43, 38, 32, .04);
-  --card-shadow-hover: 0 10px 28px -4px rgba(43, 38, 32, .13), 0 3px 8px 0 rgba(43, 38, 32, .06);
+  --accent: #c8401f;
+  --accent-soft: rgba(200, 64, 31, .38);
+  --card: #fffdf7;
+  --card-border: rgba(43, 38, 32, .13);
+  --card-shadow: 0 1px 2px 0 rgba(90, 70, 40, .05), 0 4px 10px -2px rgba(90, 70, 40, .07), 0 16px 32px -16px rgba(90, 70, 40, .16);
+  --card-shadow-hover: 0 2px 3px 0 rgba(90, 70, 40, .06), 0 8px 16px -4px rgba(90, 70, 40, .1), 0 24px 40px -16px rgba(90, 70, 40, .22);
   --ok: #4a7c59;
   --warn: #9a6b2f;
   --danger: #8c2f26;
@@ -43,9 +41,9 @@
   --ink-soft: #a49883;
   --ink-faint: #877e70;
   --rule: rgba(230, 222, 208, .15);
-  --accent: #cb5c46;
-  --accent-soft: rgba(201, 86, 63, .42);
-  --card: #1f1b15;
+  --accent: #e0684c;
+  --accent-soft: rgba(224, 104, 76, .45);
+  --card: #201b14;
   --card-border: rgba(230, 222, 208, .1);
   --card-shadow: 0 2px 14px -2px rgba(0, 0, 0, .3), 0 1px 3px 0 rgba(0, 0, 0, .2);
   --card-shadow-hover: 0 10px 28px -4px rgba(0, 0, 0, .55), 0 3px 8px 0 rgba(0, 0, 0, .3);
@@ -58,65 +56,7 @@
   --paper-grain-opacity: .05;
 }
 
-.theme-journal {
-  --paper: #fdfbf7;
-  --paper-deep: #f5f1e8;
-  --ink: #3a3733;
-  --ink-soft: #79736a;
-  --ink-faint: #79736d;
-  --rule: rgba(58, 55, 51, .14);
-  --accent: #a36358;
-  --accent-soft: rgba(214, 121, 106, .3);
-  --card: #fffefb;
-  --card-border: rgba(58, 55, 51, .09);
-  --card-shadow: 0 3px 0 rgba(58, 55, 51, .06), 0 10px 24px -14px rgba(58, 55, 51, .25);
-  --card-shadow-hover: 0 5px 0 rgba(58, 55, 51, .08), 0 18px 30px -16px rgba(58, 55, 51, .35);
-  --tape-mint: #b6dcc8;
-  --tape-pink: #f3c6c6;
-  --tape-butter: #f2e6ad;
-  --on-tape: #2f4a3c;
-  --quote-bg: rgba(243, 198, 198, .22);
-  --stat-bg: rgba(182, 220, 200, .3);
-  --tag-bg: rgba(242, 230, 173, .6);
-  --ok: #5f8f6b;
-  --warn: #a97b3a;
-  --danger: #b04a3c;
-  --grid: rgba(122, 148, 168, .17);
-  --paper-grain-blend: multiply;
-  --paper-grain-opacity: .05;
-  --code-bg: #2b2620;
-  --code-fg: #e8e2d6;
-}
 
-.theme-journal.dark {
-  --paper: #1b1e23;
-  --paper-deep: #22262c;
-  --ink: #e3e1dd;
-  --ink-soft: #a5a19b;
-  --ink-faint: #89857d;
-  --rule: rgba(227, 225, 221, .14);
-  --accent: #e29a89;
-  --accent-soft: rgba(226, 154, 137, .3);
-  --card: #23262c;
-  --card-border: rgba(227, 225, 221, .1);
-  --card-shadow: 0 3px 0 rgba(0, 0, 0, .25), 0 12px 22px -16px rgba(0, 0, 0, .6);
-  --card-shadow-hover: 0 5px 0 rgba(0, 0, 0, .3), 0 18px 30px -16px rgba(0, 0, 0, .75);
-  --tape-mint: rgba(122, 190, 158, .3);
-  --tape-pink: rgba(226, 150, 152, .28);
-  --tape-butter: rgba(226, 206, 130, .28);
-  --on-tape: #cfe6da;
-  --quote-bg: rgba(226, 150, 152, .13);
-  --stat-bg: rgba(122, 190, 158, .14);
-  --tag-bg: rgba(226, 206, 130, .22);
-  --ok: #8cc29a;
-  --warn: #d9b06a;
-  --danger: #e08573;
-  --grid: rgba(138, 168, 200, .13);
-  --paper-grain-blend: screen;
-  --paper-grain-opacity: .04;
-  --code-bg: #17191d;
-  --code-fg: #dfe3e0;
-}
 /* ========================================================
    2b. 色板重映射：Tailwind 强调色族 → 印章红
    --------------------------------------------------------
@@ -384,7 +324,6 @@
 @layer base {
   :root {
     --font-serif: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", "STSong", serif;
-    --font-journal: "Kaiti SC", "KaiTi", "STKaiti", "Source Han Serif SC", "Songti SC", serif;
   }
 
   body {
@@ -396,14 +335,6 @@
     -moz-osx-font-smoothing: grayscale;
   }
 
-  /* 手账主题：方格纸底纹与手写楷体/便签质感 */
-  .theme-journal body {
-    font-family: var(--font-journal);
-    background-image:
-      linear-gradient(var(--grid) 1px, transparent 1px),
-      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
-    background-size: 23px 23px;
-  }
 
   h1, h2, h3, h4 {
     font-weight: 900;
@@ -687,6 +618,33 @@ textarea::placeholder {
 }
 
 /* 宣纸方印小红章（小巧红印点缀） */
+/* 和纸手帐：带字的方印（与博客端 globals.css 保持同步） */
+@utility seal-stamp {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.35rem;
+  height: 1.35rem;
+  background-color: var(--accent);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  line-height: 1;
+  border-radius: 3px;
+  box-shadow: 0 1px 3px var(--accent-soft);
+}
+
+.article-body .prose > p:first-child::first-letter,
+.article-body.prose > p:first-child::first-letter {
+  font-size: 2.6em;
+  font-weight: 900;
+  color: var(--accent);
+  float: left;
+  line-height: 1.1;
+  padding-right: 0.12em;
+  padding-top: 0.04em;
+}
+
 @utility seal-mark {
   display: inline-block;
   width: 8px;
@@ -756,6 +714,8 @@ textarea::placeholder {
   margin-bottom: 1rem;
   margin-top: 1.5rem;
   color: inherit;
+  border-left: 3px solid var(--accent);
+  padding-left: 0.75rem;
 }
 .prose h3 {
   font-size: 1.2rem;
@@ -766,7 +726,7 @@ textarea::placeholder {
 }
 .prose p {
   font-size: 0.95rem;
-  line-height: 1.75;
+  line-height: 1.9;
   color: inherit;
 }
 .prose ul,
@@ -803,7 +763,7 @@ textarea::placeholder {
 /* 引用块：左侧印章红细线 + 微透底，圆角收敛到纸张尺度 */
 .prose blockquote {
   border-left: 3px solid var(--accent);
-  background-color: color-mix(in srgb, var(--accent) 5%, transparent);
+  background-color: color-mix(in srgb, var(--paper-deep) 65%, transparent);
   padding: 1rem 1.5rem;
   margin: 1.5rem 0;
   border-radius: 0 0.5rem 0.5rem 0;
@@ -1071,4 +1031,31 @@ textarea::placeholder {
 
 .window-ctl-close:active {
   background-color: #a5301f;
+}
+
+/* ========================================================
+   细节包（2026-11-19）：选区色 / 键盘焦点 / 动效降级
+   ======================================================== */
+::selection {
+  background-color: color-mix(in srgb, var(--accent) 24%, transparent);
+  color: inherit;
+}
+
+a:focus-visible,
+button:focus-visible,
+[role="button"]:focus-visible,
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

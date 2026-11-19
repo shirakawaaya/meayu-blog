@@ -26,7 +26,7 @@ export function collectTags(): Map<string, { slug: string; title: string; date: 
           });
         }
       });
-  } catch (e) {
+  } catch {
     // 目录不存在或读取失败时返回空集合，页面会渲染空状态
   }
   for (const list of map.values()) {

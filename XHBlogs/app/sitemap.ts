@@ -39,7 +39,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
           priority: 0.6,
         });
       });
-  } catch (e) {
+  } catch {
     // 目录缺失时跳过杂谈条目
   }
 

@@ -13,7 +13,7 @@ import { getBlogDir } from './blog-paths';
  */
 
 /** 从 TS 文本里抽出 `export const xxx = [...]` 的数组并解析为 JSON */
-function parseTsArray(fileText: string, exportName: string): any[] {
+function parseTsArray<T>(fileText: string, exportName: string): T[] {
   // 定位 `export const <name> ... = [`
   const startRe = new RegExp(`export\\s+const\\s+${exportName}\\s*(?::[^=]*)?=\\s*\\[`);
   const m = startRe.exec(fileText);
@@ -66,7 +66,7 @@ function parseTsArray(fileText: string, exportName: string): any[] {
 }
 
 /** 读取博客 data 目录下某个 .ts 文件里的导出数组 */
-export function readBlogDataArray(fileName: string, exportName: string): any[] {
+export function readBlogDataArray<T>(fileName: string, exportName: string): T[] {
   try {
     const file = getBlogDir('data', fileName);
     if (!file || !fs.existsSync(file)) return [];

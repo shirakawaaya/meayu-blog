@@ -4,12 +4,12 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ToastProvider, useToast } from '../../components/ToastProvider';
-import { AlertTriangle, Search, Trash2, X, Sparkles, Pencil } from 'lucide-react';
+import { AlertTriangle, Search, X, Sparkles } from 'lucide-react';
 import { useEscapeClose } from '../../lib/use-escape-close';
 
 function DraftsContent() {
   const { showToast } = useToast();
-  const [drafts, setDrafts] = useState<any[]>([]);
+  const [drafts, setDrafts] = useState<DraftItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
   // 区分「后端读取失败」与「确实没有草稿」，两者提示不能混用
@@ -44,7 +44,7 @@ function DraftsContent() {
         setDrafts([]);
         setLoadError(data.message || "后端读取草稿失败");
       }
-    } catch (error) {
+    } catch {
       setDrafts([]);
       setLoadError("无法连接到后端服务");
     } finally {
@@ -78,7 +78,7 @@ function DraftsContent() {
       } else {
         showToast(`删除失败：${data.message}`, "error");
       }
-    } catch (error) {
+    } catch {
       showToast("连不上管理端后端", "error");
     } finally {
       // 关闭弹窗并重置状态
@@ -131,7 +131,7 @@ function DraftsContent() {
               <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">删除这篇草稿？</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-8 leading-relaxed">
                 你正在尝试删除未发布的草稿 <br />
-                <span className="text-red-500 font-bold">"{deleteModal.title}"</span>。<br />
+                <span className="text-red-500 font-bold">「{deleteModal.title}」</span>。<br />
                 此操作不可撤销，草稿将被永久删除。
               </p>
 
@@ -161,10 +161,10 @@ function DraftsContent() {
             <div>
               <h1 className="text-4xl font-black text-slate-800 dark:text-white mb-3 tracking-wider flex items-center gap-3">
                 创作草稿箱
-                <span className="text-sm font-bold bg-indigo-500 text-white px-3 py-1 rounded-full">{drafts.length}</span>
+                <span className="text-sm font-bold bg-[var(--accent)] text-white px-3 py-1 rounded-full">{drafts.length}</span>
               </h1>
               <p className="text-slate-500 dark:text-slate-400 font-medium text-sm flex items-center gap-2">
-                <Sparkles size={14} className="text-indigo-500" /> 未发布的草稿都放在这里。
+                <Sparkles size={14} className="text-[var(--accent)]" /> 未发布的草稿都放在这里。
               </p>
             </div>
 
@@ -174,9 +174,9 @@ function DraftsContent() {
                 placeholder="搜索草稿…"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 pl-12 text-sm outline-none focus:ring-2 focus:ring-indigo-500 transition-all shadow-sm"
+                className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-5 py-3 pl-12 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all shadow-sm"
               />
-              <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+              <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors" />
             </div>
           </header>
 
@@ -188,7 +188,7 @@ function DraftsContent() {
 
           {isLoading ? (
             <div className="w-full py-20 flex justify-center">
-              <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -222,7 +222,7 @@ function DraftsContent() {
                       </div>
 
                       <Link href={`/editor?id=${draft.id}`} className="block">
-                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2 group-hover:text-indigo-600 transition-colors line-clamp-1">
+                        <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-2 group-hover:text-[var(--accent)] transition-colors line-clamp-1">
                           {draft.title || "无标题草稿"}
                         </h3>
                         <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed h-10">
@@ -252,6 +252,13 @@ function DraftsContent() {
       </div>
     </div>
   );
+}
+
+interface DraftItem {
+  id: string;
+  title: string;
+  lastModified: number; // 后端给的是毫秒时间戳，formatDate 按 number 渲染
+  contentPreview?: string;
 }
 
 export default function DraftsPage() {

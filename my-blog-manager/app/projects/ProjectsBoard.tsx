@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import BackButton from '../../components/BackButton';
  import type { Project } from '../../data/projects';
-import { Plus, Pencil, Trash2, AlertTriangle, Save, Edit3, X, Sparkles, Code2 } from 'lucide-react';
+import { Plus, Trash2, AlertTriangle, Save, Edit3, Sparkles, Code2 } from 'lucide-react';
 import { useOperations } from '../../context/OperationContext';
 import { useToast } from '../../components/ToastProvider';
 import { useEscapeClose } from '../../lib/use-escape-close';
@@ -98,7 +98,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.9, opacity: 0 }} className="relative w-full max-w-sm paper-card-strong rounded-2xl shadow-lg border border-[var(--card-border)] p-10 text-center">
               <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6"><AlertTriangle className="text-red-500" /></div>
               <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">删除这个项目？</h3>
-              <p className="text-sm text-slate-500 mb-8 leading-relaxed text-balance">确认从列表中删除 <span className="font-bold text-red-500">"{deleteModal.name}"</span> 吗？</p>
+              <p className="text-sm text-slate-500 mb-8 leading-relaxed text-balance">确认从列表中删除 <span className="font-bold text-red-500">「{deleteModal.name}」</span> 吗？</p>
               <div className="flex gap-3">
                 <button onClick={() => setDeleteModal({ ...deleteModal, isOpen: false })} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black uppercase">取消</button>
                 <button onClick={confirmDelete} className="flex-1 py-4 bg-red-500 text-white rounded-2xl text-xs font-black uppercase shadow-lg">确认删除</button>
@@ -114,19 +114,19 @@ import { useEscapeClose } from '../../lib/use-escape-close';
           <div className="fixed inset-0 z-[150] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} onClick={() => setProjectModal({ ...projectModal, isOpen: false })} className="absolute inset-0 bg-black/60" />
             <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative w-full max-w-md paper-card-strong rounded-2xl border border-[var(--card-border)] p-8 shadow-lg">
-               <h2 className="text-2xl font-black mb-6 dark:text-white flex items-center gap-2"><Code2 className="text-indigo-500" /> {projectModal.mode === 'add' ? '新建项目' : '编辑项目'}</h2>
+               <h2 className="text-2xl font-black mb-6 dark:text-white flex items-center gap-2"><Code2 className="text-[var(--accent)]" /> {projectModal.mode === 'add' ? '新建项目' : '编辑项目'}</h2>
                <div className="space-y-4">
                  <div className="flex gap-4">
-                    <input type="text" value={projectModal.data.icon || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, icon: e.target.value}})} className="w-20 bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 text-center text-2xl border-none outline-none focus:ring-2 focus:ring-indigo-500" placeholder="图标" />
-                    <input type="text" value={projectModal.data.name || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, name: e.target.value}})} className="flex-1 bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 border-none" placeholder="项目名称" />
+                    <input type="text" value={projectModal.data.icon || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, icon: e.target.value}})} className="w-20 bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 text-center text-2xl border-none outline-none focus:ring-2 focus:ring-[var(--accent-soft)]" placeholder="图标" />
+                    <input type="text" value={projectModal.data.name || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, name: e.target.value}})} className="flex-1 bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white outline-none focus:ring-2 focus:ring-[var(--accent-soft)] border-none" placeholder="项目名称" />
                  </div>
-                 <input type="text" value={projectModal.data.githubUrl || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, githubUrl: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 border-none" placeholder="GitHub URL" />
-                 <textarea value={projectModal.data.description || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, description: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white h-24 outline-none resize-none focus:ring-2 focus:ring-indigo-500 border-none" placeholder="项目描述..." />
-                 <input type="text" value={projectModal.data.tags?.join(', ') || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, tags: e.target.value.split(',').map(t => t.trim())}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white outline-none focus:ring-2 focus:ring-indigo-500 border-none" placeholder="技术栈 (逗号分隔)" />
+                 <input type="text" value={projectModal.data.githubUrl || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, githubUrl: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white outline-none focus:ring-2 focus:ring-[var(--accent-soft)] border-none" placeholder="GitHub URL" />
+                 <textarea value={projectModal.data.description || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, description: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white h-24 outline-none resize-none focus:ring-2 focus:ring-[var(--accent-soft)] border-none" placeholder="项目描述..." />
+                 <input type="text" value={projectModal.data.tags?.join(', ') || ''} onChange={e => setProjectModal({...projectModal, data: {...projectModal.data, tags: e.target.value.split(',').map(t => t.trim())}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3 dark:text-white outline-none focus:ring-2 focus:ring-[var(--accent-soft)] border-none" placeholder="技术栈 (逗号分隔)" />
                </div>
                <div className="mt-8 flex gap-3">
                  <button onClick={() => setProjectModal({ ...projectModal, isOpen: false })} className="flex-1 py-3 text-slate-500 font-bold uppercase text-xs">取消</button>
-                 <button onClick={handleSaveProject} className="flex-1 py-4 bg-indigo-500 text-white rounded-2xl font-black shadow-lg flex items-center justify-center gap-2"><Save size={18} /> 加入收件箱</button>
+                 <button onClick={handleSaveProject} className="flex-1 py-4 bg-[var(--accent)] text-white rounded-2xl font-black shadow-lg flex items-center justify-center gap-2"><Save size={18} /> 加入收件箱</button>
                </div>
             </motion.div>
           </div>
@@ -139,7 +139,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
         <div className="text-center md:text-left w-full">
           <h1 className="text-4xl font-black text-slate-900 dark:text-white mb-4 tracking-widest uppercase">项目 · Projects</h1>
           <p className="text-slate-600 dark:text-slate-400 font-serif italic opacity-80 flex items-center justify-center md:justify-start gap-2">
-            <Sparkles size={14} className="text-indigo-500" /> 我写过的开源项目
+            <Sparkles size={14} className="text-[var(--accent)]" /> 我写过的开源项目
           </p>
         </div>
       </div>
@@ -147,19 +147,19 @@ import { useEscapeClose } from '../../lib/use-escape-close';
       {/* 搜索框 */}
       <div className="mb-12 flex justify-center w-full">
         <div className="relative w-full max-w-lg group">
-          <input type="text" placeholder="搜索项目、代号或技术栈..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full paper-card border border-[var(--card-border)] rounded-full px-6 py-3 pl-12 text-slate-800 dark:text-white shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-serif" />
-          <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <input type="text" placeholder="搜索项目、代号或技术栈..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full paper-card border border-[var(--card-border)] rounded-full px-6 py-3 pl-12 text-slate-800 dark:text-white shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all font-serif" />
+          <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 group-focus-within:text-[var(--accent)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
       </div>
 
       <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-8 relative">
 
         {/* 新建项目虚线区 */}
-        <motion.div layout onClick={() => setProjectModal({ isOpen: true, mode: 'add', data: { icon: '', tags: [] } })} className="group cursor-pointer flex flex-col items-center justify-center min-h-[320px] rounded-2xl border-4 border-dashed border-slate-300 dark:border-slate-700 bg-white/10 hover:border-indigo-500 hover:bg-indigo-500/5 transition-all duration-500">
-            <div className="w-16 h-16 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-indigo-500 group-hover:text-white transition-all shadow-md group-hover:rotate-90">
+        <motion.div layout onClick={() => setProjectModal({ isOpen: true, mode: 'add', data: { icon: '', tags: [] } })} className="group cursor-pointer flex flex-col items-center justify-center min-h-[320px] rounded-2xl border-4 border-dashed border-slate-300 dark:border-slate-700 bg-white/10 hover:border-[var(--accent)] hover:bg-[var(--accent)]/5 transition-all duration-500">
+            <div className="w-16 h-16 rounded-full bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-[var(--accent)] group-hover:text-white transition-all shadow-md group-hover:rotate-90">
               <Plus size={40} />
             </div>
-            <span className="mt-4 text-xs font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-indigo-500">新建项目 · New Project</span>
+            <span className="mt-4 text-xs font-black uppercase tracking-[0.3em] text-slate-400 group-hover:text-[var(--accent)]">新建项目 · New Project</span>
         </motion.div>
 
         <AnimatePresence mode='popLayout'>
@@ -168,17 +168,17 @@ import { useEscapeClose } from '../../lib/use-escape-close';
 
               {/* 悬浮管理按钮 */}
               <div className="absolute top-8 right-8 z-30 flex gap-2 opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0">
-                  <button onClick={(e) => { e.preventDefault(); setProjectModal({ isOpen: true, mode: 'edit', data: project }); }} className="w-9 h-9 rounded-xl bg-indigo-500 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"><Edit3 size={16}/></button>
+                  <button onClick={(e) => { e.preventDefault(); setProjectModal({ isOpen: true, mode: 'edit', data: project }); }} className="w-9 h-9 rounded-xl bg-[var(--accent)] text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"><Edit3 size={16}/></button>
                   <button onClick={(e) => { e.preventDefault(); setDeleteModal({ isOpen: true, id: project.id, name: project.name }); }} className="w-9 h-9 rounded-xl bg-red-500 text-white flex items-center justify-center shadow-lg hover:scale-110 transition-transform"><Trash2 size={16}/></button>
               </div>
 
               <a href={project.githubUrl} target="_blank" rel="noopener noreferrer" className="block h-full rounded-2xl paper-card border border-[var(--card-border)] shadow-md overflow-hidden transition-all duration-700 hover:-translate-y-1 p-8 md:p-10 relative group">
-                <div className="absolute -top-10 -right-10 w-32 h-32 bg-indigo-500/5 rounded-full blur-2xl group-hover:bg-indigo-500/10 transition-colors"></div>
+                <div className="absolute -top-10 -right-10 w-32 h-32 bg-[var(--accent)]/5 rounded-full blur-2xl group-hover:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] transition-colors"></div>
 
                 <div className="flex items-start justify-between mb-8 relative z-10">
                   <div className="flex items-center gap-5">
                     <span className="text-5xl group-hover:scale-110 transition-transform duration-500">{project.icon}</span>
-                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{project.name}</h2>
+                    <h2 className="text-3xl font-bold text-slate-900 dark:text-white group-hover:text-[var(--accent)] transition-colors">{project.name}</h2>
                   </div>
                   <GithubIcon />
                 </div>
@@ -189,7 +189,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
 
                 <div className="flex flex-wrap gap-2 relative z-10">
                   {project.tags.map(tag => (
-                    <span key={tag} className="text-[10px] font-black tracking-widest uppercase text-indigo-600 dark:text-indigo-400 bg-indigo-500/10 px-3 py-1.5 rounded-lg border border-indigo-500/10 shadow-sm">
+                    <span key={tag} className="text-[10px] font-black tracking-widest uppercase text-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] px-3 py-1.5 rounded-lg border border-[var(--accent-soft)] shadow-sm">
                       {tag}
                     </span>
                   ))}

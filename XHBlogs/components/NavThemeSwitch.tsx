@@ -1,46 +1,22 @@
 "use client";
 
-import { useTheme, type ThemeStyle } from './ThemeProvider';
-
-const STYLES: { id: ThemeStyle; label: string }[] = [
-  { id: 'xuan', label: '宣纸' },
-  { id: 'journal', label: '手账' },
-];
+import { useTheme } from './ThemeProvider';
 
 /**
- * 导航栏里的主题切换：左侧切版式（宣纸/手账），右侧切明暗。
+ * 导航栏里的主题切换：只切明暗（版式固定为宣纸）。
  * 用图标 + 文字，避免在窄导航里占太多宽度。
  */
 export default function NavThemeSwitch() {
-  const { isDark, toggleTheme, style, setStyle } = useTheme();
+  const { isDark, toggleTheme } = useTheme();
 
   return (
     <div className="flex items-center gap-1">
-      {/* 版式切换：当前版式高亮 */}
-      {STYLES.map((s) => {
-        const active = style === s.id;
-        return (
-          <button
-            key={s.id}
-            onClick={() => setStyle(s.id)}
-            aria-pressed={active}
-            title={`切换到${s.label}版式`}
-            className="rounded px-2 py-1 text-xs tracking-wider transition-colors duration-200"
-            style={{
-              color: active ? 'var(--accent)' : 'var(--ink-faint)',
-              borderBottom: active ? '1px solid var(--accent)' : '1px solid transparent',
-            }}
-          >
-            {s.label}
-          </button>
-        );
-      })}
-
       {/* 明暗切换 */}
       <button
         onClick={toggleTheme}
         aria-pressed={isDark}
         title={isDark ? '切换到日间' : '切换到夜间'}
+        aria-label={isDark ? '切换到日间模式' : '切换到夜间模式'}
         className="ml-1 grid h-6 w-6 place-items-center rounded-full border transition-colors duration-200"
         style={{ borderColor: 'var(--rule)', color: 'var(--ink-soft)' }}
       >

@@ -22,7 +22,7 @@ export default function NotFound() {
         <div className="flex flex-wrap gap-3 justify-center">
           <Link
             href="/"
-            className="px-6 py-2.5 rounded-2xl bg-indigo-500 text-white text-sm font-black shadow-sm hover:bg-indigo-600 transition-colors"
+            className="px-6 py-2.5 rounded-2xl bg-[var(--accent)] text-white text-sm font-black shadow-sm hover:bg-[var(--accent)] transition-colors"
           >
             回到首页
           </Link>

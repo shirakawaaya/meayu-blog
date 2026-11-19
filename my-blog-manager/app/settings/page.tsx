@@ -1,7 +1,8 @@
 "use client";
 
+import type { SettingsFormData } from '../../components/settings/shared';
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { AnimatePresence } from 'framer-motion';
 import { useOperations } from '../../context/OperationContext';
 import { siteConfig } from '../../siteConfig';
 import { ToastProvider, useToast } from '../../components/ToastProvider';
@@ -14,11 +15,11 @@ import RepoSection from '../../components/settings/RepoSection';
  import ModelSection from '../../components/settings/ModelSection';
 
 function SettingsContent() {
-  const { operations, addOperation } = useOperations();
+  const { addOperation } = useOperations();
   const [activeTab, setActiveTab] = useState('profile');
   const { showToast } = useToast();
 
-  const [formData, setFormData] = useState<any>({
+  const [formData, setFormData] = useState<SettingsFormData>({
     siteUrl: siteConfig.siteUrl || "",
     authorName: siteConfig.authorName || "",
     bio: siteConfig.bio || "",
@@ -48,7 +49,7 @@ function SettingsContent() {
 
         if (data.success && data.data) {
           console.log("成功从后端拉取到真实配置:", data.data);
-          setFormData((prev: any) => ({
+          setFormData((prev) => ({
             ...prev,
             ...data.data,
             social: { ...(prev.social || {}), ...(data.data.social || {}) },
@@ -67,14 +68,14 @@ function SettingsContent() {
     };
 
     fetchRealConfig();
-  }, []);
+  }, [showToast]);
 
-  const handleUpdate = (field: string, value: any) => {
-    setFormData((prev: any) => ({ ...prev, [field]: value }));
+  const handleUpdate = (field: string, value: unknown) => {
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
 
-  const pushToQueue = (label: string, key?: string, value?: any) => {
+  const pushToQueue = (label: string, key?: string, value?: unknown) => {
     addOperation({
       id: Date.now().toString(),
       type: 'CONFIG',
@@ -108,7 +109,7 @@ function SettingsContent() {
               <p className="text-[10px] font-black text-slate-400 uppercase mb-4 ml-2 tracking-widest">设置分类</p>
               <nav className="flex flex-col gap-2">
                 {menuItems.map((item) => (
-                  <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === item.id ? 'bg-indigo-500 text-white shadow-lg translate-x-1' : 'text-slate-600 dark:text-slate-300 hover:paper-card dark:hover:bg-slate-800/50'}`}>
+                  <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === item.id ? 'bg-[var(--accent)] text-white shadow-lg translate-x-1' : 'text-slate-600 dark:text-slate-300 hover:paper-card dark:hover:bg-slate-800/50'}`}>
                   <span>{item.name}</span>
                   </button>
                 ))}

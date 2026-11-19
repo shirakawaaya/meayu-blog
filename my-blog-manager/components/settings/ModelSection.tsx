@@ -12,7 +12,7 @@ import { useToast } from '../ToastProvider';
  */
 
 const inputCls =
-  'w-full paper-card rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono dark:text-slate-200';
+  'w-full paper-card rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[var(--accent-soft)] text-sm font-mono dark:text-slate-200';
 const labelCls =
   'text-xs font-black uppercase text-slate-400 tracking-widest mb-2 flex items-center gap-2';
 
@@ -58,7 +58,7 @@ export default function ModelSection() {
       }
     };
     load();
-  }, []);
+  }, [showToast]);
 
   const update = (k: string, v: string) => setForm((prev) => ({ ...prev, [k]: v }));
 
@@ -128,7 +128,7 @@ export default function ModelSection() {
           <button
             onClick={save}
             disabled={saving}
-            className="px-6 py-3 bg-indigo-500 text-white rounded-2xl font-black text-sm shadow-lg flex items-center gap-2 hover:bg-indigo-600 transition-colors disabled:opacity-50"
+            className="px-6 py-3 bg-[var(--accent)] text-white rounded-2xl font-black text-sm shadow-lg flex items-center gap-2 hover:bg-[var(--accent)] transition-colors disabled:opacity-50"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} 保存修改
           </button>
@@ -199,7 +199,7 @@ export default function ModelSection() {
               />
               <button
                 onClick={() => setShowKey((v) => !v)}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-indigo-500 transition-colors"
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-[var(--accent)] transition-colors"
                 title={showKey ? '隐藏' : '显示'}
               >
                 {showKey ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -220,7 +220,7 @@ export default function ModelSection() {
             />
             <button
               onClick={() => update('polishPromptHtml', defaultPrompts.html)}
-              className="mt-2 text-[10px] font-black uppercase tracking-widest text-indigo-500 hover:text-indigo-600 transition-colors"
+              className="mt-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent)] hover:text-[var(--accent)] transition-colors"
               disabled={!defaultPrompts.html}
             >
               恢复默认
@@ -240,7 +240,7 @@ export default function ModelSection() {
             />
             <button
               onClick={() => update('polishPromptText', defaultPrompts.text)}
-              className="mt-2 text-[10px] font-black uppercase tracking-widest text-indigo-500 hover:text-indigo-600 transition-colors"
+              className="mt-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent)] hover:text-[var(--accent)] transition-colors"
               disabled={!defaultPrompts.text}
             >
               恢复默认

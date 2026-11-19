@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../ToastProvider';
-import { ShieldCheck, GitBranch, Save, Rocket, Wand2, Key, Copy, ExternalLink, Check, CloudUpload, Code } from 'lucide-react';
+import { ShieldCheck, GitBranch, Save, Rocket, Wand2, Key, Copy, Check, CloudUpload, Code } from 'lucide-react';
 
 export default function RepoSection() {
   const { showToast } = useToast();
@@ -17,6 +17,7 @@ export default function RepoSection() {
   const [isCopied, setIsCopied] = useState(false);
 
   const [mounted, setMounted] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- mounted 守卫用于避开 SSR 渲染桌面壳相关 UI
   useEffect(() => setMounted(true), []);
 
   const [modalConfig, setModalConfig] = useState<{ isOpen: boolean; type: 'init' | 'deploy' | 'upload' | 'ssh' | null }>({
@@ -59,7 +60,7 @@ export default function RepoSection() {
       }
     };
     fetchConfig();
-  }, []);
+  }, [showToast]);
 
   const testPathConnection = async () => {
     if (!deployData.blogPath) { showToast("请先填写博客目录", "warning"); return; }
@@ -75,7 +76,7 @@ export default function RepoSection() {
       const data = await res.json();
       if (data.success) showToast(data.message, "success");
       else showToast(data.message, "error");
-    } catch (e) { showToast("连不上管理端后端", "error"); }
+    } catch { showToast("连不上管理端后端", "error"); }
     setIsCheckingPath(false);
   };
 
@@ -93,7 +94,7 @@ export default function RepoSection() {
       const data = await res.json();
       if (data.success) showToast(data.message, "success");
       else showToast(data.message, "error");
-    } catch (e) { showToast("管理端后端没有响应", "error"); }
+    } catch { showToast("管理端后端没有响应", "error"); }
     setIsCheckingGit(false);
   };
 
@@ -111,7 +112,7 @@ export default function RepoSection() {
       } else {
         showToast(data.message, "error");
       }
-    } catch (e) { showToast("获取 SSH 失败", "error"); }
+    } catch { showToast("获取 SSH 失败", "error"); }
   };
 
   const executeInitEnv = async () => {
@@ -129,7 +130,7 @@ export default function RepoSection() {
       const data = await res.json();
       if (data.success) showToast(data.message, "success");
       else showToast(`初始化失败：${data.message}`, "error");
-    } catch (error) { showToast("管理端后端没有响应", "error"); }
+    } catch { showToast("管理端后端没有响应", "error"); }
     setIsInitializing(false);
   };
 
@@ -148,7 +149,7 @@ export default function RepoSection() {
       const data = await res.json();
       if (data.success) showToast(data.message, "success");
       else showToast(`部署失败：${data.message}`, "error");
-    } catch (error) { showToast("部署请求失败", "error"); }
+    } catch { showToast("部署请求失败", "error"); }
     setIsDeploying(false);
   };
 
@@ -167,7 +168,7 @@ export default function RepoSection() {
       const data = await res.json();
       if (data.success) showToast("源码推送成功，Vercel 即将自动构建", "success");
       else showToast(`推送失败：${data.message}`, "error");
-    } catch (error) { showToast("推送源码失败", "error"); }
+    } catch { showToast("推送源码失败", "error"); }
     setIsUploading(false);
   };
 
@@ -183,7 +184,7 @@ export default function RepoSection() {
       });
       const data = await res.json();
       if (data.success) showToast(data.message, "success");
-    } catch (e) { showToast("保存失败", "error"); }
+    } catch { showToast("保存失败", "error"); }
     setIsSaving(false);
   };
 
@@ -209,7 +210,7 @@ export default function RepoSection() {
                  {isCheckingPath ? "探测中…" : "测试路径"}
                </button>
             </div>
-            <input type="text" value={deployData.blogPath} onChange={e => setDeployData({...deployData, blogPath: e.target.value})} className="w-full paper-card rounded-xl px-4 py-3 text-xs font-mono text-[var(--ink)] outline-none focus:ring-2 focus:ring-indigo-500/40" placeholder="C:/Workspace/XinghuisamaBlogs/XHBlogs" />
+            <input type="text" value={deployData.blogPath} onChange={e => setDeployData({...deployData, blogPath: e.target.value})} className="w-full paper-card rounded-xl px-4 py-3 text-xs font-mono text-[var(--ink)] outline-none focus:ring-2 focus:ring-[var(--accent-soft)]/40" placeholder="C:/Workspace/XinghuisamaBlogs/XHBlogs" />
           </div>
 
           <div className="bg-slate-50 p-5 rounded-2xl border border-slate-100 dark:border-slate-700/50">
@@ -231,11 +232,11 @@ export default function RepoSection() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">仓库地址（SSH，存放静态页面）</label>
-                  <input type="text" value={deployData.staticRepoUrl} onChange={e => setDeployData({...deployData, staticRepoUrl: e.target.value})} className="w-full paper-card rounded-xl px-4 py-2 text-xs mt-1 outline-none font-mono text-[var(--ink)] focus:ring-2 focus:ring-indigo-500/40" placeholder="git@github.com:..." />
+                  <input type="text" value={deployData.staticRepoUrl} onChange={e => setDeployData({...deployData, staticRepoUrl: e.target.value})} className="w-full paper-card rounded-xl px-4 py-2 text-xs mt-1 outline-none font-mono text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent-soft)]/40" placeholder="git@github.com:..." />
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">目标分支</label>
-                  <input type="text" value={deployData.staticBranch} onChange={e => setDeployData({...deployData, staticBranch: e.target.value})} className="w-full paper-card rounded-xl px-4 py-2 text-xs mt-1 outline-none font-mono text-[var(--ink)] focus:ring-2 focus:ring-indigo-500/40" placeholder="gh-pages" />
+                  <input type="text" value={deployData.staticBranch} onChange={e => setDeployData({...deployData, staticBranch: e.target.value})} className="w-full paper-card rounded-xl px-4 py-2 text-xs mt-1 outline-none font-mono text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent-soft)]/40" placeholder="gh-pages" />
                 </div>
               </div>
             </div>
@@ -251,11 +252,11 @@ export default function RepoSection() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div className="md:col-span-2">
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">仓库地址（SSH，存放源码）</label>
-                  <input type="text" value={deployData.sourceRepoUrl} onChange={e => setDeployData({...deployData, sourceRepoUrl: e.target.value})} className="w-full paper-card rounded-xl px-4 py-2 text-xs mt-1 outline-none font-mono text-[var(--ink)] focus:ring-2 focus:ring-indigo-500/40" placeholder="git@github-source:..." />
+                  <input type="text" value={deployData.sourceRepoUrl} onChange={e => setDeployData({...deployData, sourceRepoUrl: e.target.value})} className="w-full paper-card rounded-xl px-4 py-2 text-xs mt-1 outline-none font-mono text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent-soft)]/40" placeholder="git@github-source:..." />
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">源码分支</label>
-                  <input type="text" value={deployData.sourceBranch} onChange={e => setDeployData({...deployData, sourceBranch: e.target.value})} className="w-full paper-card rounded-xl px-4 py-2 text-xs mt-1 outline-none font-mono text-[var(--ink)] focus:ring-2 focus:ring-indigo-500/40" placeholder="main" />
+                  <input type="text" value={deployData.sourceBranch} onChange={e => setDeployData({...deployData, sourceBranch: e.target.value})} className="w-full paper-card rounded-xl px-4 py-2 text-xs mt-1 outline-none font-mono text-[var(--ink)] focus:ring-2 focus:ring-[var(--accent-soft)]/40" placeholder="main" />
                 </div>
               </div>
             </div>
@@ -335,7 +336,7 @@ export default function RepoSection() {
                         <p className="text-sm text-slate-500 mb-8 leading-relaxed">自动绑定 Git 仓库、安装 gh-pages，并写入部署配置</p>
                         <div className="flex gap-3">
                             <button onClick={() => setModalConfig({isOpen: false, type: null})} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black transition-colors hover:bg-slate-200">取消</button>
-                            <button onClick={executeInitEnv} className="flex-1 py-4 bg-indigo-500 text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all">确认执行</button>
+                            <button onClick={executeInitEnv} className="flex-1 py-4 bg-[var(--accent)] text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all">确认执行</button>
                         </div>
                     </>
                 )}
@@ -347,7 +348,7 @@ export default function RepoSection() {
                         <p className="text-sm text-slate-500 mb-8 leading-relaxed">打包前端静态文件，推送到「仓库一（静态页面）」。</p>
                         <div className="flex gap-3">
                             <button onClick={() => setModalConfig({isOpen: false, type: null})} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black transition-colors hover:bg-slate-200">取消</button>
-                            <button onClick={executeDeploy} className="flex-1 py-4 bg-indigo-500 text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all">确认执行</button>
+                            <button onClick={executeDeploy} className="flex-1 py-4 bg-[var(--accent)] text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all">确认执行</button>
                         </div>
                     </>
                 )}
@@ -359,7 +360,7 @@ export default function RepoSection() {
                         <p className="text-sm text-slate-500 mb-8 leading-relaxed">把本地源码提交并推送到「仓库二（博客源码）」，Vercel 会自动构建。</p>
                         <div className="flex gap-3">
                             <button onClick={() => setModalConfig({isOpen: false, type: null})} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black transition-colors hover:bg-slate-200">取消</button>
-                            <button onClick={executeUploadSource} className="flex-1 py-4 bg-indigo-500 text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all">开始推送</button>
+                            <button onClick={executeUploadSource} className="flex-1 py-4 bg-[var(--accent)] text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all">开始推送</button>
                         </div>
                     </>
                 )}

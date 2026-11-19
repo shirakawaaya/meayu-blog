@@ -1,10 +1,12 @@
-import { useState, useRef } from 'react';
+import { useState, useRef, type DragEvent } from 'react';
+import type { SettingsSectionProps } from './shared';
+import { resolvePicbedUpload } from '../../lib/picbed';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../ToastProvider';
 import { toPreviewSrc } from '../imagePreview';
 import { Clock, Cloud } from 'lucide-react';
 
-export default function BackgroundSection({ formData, handleUpdate, pushToQueue }: any) {
+export default function BackgroundSection({ formData, handleUpdate, pushToQueue }: SettingsSectionProps) {
   const { showToast } = useToast();
   const [isDragging, setIsDragging] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
@@ -47,57 +49,48 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
   };
 
   const removeBg = (index: number) => {
-    const newList = [...formData.bgImages];
+    const newList = [...(formData.bgImages ?? [])];
     newList.splice(index, 1);
     handleUpdate('bgImages', newList);
     showToast("已移除一张背景图", "success");
   };
 
   const addBgUrl = () => {
-    if (!formData.newBgUrl) {
+    const newBgUrl = typeof formData.newBgUrl === 'string' ? formData.newBgUrl : '';
+    if (!newBgUrl) {
       showToast("请先填写图片地址", "warning");
       return;
     }
-    if (formData.bgImages.includes(formData.newBgUrl)) {
+    if ((formData.bgImages ?? []).includes(newBgUrl)) {
       showToast("这张图已经在列表里了", "warning");
       return;
     }
-    handleUpdate('bgImages', [...formData.bgImages, formData.newBgUrl]);
+    handleUpdate('bgImages', [...(formData.bgImages ?? []), newBgUrl]);
     handleUpdate('newBgUrl', '');
     showToast("背景图已添加", "success");
   };
 
-  // 【核心功能】：真实的图床上传逻辑
+  // 【核心功能】：真实的图床上传逻辑（目标由后端决定：R2 已启用走 R2，否则本地）
   const handleFileUpload = async (file: File) => {
-    const picUrl = formData.picBedUrl || "";
-    const picToken = formData.picBedToken;
-    const useRemote = Boolean(picUrl && picToken);   // 两个都填了才走第三方图床
-
     if (!file.type.startsWith('image/')) {
       showToast("只能上传图片文件", "warning");
       return;
     }
 
     setIsUploading(true);
-    showToast(
-      useRemote ? "正在上传到图床..." : "正在保存到本地...",
-      "info"
-    );
 
     try {
-      const configRes = await fetch(`/backend_config.json?t=${Date.now()}`);
-      const configData = await configRes.json();
-      const base = `http://127.0.0.1:${configData.api_port}/api/picbed`;
+      const { endpoint, useRemote } = await resolvePicbedUpload();
+      showToast(
+        useRemote ? "正在上传到 R2 图床..." : "正在保存到本地...",
+        "info"
+      );
 
       // 构建 multipart/form-data
       const uploadData = new FormData();
       uploadData.append('file', file);
-      if (useRemote) {
-        uploadData.append('url', picUrl);
-        uploadData.append('token', picToken);
-      }
 
-      const res = await fetch(useRemote ? `${base}/upload` : `${base}/local`, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         body: uploadData,
       });
@@ -110,7 +103,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
       } else {
         showToast(`上传失败: ${data.message}`, "error");
       }
-    } catch (error) {
+    } catch {
       showToast("连不上管理端后端，图片没能上传", "error");
     } finally {
       setIsUploading(false);
@@ -120,7 +113,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
   // 确认或取消加入背景
   const confirmAddPendingImage = () => {
     if (pendingImageUrl) {
-      handleUpdate('bgImages', [...formData.bgImages, pendingImageUrl]);
+      handleUpdate('bgImages', [...(formData.bgImages ?? []), pendingImageUrl]);
       showToast("已加入背景图库", "success");
       setPendingImageUrl(null);
     }
@@ -131,9 +124,9 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
     showToast("已取消操作，但图片已保存在图床中", "info");
   };
 
-  const onDragOver = (e: any) => { e.preventDefault(); setIsDragging(true); };
-  const onDragLeave = (e: any) => { e.preventDefault(); setIsDragging(false); };
-  const onDrop = (e: any) => {
+  const onDragOver = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setIsDragging(true); };
+  const onDragLeave = (e: DragEvent<HTMLDivElement>) => { e.preventDefault(); setIsDragging(false); };
+  const onDrop = (e: DragEvent<HTMLDivElement>) => {
     e.preventDefault();
     setIsDragging(false);
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
@@ -150,7 +143,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
           <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase">管理网站的全局轮播背景图 ({formData.bgImages?.length || 0} 张)</p>
         </div>
         {/* 修复暂存参数：传入真正的 key 和 value */}
-        <button onClick={() => pushToQueue('视觉背景图', 'bgImages', formData.bgImages)} className="px-6 py-2 bg-indigo-500 text-white rounded-xl text-xs font-black shadow-lg active:scale-95 transition-all">
+        <button onClick={() => pushToQueue('视觉背景图', 'bgImages', formData.bgImages)} className="px-6 py-2 bg-[var(--accent)] text-white rounded-xl text-xs font-black shadow-lg active:scale-95 transition-all">
           加入待保存
         </button>
       </header>
@@ -168,7 +161,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
         <button
           onClick={toggleBgEnabled}
           disabled={isTogglingBg}
-          className={`shrink-0 w-16 h-9 rounded-full transition-all duration-300 relative shadow-inner disabled:opacity-60 ${formData.bgEnabled ? 'bg-indigo-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+          className={`shrink-0 w-16 h-9 rounded-full transition-all duration-300 relative shadow-inner disabled:opacity-60 ${formData.bgEnabled ? 'bg-[var(--accent)]' : 'bg-slate-300 dark:bg-slate-600'}`}
           aria-label="切换全站背景轮播"
           aria-pressed={!!formData.bgEnabled}
         >
@@ -199,7 +192,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
           <div className="paper-card rounded-2xl p-5 border border-[var(--card-border)] dark:border-slate-700/50 shadow-sm">
             <p className="text-[10px] font-black text-slate-400 uppercase mb-3">粘贴网络图片 URL</p>
             <div className="flex gap-2">
-              <input type="text" placeholder="https://..." value={formData.newBgUrl} onChange={e => handleUpdate('newBgUrl', e.target.value)} className="flex-1 bg-white dark:bg-slate-900 border-none rounded-xl px-4 py-2 text-xs outline-none shadow-inner" />
+              <input type="text" placeholder="https://..." value={typeof formData.newBgUrl === 'string' ? formData.newBgUrl : ''} onChange={e => handleUpdate('newBgUrl', e.target.value)} className="flex-1 bg-white dark:bg-slate-900 border-none rounded-xl px-4 py-2 text-xs outline-none shadow-inner" />
               <button onClick={addBgUrl} className="px-4 py-2 bg-emerald-500 text-white rounded-xl text-xs font-black shadow-sm active:scale-95">添加</button>
             </div>
           </div>
@@ -208,12 +201,12 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
             onDragOver={onDragOver} onDragLeave={onDragLeave} onDrop={onDrop}
             onClick={() => !isUploading && fileInputRef.current?.click()}
             className={`flex-1 min-h-[200px] border-2 border-dashed rounded-2xl flex flex-col items-center justify-center gap-4 cursor-pointer transition-all duration-300 relative overflow-hidden
-              ${isDragging ? 'border-indigo-500 bg-indigo-500/10 scale-[1.02]' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:border-indigo-400'}
+              ${isDragging ? 'border-[var(--accent)] bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] scale-[1.02]' : 'border-slate-300 dark:border-slate-600 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 hover:border-[var(--accent)]'}
             `}
           >
             <input type="file" ref={fileInputRef} onChange={e => e.target.files && handleFileUpload(e.target.files[0])} className="hidden" accept="image/*" />
 
-            <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-md transition-all duration-300 ${isDragging ? 'bg-indigo-500 text-white rotate-12' : 'bg-white dark:bg-slate-800 text-slate-500'}`}>
+            <div className={`w-16 h-16 rounded-full flex items-center justify-center text-2xl shadow-md transition-all duration-300 ${isDragging ? 'bg-[var(--accent)] text-white rotate-12' : 'bg-white dark:bg-slate-800 text-slate-500'}`}>
               {isUploading ? <Clock size={26} className="animate-pulse" /> : <Cloud size={26} />}
             </div>
 
@@ -225,7 +218,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
 
             {isUploading && (
               <div className="absolute inset-0 paper-card flex items-center justify-center z-10">
-                <div className="w-10 h-10 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+                <div className="w-10 h-10 border-4 border-[var(--accent)] border-t-transparent rounded-full animate-spin"></div>
               </div>
             )}
           </div>

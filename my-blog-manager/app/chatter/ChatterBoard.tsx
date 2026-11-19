@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { motion, AnimatePresence } from 'framer-motion';
 import { siteConfig } from '../../siteConfig';
-import { Plus, Pencil, Trash2, Search, Sparkles, AlertTriangle, X, Lock } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, Sparkles, AlertTriangle, Lock } from 'lucide-react';
 import { useToast } from '../../components/ToastProvider';
 import { useEscapeClose } from '../../lib/use-escape-close';
 
@@ -71,7 +71,7 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
       } else {
         showToast("删除失败：" + data.message, "error");
       }
-    } catch (err) {
+    } catch {
       showToast("连不上管理端后端，请确认它还在运行", "error");
     } finally {
       setDeleteModal({ isOpen: false, slug: null, title: null });
@@ -113,7 +113,7 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
 
               <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">确认要删除吗？</h3>
               <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-8 leading-relaxed">
-                你正在尝试删除 <span className="text-red-500 font-bold">"{deleteModal.title}"</span>。<br />
+                你正在尝试删除 <span className="text-red-500 font-bold">「{deleteModal.title}」</span>。<br />
                 此操作将永久从硬盘删除源文件，不可撤回。
               </p>
 
@@ -148,7 +148,7 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
           {siteConfig.chatterTitle || "杂谈"}
         </motion.h1>
         <p className="text-slate-500 dark:text-slate-400 font-medium italic opacity-80 flex items-center justify-center gap-2">
-          <Sparkles size={14} className="text-indigo-500" />
+          <Sparkles size={14} className="text-[var(--accent)]" />
           “ {siteConfig.chatterDescription || "日常记录"} ”
         </p>
       </div>
@@ -158,9 +158,9 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
           <input
             type="text" placeholder="搜索杂谈…" value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full paper-card border border-[var(--card-border)] rounded-2xl px-6 py-4 pl-14 text-slate-800 dark:text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder-slate-400 font-medium"
+            className="w-full paper-card border border-[var(--card-border)] rounded-2xl px-6 py-4 pl-14 text-slate-800 dark:text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all placeholder-slate-400 font-medium"
           />
-          <Search className="w-6 h-6 absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+          <Search className="w-6 h-6 absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors" />
         </div>
 
         <div className="flex flex-wrap justify-center gap-2">
@@ -168,7 +168,7 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
             <button key={tag} onClick={() => setActiveTag(tag)}
               className={`px-5 py-2 rounded-xl text-xs font-black transition-all duration-500 border ${
                 activeTag === tag 
-                ? 'bg-indigo-500 text-white border-indigo-500 shadow-lg scale-105' 
+                ? 'bg-[var(--accent)] text-white border-[var(--accent)] shadow-lg scale-105' 
                 : 'bg-white/30 text-slate-600 dark:text-slate-400 border-white/20 hover:paper-card dark:hover:bg-slate-700/60'
               }`}
             >
@@ -183,12 +183,12 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
         {/* 新增项 */}
         <motion.div layout initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="break-inside-avoid">
           <Link href="/editor?type=chatter"
-            className="group flex flex-col items-center justify-center min-h-[250px] rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white/10 hover:bg-white/30 dark:hover:bg-indigo-500/5 hover:border-indigo-500 transition-all duration-500"
+            className="group flex flex-col items-center justify-center min-h-[250px] rounded-2xl border-2 border-dashed border-slate-300 dark:border-slate-700 bg-white/10 hover:bg-white/30 dark:hover:bg-[color-mix(in_oklab,var(--accent)_5%,transparent)] hover:border-[var(--accent)] transition-all duration-500"
           >
-            <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-indigo-500 group-hover:text-white group-hover:rotate-90 transition-all duration-500 shadow-sm">
+            <div className="w-14 h-14 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-[var(--accent)] group-hover:text-white group-hover:rotate-90 transition-all duration-500 shadow-sm">
               <Plus size={32} />
             </div>
-            <span className="mt-4 text-xs font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-indigo-500 transition-colors">写点新的</span>
+            <span className="mt-4 text-xs font-black uppercase tracking-[0.2em] text-slate-400 group-hover:text-[var(--accent)] transition-colors">写点新的</span>
           </Link>
         </motion.div>
 
@@ -202,7 +202,7 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
               <div className="absolute top-5 left-5 z-20 flex gap-2 opacity-0 group-hover:opacity-100 transition-all duration-300 -translate-x-2 group-hover:translate-x-0">
                 <Link
                   href={`/editor?id=${chatter.slug}&type=chatter`}
-                  className="w-8 h-8 rounded-lg bg-indigo-500 text-white flex items-center justify-center shadow-lg hover:bg-indigo-600 transition-colors"
+                  className="w-8 h-8 rounded-lg bg-[var(--accent)] text-white flex items-center justify-center shadow-lg hover:bg-[var(--accent)] transition-colors"
                 >
                   <Pencil size={14} />
                 </Link>
@@ -231,7 +231,7 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
                 <div className="p-7">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <div className="text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-[0.2em] bg-indigo-500/5 dark:bg-indigo-400/10 px-3 py-1 rounded-lg border border-indigo-500/10">
+                      <div className="text-[10px] font-black text-[var(--accent)] uppercase tracking-[0.2em] bg-[var(--accent)]/5 dark:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] px-3 py-1 rounded-lg border border-[var(--accent-soft)]">
                         {chatter.date}
                       </div>
                       {chatter.isPrivate && (
@@ -247,7 +247,7 @@ export default function ChatterBoard({ chatters: initialChatters }: { chatters: 
                     )}
                   </div>
 
-                  <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  <h3 className="text-xl font-bold text-slate-800 dark:text-white mb-4 leading-tight group-hover:text-[var(--accent)] transition-colors">
                     {chatter.title || "无标题"}
                   </h3>
 

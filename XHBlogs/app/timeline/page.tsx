@@ -1,3 +1,4 @@
+import type { TimelinePost } from '../../lib/content-types';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
@@ -12,8 +13,8 @@ export const metadata = {
 export default function Timeline() {
   // 时间线 = 杂谈(chatters) + 说说(moments) 的自动汇总
   const chattersDirectory = path.join(process.cwd(), 'chatters');
-  let posts: any[] = [];
-  let tagCounts: Record<string, number> = {};
+  const posts: TimelinePost[] = [];
+  const tagCounts: Record<string, number> = {};
 
   const collect = (dir: string) => {
     try {

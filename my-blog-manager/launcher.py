@@ -16,6 +16,7 @@ import time
 import socket
 import json
 import subprocess
+import secrets
 import shutil
 import traceback
 from cms_core.main import app
@@ -112,18 +113,18 @@ def check_standalone_artifacts():
     return (len(missing) == 0, missing)
 
 
-def write_port_config(port):
+def write_port_config(port, token=None):
     # 写入解压目录供前端读取
     public_dir = os.path.join(BASE_DIR, 'public')
     os.makedirs(public_dir, exist_ok=True)
     with open(os.path.join(public_dir, 'backend_config.json'), 'w', encoding='utf-8') as f:
-        json.dump({"api_port": port}, f)
+        json.dump({"api_port": port, "api_token": token}, f)
 
     standalone_public = os.path.join(BASE_DIR, '.next', 'standalone', 'public')
     if os.path.exists(os.path.join(BASE_DIR, '.next', 'standalone')):
         os.makedirs(standalone_public, exist_ok=True)
         with open(os.path.join(standalone_public, 'backend_config.json'), 'w', encoding='utf-8') as f:
-            json.dump({"api_port": port}, f)
+            json.dump({"api_port": port, "api_token": token}, f)
 
 def wait_for_port(port, timeout=60):
     start_time = time.time()
@@ -197,7 +198,10 @@ if __name__ == "__main__":
         frontend_process = subprocess.Popen("npm run dev", shell=True, cwd=BASE_DIR, env=env_vars)
         window_url = f"http://localhost:{frontend_port}"
 
-    write_port_config(backend_port)
+    # 本地令牌：每次启动随机生成，后端同进程经环境变量校验，前端经 backend_config.json 读取
+    local_token = secrets.token_hex(16)
+    os.environ["BLOG_LOCAL_TOKEN"] = local_token
+    write_port_config(backend_port, local_token)
     threading.Thread(target=run_api, args=(backend_port,), daemon=True).start()
 
     if not wait_for_port(backend_port) or not wait_for_port(frontend_port):

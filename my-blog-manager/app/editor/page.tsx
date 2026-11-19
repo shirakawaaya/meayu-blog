@@ -5,7 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import RichTextEditor, { RichTextEditorHandle } from '../../components/editor/RichTextEditor';
 import MetaMatrix from '../../components/editor/MetaMatrix';
 import FloatingImageTool from '../../components/editor/FloatingImageTool';
-import { ArrowLeft, AlertTriangle, Save, LogOut, Sparkles, Check, Loader2, RefreshCw, Maximize2, Minimize2, ListTree } from 'lucide-react';
+import { ArrowLeft, AlertTriangle, Save, LogOut, Sparkles, Check, Loader2, RefreshCw, Maximize2, Minimize2, ListTree, PanelRight } from 'lucide-react';
 import { useToast } from '../../components/ToastProvider';
 import { useOperations } from '../../context/OperationContext';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -69,6 +69,7 @@ function EditorContent() {
   const [exitModalOpen, setExitModalOpen] = useState(false);
   const [isZenMode, setIsZenMode] = useState(false);
   const [isOutlineOpen, setIsOutlineOpen] = useState(false);
+  const [isMetaOpen, setIsMetaOpen] = useState(true);
 
   useEscapeClose(isZenMode, () => setIsZenMode(false));
 
@@ -165,8 +166,8 @@ function EditorContent() {
       } else {
         showToast(data.message || '润色失败', 'error');
       }
-    } catch (e: any) {
-      if (e?.name === 'AbortError') {
+    } catch (e) {
+      if (e instanceof Error && e.name === 'AbortError') {
         showToast('润色超过 90 秒仍未返回，请检查模型配置或网络后重试', 'error');
       } else {
         console.error(e);
@@ -197,7 +198,7 @@ function EditorContent() {
           setHistoryPostTags(data.postTags || []);
           setHistoryChatterTags(data.chatterTags || []);
         }
-      } catch (e) { console.error(e); }
+      } catch (err) { console.error(err); }
       finally { setIsLoadingTags(false); }
     };
     fetchTags();
@@ -248,11 +249,11 @@ function EditorContent() {
                   setSnapshotAvailable(null);
                 }
               }
-            } catch (e) {}
+            } catch {}
           } else {
              showToast(data.message || "未找到草稿或原文件", "error");
           }
-        } catch (e) { showToast("读取失败", "error"); }
+        } catch { showToast("读取失败", "error"); }
       };
       loadDraft();
     } else {
@@ -268,7 +269,7 @@ function EditorContent() {
             setSnapshotAvailable({ ...snap, timeStr });
           }
         }
-      } catch (e) {}
+      } catch {}
     }
   }, [currentDocId, snapshotKey]);
 
@@ -291,7 +292,7 @@ function EditorContent() {
           };
           localStorage.setItem(snapshotKey, JSON.stringify(snapData));
         }
-      } catch (e) {}
+      } catch {}
     }, 1500);
 
     return () => clearTimeout(timer);
@@ -406,7 +407,7 @@ function EditorContent() {
           router.back();
         }
       }
-    } catch (e) { showToast("保存失败", "error"); }
+    } catch { showToast("保存失败", "error"); }
     finally { setIsSaving(false); }
   };
 
@@ -439,21 +440,21 @@ function EditorContent() {
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-4">
             <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setExitModalOpen(false)} className="absolute inset-0 bg-slate-900/40" />
             <motion.div initial={{ scale: 0.9, opacity: 0, y: 20 }} animate={{ scale: 1, opacity: 1, y: 0 }} exit={{ scale: 0.9, opacity: 0, y: 20 }} className="relative w-full max-w-sm paper-card-strong rounded-2xl shadow-lg border border-[var(--card-border)] p-10 text-center overflow-hidden">
-              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-yellow-500 to-transparent opacity-50" />
-              <div className="w-20 h-20 bg-yellow-500/10 rounded-2xl flex items-center justify-center mx-auto mb-6"><AlertTriangle className="w-10 h-10 text-yellow-500" /></div>
-              <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">存在未保存的数据</h3>
-              <p className="text-sm text-slate-500 dark:text-slate-400 font-medium mb-8 leading-relaxed">改动还没有保存，<br />直接离开会丢失本次修改。</p>
+              <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-to-r from-transparent via-[var(--warn)] to-transparent opacity-60" />
+              <div className="w-20 h-20 bg-[color-mix(in_oklab,var(--warn)_12%,transparent)] rounded-2xl flex items-center justify-center mx-auto mb-6"><AlertTriangle className="w-10 h-10 text-[var(--warn)]" /></div>
+              <h3 className="text-xl font-black text-[var(--ink)] mb-2">存在未保存的数据</h3>
+              <p className="text-sm text-[var(--ink-soft)] font-medium mb-8 leading-relaxed">改动还没有保存，<br />直接离开会丢失本次修改。</p>
 
               <div className="flex flex-col gap-3">
                 <button
                   onClick={() => handleSave(false, true)}
-                  className="w-full py-4 bg-indigo-500 text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg hover:bg-indigo-600 transition-all flex items-center justify-center gap-2"
+                  className="w-full py-4 bg-[var(--accent)] text-white rounded-2xl text-xs font-black uppercase tracking-widest shadow-lg hover:bg-[var(--accent)] transition-all flex items-center justify-center gap-2"
                 >
                   <Save size={16} /> 存为草稿并离开
                 </button>
                 <div className="flex gap-3">
-                  <button onClick={() => setExitModalOpen(false)} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-slate-200 transition-all">取消</button>
-                  <button onClick={() => { setExitModalOpen(false); setHasUnsavedChanges(false); router.back(); }} className="flex-1 py-4 bg-red-500/10 text-red-500 rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-red-500 hover:text-white transition-all flex items-center justify-center gap-2">
+                  <button onClick={() => setExitModalOpen(false)} className="flex-1 py-4 bg-[var(--paper-deep)] text-[var(--ink-soft)] rounded-2xl text-xs font-black uppercase tracking-widest hover:text-[var(--ink)] transition-all">取消</button>
+                  <button onClick={() => { setExitModalOpen(false); setHasUnsavedChanges(false); router.back(); }} className="flex-1 py-4 bg-[color-mix(in_oklab,var(--danger)_10%,transparent)] text-[var(--danger)] rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-[var(--danger)] hover:text-white transition-all flex items-center justify-center gap-2">
                   <LogOut size={16} /> 不保存直接离开
                   </button>
                 </div>
@@ -539,9 +540,9 @@ function EditorContent() {
           <div className="absolute -top-14 left-2 right-2 flex items-center justify-between z-50">
             <button
               onClick={handleBackClick}
-              className="px-4 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-slate-700 dark:text-slate-200 font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all group"
+              className="px-4 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-[var(--ink-soft)] font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all group"
             >
-              <ArrowLeft size={15} className="group-hover:-translate-x-1 transition-transform text-indigo-500" />
+              <ArrowLeft size={15} className="group-hover:-translate-x-1 transition-transform text-[var(--accent)]" />
               返回上一级
             </button>
 
@@ -549,7 +550,7 @@ function EditorContent() {
               <button
                 onClick={() => setIsOutlineOpen(!isOutlineOpen)}
                 className={`px-3.5 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-xs font-bold transition-all ${
-                  isOutlineOpen ? 'bg-[var(--accent)] text-white' : 'text-slate-700 dark:text-slate-200 hover:text-[var(--accent)]'
+                  isOutlineOpen ? 'bg-[var(--accent)] text-white' : 'text-[var(--ink-soft)] hover:text-[var(--accent)]'
                 }`}
                 title="切换文章大纲"
               >
@@ -558,8 +559,19 @@ function EditorContent() {
               </button>
 
               <button
+                onClick={() => setIsMetaOpen(!isMetaOpen)}
+                className={`px-3.5 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-xs font-bold transition-all ${
+                  isMetaOpen ? 'bg-[var(--accent)] text-white' : 'text-[var(--ink-soft)] hover:text-[var(--accent)]'
+                }`}
+                title="切换右侧信息面板（标签/封面/心情）"
+              >
+                <PanelRight size={14} />
+                <span>信息</span>
+              </button>
+
+              <button
                 onClick={() => setIsZenMode(true)}
-                className="px-3.5 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-slate-700 dark:text-slate-200 hover:text-[var(--accent)] font-bold text-xs transition-all hover:scale-105 active:scale-95"
+                className="px-3.5 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-[var(--ink-soft)] hover:text-[var(--accent)] font-bold text-xs transition-all hover:scale-105 active:scale-95"
                 title="开启全屏专注书写模式 (Esc 退出)"
               >
                 <Maximize2 size={14} />
@@ -568,7 +580,7 @@ function EditorContent() {
             </div>
           </div>
 
-          <section className="flex-1 min-w-0 bg-white/30 rounded-2xl shadow-lg border border-[var(--card-border)] flex flex-col overflow-hidden min-[1400px]:min-h-0 min-h-[70vh]">
+          <section className="flex-1 min-w-0 paper-card rounded-2xl border border-[var(--card-border)] flex flex-col overflow-hidden min-[1400px]:min-h-0 min-h-[70vh]">
             {/* 本地未保存防丢快照恢复提示 */}
             <AnimatePresence>
               {snapshotAvailable && (
@@ -651,14 +663,24 @@ function EditorContent() {
             )}
           </AnimatePresence>
 
-          <aside className="w-[360px] shrink-0 bg-white/30 rounded-2xl shadow-lg border border-[var(--card-border)] flex flex-col overflow-hidden min-[1400px]:min-h-0">
+          <AnimatePresence>
+            {isMetaOpen && (
+              <motion.aside
+                initial={{ width: 0, opacity: 0 }}
+                animate={{ width: 360, opacity: 1 }}
+                exit={{ width: 0, opacity: 0 }}
+                transition={{ duration: 0.25 }}
+                className="w-[360px] shrink-0 paper-card rounded-2xl border border-[var(--card-border)] flex flex-col overflow-hidden min-[1400px]:min-h-0"
+              >
             <MetaMatrix
-              type={docType as any} tags={tags} setTags={setTags} cover={cover} setCover={setCover} summary={summary} setSummary={setSummary} mood={mood} setMood={setMood}
+              type={docType as 'post' | 'chatter' | 'about'} tags={tags} setTags={setTags} cover={cover} setCover={setCover} summary={summary} setSummary={setSummary} mood={mood} setMood={setMood}
               isPrivate={isPrivate} setIsPrivate={(val) => { setIsPrivate(val); setHasUnsavedChanges(true); }}
               allHistoryPostTags={historyPostTags} allHistoryChatterTags={historyChatterTags} isLoadingTags={isLoadingTags}
               allHistoryMoods={historyMoods} onSave={(isPublish) => handleSave(isPublish, false)} isSaving={isSaving} lastSaved={lastSaved} onOpenImageTool={() => { setImgToolTarget('cover'); setIsImgToolOpen(true); }}
-            />
-          </aside>
+                />
+              </motion.aside>
+            )}
+          </AnimatePresence>
         </main>
       </div>
 
@@ -729,7 +751,7 @@ export default function EditorPage() {
     <Suspense fallback={
       <div className="h-screen w-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="flex flex-col items-center gap-4">
-          <div className="w-12 h-12 border-4 border-indigo-500/20 border-t-indigo-500 rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[color-mix(in_oklab,var(--accent)_20%,transparent)] border-t-[var(--accent)] rounded-full animate-spin"></div>
             <p className="text-slate-500 font-bold tracking-widest text-sm uppercase">编辑器加载中...</p>
         </div>
       </div>

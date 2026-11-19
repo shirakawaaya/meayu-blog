@@ -56,7 +56,17 @@ export default function GlobalSearchModal() {
     };
   }, []);
 
-  // 延迟加载搜索索引数据（首次打开时加载）
+  // 打开时重置查询：用渲染期调整（React 官方推荐写法），不在 effect 里同步 setState
+  const [prevIsOpen, setPrevIsOpen] = useState(isOpen);
+  if (isOpen !== prevIsOpen) {
+    setPrevIsOpen(isOpen);
+    if (isOpen) {
+      setQuery('');
+      setSelectedIndex(0);
+    }
+  }
+
+  // 延迟加载搜索索引数据（首次打开时加载）+ 打开后聚焦输入框
   useEffect(() => {
     if (isOpen && !hasLoaded) {
       fetch('/api/search')
@@ -69,9 +79,8 @@ export default function GlobalSearchModal() {
         .catch((err) => console.error('加载搜索数据失败:', err));
     }
     if (isOpen) {
-      setQuery('');
-      setSelectedIndex(0);
-      setTimeout(() => inputRef.current?.focus(), 50);
+      const timer = setTimeout(() => inputRef.current?.focus(), 50);
+      return () => clearTimeout(timer);
     }
   }, [isOpen, hasLoaded]);
 
@@ -149,6 +158,21 @@ export default function GlobalSearchModal() {
     }
   }, [selectedIndex]);
 
+  // 空态推荐：按出现频次取热门标签，最近杂谈按日期倒序取三篇
+  const hotTags = useMemo(() => {
+    const counts = new Map<string, number>();
+    chatters.forEach((c) => c.tags?.forEach((t) => counts.set(t, (counts.get(t) ?? 0) + 1)));
+    return [...counts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([tag]) => tag);
+  }, [chatters]);
+
+  const recentChatters = useMemo(
+    () => [...chatters].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 3),
+    [chatters],
+  );
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -191,7 +215,7 @@ export default function GlobalSearchModal() {
               <button
                 onClick={() => setIsOpen(false)}
                 className="p-1 rounded-md text-[var(--ink-faint)] hover:text-[var(--ink)] hover:bg-[var(--rule)] transition-colors text-xs"
-                title="关闭 (Esc)"
+                title="关闭 (Esc)" aria-label="关闭搜索"
               >
                 ESC
               </button>
@@ -200,12 +224,50 @@ export default function GlobalSearchModal() {
             {/* 结果列表区 */}
             <div ref={listRef} className="max-h-[380px] overflow-y-auto custom-scrollbar p-2">
               {query.trim() === '' ? (
-                <div className="py-12 text-center text-sm text-[var(--ink-faint)] flex flex-col items-center gap-2">
-                  <span>输入关键词，支持搜索标题、正文、标签与地点</span>
-                  <div className="flex gap-2 text-xs opacity-75">
-                    <span className="px-2 py-0.5 rounded bg-[var(--paper-deep)] border border-[var(--card-border)]">杂谈长文</span>
-                    <span className="px-2 py-0.5 rounded bg-[var(--paper-deep)] border border-[var(--card-border)]">说说动态</span>
-                  </div>
+                <div className="px-3 py-6">
+                  {hotTags.length > 0 && (
+                    <div className="mb-6">
+                      <p className="mb-2.5 text-[11px] font-bold tracking-widest text-[var(--ink-faint)]">热门标签 · Tags</p>
+                      <div className="flex flex-wrap gap-2">
+                        {hotTags.map((tag) => (
+                          <button
+                            key={tag}
+                            onClick={() => setQuery(tag)}
+                            className="rounded-full border border-[var(--card-border)] bg-[var(--paper-deep)] px-3 py-1 text-xs text-[var(--ink-soft)] transition-colors hover:border-[var(--accent)] hover:text-[var(--accent)]"
+                          >
+                            {tag}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                  {recentChatters.length > 0 && (
+                    <div>
+                      <p className="mb-1.5 text-[11px] font-bold tracking-widest text-[var(--ink-faint)]">最近杂谈 · Recent</p>
+                      {recentChatters.map((c) => (
+                        <button
+                          key={c.slug}
+                          onClick={() => {
+                            setIsOpen(false);
+                            router.push(`/chatter/${c.slug}`);
+                          }}
+                          className="flex w-full items-center justify-between gap-3 rounded-lg px-2 py-2 text-left transition-colors hover:bg-[var(--paper-deep)]"
+                        >
+                          <span className="truncate text-sm text-[var(--ink)]">{c.title}</span>
+                          <span className="shrink-0 text-xs text-[var(--ink-faint)]">{c.date.slice(0, 10)}</span>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                  {hotTags.length === 0 && recentChatters.length === 0 && (
+                    <div className="flex flex-col items-center gap-2 py-6 text-center text-sm text-[var(--ink-faint)]">
+                      <span>输入关键词，支持搜索标题、正文、标签与地点</span>
+                      <div className="flex gap-2 text-xs opacity-75">
+                        <span className="rounded border border-[var(--card-border)] bg-[var(--paper-deep)] px-2 py-0.5">杂谈长文</span>
+                        <span className="rounded border border-[var(--card-border)] bg-[var(--paper-deep)] px-2 py-0.5">说说动态</span>
+                      </div>
+                    </div>
+                  )}
                 </div>
               ) : results.length === 0 ? (
                 <div className="py-12 text-center text-sm text-[var(--ink-faint)]">
@@ -233,7 +295,7 @@ export default function GlobalSearchModal() {
                           <span
                             className={`text-[9px] font-black uppercase tracking-wider px-1.5 py-0.5 rounded ${
                               res.type === 'chatter'
-                                ? 'bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 border border-indigo-500/20'
+                                ? 'bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] text-[var(--accent)] border border-[color-mix(in_oklab,var(--accent)_20%,transparent)]'
                                 : 'bg-[color-mix(in_oklab,var(--ok)_12%,var(--paper))] text-[var(--ok)] border border-[var(--ok)]/20'
                             }`}
                           >

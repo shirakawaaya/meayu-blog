@@ -12,6 +12,9 @@ import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { sanitizeSchema } from '../../../lib/sanitize-schema';
 import rehypeKatex from 'rehype-katex';
 
 // 引入神仙代码高亮主题（Atom One Dark）
@@ -38,7 +41,8 @@ async function getChatterData(slug: string) {
   }
   const fileContents = fs.readFileSync(fullPath, 'utf8');
 
-  let { data, content } = matter(fileContents);
+  const { data, content: rawContent } = matter(fileContents);
+  let content = rawContent; // content 后续要做文本预清洗重赋值
 
   // ==========================================
   // 前台渲染清洗区：终极防吞换行 + 安全保护补丁！
@@ -84,13 +88,14 @@ async function getChatterData(slug: string) {
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkRehype, { allowDangerousHtml: true })
-    // @ts-ignore
+    .use(rehypeRaw)
     .use(rehypeHighlight, {
       detect: true,
       ignoreMissing: true,
       subset: ['cpp', 'c', 'python', 'java', 'javascript', 'typescript', 'go', 'rust', 'bash', 'json', 'html', 'css', 'sql', 'xml']
     })
     .use(rehypeKatex)
+    .use(rehypeSanitize, sanitizeSchema)
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 
@@ -110,7 +115,7 @@ async function getChatterData(slug: string) {
 function getRecentChatters(currentSlug: string) {
   const chattersDirectory = getBlogDir('chatters');
   let fileNames: string[] = [];
-  try { if (chattersDirectory) fileNames = fs.readdirSync(chattersDirectory).filter(f => f.endsWith('.md')); } catch(e) {}
+  try { if (chattersDirectory) fileNames = fs.readdirSync(chattersDirectory).filter(f => f.endsWith('.md')); } catch {}
   if (!fileNames) return [];
 
   return fileNames.map(f => {
@@ -170,7 +175,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                 {/* 控制台专供：修改此篇按钮保留 */}
                 <Link
                   href={`/editor?id=${chatterData.slug}&type=chatter`}
-                  className="absolute top-0 right-0 p-2.5 md:p-3 rounded-xl md:rounded-2xl paper-card text-slate-600 dark:text-slate-300 hover:bg-indigo-500 hover:text-white transition-all shadow-sm border border-slate-200 dark:border-slate-700 group flex items-center gap-2 active:scale-95 z-50"
+                  className="absolute top-0 right-0 p-2.5 md:p-3 rounded-xl md:rounded-2xl paper-card text-slate-600 dark:text-slate-300 hover:bg-[var(--accent)] hover:text-white transition-all shadow-sm border border-slate-200 dark:border-slate-700 group flex items-center gap-2 active:scale-95 z-50"
                 >
                   <span className="text-base md:text-lg">
                     <svg className="w-4 h-4 md:w-5 md:h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
@@ -179,7 +184,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                 </Link>
 
                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                  <div className="flex items-center gap-1.5 md:gap-2 text-indigo-700 dark:text-indigo-400 font-bold bg-indigo-500/5 dark:bg-indigo-400/10 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs md:text-sm border border-indigo-500/10">
+                  <div className="flex items-center gap-1.5 md:gap-2 text-[var(--accent)] dark:text-[var(--accent)] font-bold bg-[color-mix(in_oklab,var(--accent)_7%,transparent)] dark:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] px-3 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs md:text-sm border border-[var(--accent-soft)]">
                     <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     {chatterData.date}
                   </div>
@@ -241,7 +246,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                   <div key={index} className="flex justify-center items-center">
                     {day ? (
                       <div className={`w-8 h-8 flex items-center justify-center rounded-xl text-xs font-black transition-all duration-300
-                        ${day === dayNum ? 'bg-indigo-500 text-white shadow-lg scale-110' : 'text-slate-600 dark:text-slate-400 hover:paper-card dark:hover:bg-slate-700'}`}>
+                        ${day === dayNum ? 'bg-[var(--accent)] text-white shadow-lg scale-110' : 'text-slate-600 dark:text-slate-400 hover:paper-card dark:hover:bg-slate-700'}`}>
                         {day}
                       </div>
                     ) : <div className="w-8 h-8"></div>}
@@ -251,11 +256,11 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
             </div>
 
             <div className="paper-card rounded-2xl p-6 border border-[var(--card-border)] shadow-md">
-              <h3 className="font-black text-slate-900 dark:text-white mb-4 border-l-4 border-indigo-500 pl-2 text-xs tracking-widest uppercase">近期杂谈 · Recent Records</h3>
+              <h3 className="font-black text-slate-900 dark:text-white mb-4 border-l-4 border-[var(--accent)] pl-2 text-xs tracking-widest uppercase">近期杂谈 · Recent Records</h3>
               <div className="space-y-4">
                 {recentChatters.map(p => (
                   <Link key={p.slug} href={`/chatter/${p.slug}`} className="group block">
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">{p.title}</h4>
+                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-[var(--accent)] transition-colors line-clamp-2">{p.title}</h4>
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-bold uppercase">{p.date}</p>
                   </Link>
                 ))}

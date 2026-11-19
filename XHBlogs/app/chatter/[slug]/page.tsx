@@ -13,6 +13,9 @@ import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { sanitizeSchema } from '../../../lib/sanitize-schema';
 import rehypeKatex from 'rehype-katex';
 
 // 引入神仙代码高亮主题（Atom One Dark）
@@ -24,6 +27,7 @@ import Comments from '../../../components/Comments';
 import ClientTOC from '../../../components/ClientTOC';
 import CodeCopy from '../../../components/CodeCopy';
 import ReadingProgressBar from '../../../components/ReadingProgressBar';
+import ArticleImageZoom from '../../../components/ArticleImageZoom';
 
 export async function generateStaticParams() {
   const chattersDirectory = path.join(process.cwd(), 'chatters');
@@ -56,7 +60,8 @@ const getChatterData = cache(async (slug: string) => {
   }
   const fileContents = fs.readFileSync(fullPath, 'utf8');
 
-  let { data, content } = matter(fileContents);
+  const { data, content: rawContent } = matter(fileContents);
+  let content = rawContent; // content 后续要做文本预清洗重赋值
   if (data.private) {
     notFound();
   }
@@ -114,13 +119,14 @@ const getChatterData = cache(async (slug: string) => {
     .use(remarkGfm)
     .use(remarkMath)
     .use(remarkRehype, { allowDangerousHtml: true })
-    // @ts-ignore
+    .use(rehypeRaw)
     .use(rehypeHighlight, {
       detect: true,
       ignoreMissing: true,
       subset: ['cpp', 'c', 'python', 'java', 'javascript', 'typescript', 'go', 'rust', 'bash', 'json', 'html', 'css', 'sql', 'xml']
     })
     .use(rehypeKatex)
+    .use(rehypeSanitize, sanitizeSchema)
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 
@@ -143,7 +149,7 @@ const getChatterData = cache(async (slug: string) => {
 const getPrevNext = cache((currentSlug: string) => {
   const chattersDirectory = path.join(process.cwd(), 'chatters');
   let fileNames: string[] = [];
-  try { fileNames = fs.readdirSync(chattersDirectory).filter(f => f.endsWith('.md')); } catch(e) {}
+  try { fileNames = fs.readdirSync(chattersDirectory).filter(f => f.endsWith('.md')); } catch {}
 
   const sorted = fileNames.map(f => {
     const s = f.replace(/\.md$/, '');
@@ -162,7 +168,7 @@ const getPrevNext = cache((currentSlug: string) => {
 const getRecentChatters = cache((currentSlug: string) => {
   const chattersDirectory = path.join(process.cwd(), 'chatters');
   let fileNames: string[] = [];
-  try { fileNames = fs.readdirSync(chattersDirectory).filter(f => f.endsWith('.md')); } catch(e) {}
+  try { fileNames = fs.readdirSync(chattersDirectory).filter(f => f.endsWith('.md')); } catch {}
   if (!fileNames) return [];
 
   return fileNames.map(f => {
@@ -264,7 +270,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
           <article className="flex-1 paper-card rounded-2xl shadow-lg border border-[var(--card-border)] overflow-hidden transition-colors duration-700">
             {chatterData.cover && (
               <div className="w-full aspect-video bg-slate-200 dark:bg-slate-700 relative group">
-                <img src={chatterData.cover} alt="封面" className="vt-chatter-cover w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" />
+                <img loading="lazy" decoding="async" src={chatterData.cover} alt="封面" className="vt-chatter-cover w-full h-full object-cover opacity-90 transition-transform duration-1000 group-hover:scale-105" />
               </div>
             )}
 
@@ -279,7 +285,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                 {/* 前端展示版：特权修改按钮已彻底移除！ */}
 
                 <div className="flex flex-wrap items-center gap-2 md:gap-3">
-                  <div className="flex items-center gap-1.5 md:gap-2 text-indigo-700 dark:text-indigo-400 font-bold bg-indigo-500/5 dark:bg-indigo-400/10 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs md:text-sm border border-indigo-500/10">
+                  <div className="flex items-center gap-1.5 md:gap-2 text-[var(--accent)] font-bold bg-[color-mix(in_oklab,var(--accent)_7%,transparent)] px-3 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs md:text-sm border border-[var(--accent-soft)]">
                     <svg className="w-3 h-3 md:w-4 md:h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                     {chatterData.date}
                   </div>
@@ -305,8 +311,8 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
 
               {/* AI 摘要（发布时由模型生成并缓存进 frontmatter，无则不渲染） */}
               {chatterData.summary && (
-                <div className="mb-8 rounded-2xl border border-indigo-500/15 border-l-4 border-l-indigo-500 bg-indigo-500/5 dark:bg-indigo-400/10 p-5">
-                  <div className="flex items-center gap-2 mb-2 text-[10px] font-black uppercase tracking-widest text-indigo-600 dark:text-indigo-400">
+                <div className="mb-8 rounded-2xl border border-[var(--card-border)] border-l-4 border-l-[var(--accent)] bg-[color-mix(in_oklab,var(--paper-deep)_65%,transparent)] p-5">
+                  <div className="flex items-center gap-2 mb-2 text-[10px] font-black uppercase tracking-widest text-[var(--accent)]">
                     <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" /></svg>
                     AI 摘要 · Summary
                   </div>
@@ -318,10 +324,19 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
 
                 <div
                   id="article-content"
-                  className="prose prose-slate dark:prose-invert prose-base md:prose-lg max-w-none text-slate-800 dark:text-slate-200 font-serif transition-colors duration-700 leading-relaxed scroll-smooth"
+                  className="article-body prose prose-slate dark:prose-invert prose-base md:prose-lg max-w-none text-[var(--ink)] font-serif transition-colors duration-700 leading-relaxed scroll-smooth"
                   dangerouslySetInnerHTML={{ __html: chatterData.contentHtml }}
                 />
                 <CodeCopy containerId="article-content" />
+                <ArticleImageZoom />
+
+                {/* 文末印章：全文完 */}
+                <div className="mt-14 flex items-center gap-4" aria-hidden="true">
+                  <span className="h-px flex-1 bg-[var(--rule)]" />
+                  <span className="seal-stamp">完</span>
+                  <span className="text-xs tracking-[0.3em] text-[var(--ink-faint)]">全文完 · 感谢阅读</span>
+                  <span className="h-px flex-1 bg-[var(--rule)]" />
+                </div>
               </div>
 
               {/* 上一篇 / 下一篇 */}
@@ -330,13 +345,13 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                   {prev ? (
                     <Link href={`/chatter/${prev.slug}`} className="group rounded-2xl border border-[var(--card-border)] paper-card p-5 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all">
                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">← 上一篇 · Newer</span>
-                      <p className="mt-1.5 text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{prev.title}</p>
+                      <p className="mt-1.5 text-sm font-bold text-[var(--ink)] line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{prev.title}</p>
                     </Link>
                   ) : <div />}
                   {next && (
                     <Link href={`/chatter/${next.slug}`} className="group rounded-2xl border border-[var(--card-border)] paper-card p-5 shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all text-right">
                       <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">下一篇 · Older →</span>
-                      <p className="mt-1.5 text-sm font-bold text-slate-800 dark:text-slate-200 line-clamp-1 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">{next.title}</p>
+                      <p className="mt-1.5 text-sm font-bold text-[var(--ink)] line-clamp-1 group-hover:text-[var(--accent)] transition-colors">{next.title}</p>
                     </Link>
                   )}
                 </div>
@@ -354,7 +369,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
 
             <div className="paper-card rounded-2xl p-6 border border-[var(--card-border)] shadow-md text-center">
               <div className="w-20 h-20 mx-auto rounded-full p-1 border-2 border-[var(--accent)] shadow-md mb-4 hover:rotate-3 transition-transform">
-                <img src={siteConfig.avatarUrl} alt="avatar" className="vt-avatar w-full h-full rounded-full object-cover bg-white" />
+                <img loading="lazy" decoding="async" src={siteConfig.avatarUrl} alt="avatar" className="vt-avatar w-full h-full rounded-full object-cover bg-white" />
               </div>
               <h3 className="text-xl font-bold text-slate-900 dark:text-white mb-2">{siteConfig.authorName}</h3>
               <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed font-medium mb-4">{siteConfig.bio}</p>
@@ -373,7 +388,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                   <div key={index} className="flex justify-center items-center">
                     {day ? (
                       <div className={`w-8 h-8 flex items-center justify-center rounded-xl text-xs font-black transition-all duration-300
-                        ${day === dayNum ? 'bg-indigo-500 text-white shadow-lg scale-110' : 'text-slate-600 dark:text-slate-400 hover:paper-card dark:hover:bg-slate-700'}`}>
+                        ${day === dayNum ? 'bg-[var(--accent)] text-white shadow-lg scale-110' : 'text-slate-600 dark:text-slate-400 hover:paper-card dark:hover:bg-slate-700'}`}>
                         {day}
                       </div>
                     ) : <div className="w-8 h-8"></div>}
@@ -383,11 +398,11 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
             </div>
 
             <div className="paper-card rounded-2xl p-6 border border-[var(--card-border)] shadow-md">
-              <h3 className="font-black text-slate-900 dark:text-white mb-4 border-l-4 border-indigo-500 pl-2 text-xs tracking-widest uppercase">近期杂谈 · Recent Records</h3>
+              <h3 className="font-black text-[var(--ink)] mb-4 border-l-4 border-[var(--accent)] pl-2 text-xs tracking-widest uppercase">近期杂谈 · Recent Records</h3>
               <div className="space-y-4">
                 {recentChatters.map(p => (
                   <Link key={p.slug} href={`/chatter/${p.slug}`} className="group block">
-                    <h4 className="text-sm font-bold text-slate-800 dark:text-slate-200 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2">{p.title}</h4>
+                    <h4 className="text-sm font-bold text-[var(--ink)] group-hover:text-[var(--accent)] transition-colors line-clamp-2">{p.title}</h4>
                     <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-1 font-bold uppercase">{p.date}</p>
                   </Link>
                 ))}

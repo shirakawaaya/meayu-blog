@@ -1,14 +1,15 @@
 "use client";
 
+import type { SettingsSectionProps } from './shared';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 // 引入你的图床工具组件 (请根据你实际的文件夹层级调整相对路径)
 import FloatingImageTool from '../editor/FloatingImageTool';
 
-export default function ProfileSection({ formData, handleUpdate, pushToQueue }: any) {
+export default function ProfileSection({ formData, handleUpdate, pushToQueue }: SettingsSectionProps) {
   // 终极防崩溃兜底
   const safeData = formData || {};
-  const safeSocial = safeData.social || {};
+  const safeSocial: Record<string, string> = safeData.social ?? {};
 
   // 控制图床工具的状态
   const [isImageToolOpen, setIsImageToolOpen] = useState(false);
@@ -67,22 +68,22 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">前缀 (navTitle)</label>
-                  <input type="text" value={safeData.navTitle || ''} onChange={e => handleUpdate('navTitle', e.target.value)} placeholder="例如: Meayu" className="w-full paper-card-strong border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm mt-1 outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold" />
+                  <input type="text" value={safeData.navTitle || ''} onChange={e => handleUpdate('navTitle', e.target.value)} placeholder="例如: Meayu" className="w-full paper-card-strong border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm mt-1 outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all font-bold" />
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">连接符 (navSuffix)</label>
-                  <input type="text" value={safeData.navSuffix || ''} onChange={e => handleUpdate('navSuffix', e.target.value)} placeholder="例如: の" className="w-full paper-card-strong border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm mt-1 outline-none focus:ring-2 focus:ring-indigo-500 transition-all text-indigo-500 font-bold" />
+                  <input type="text" value={safeData.navSuffix || ''} onChange={e => handleUpdate('navSuffix', e.target.value)} placeholder="例如: の" className="w-full paper-card-strong border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm mt-1 outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all text-[var(--accent)] font-bold" />
                 </div>
                 <div>
                   <label className="text-[10px] font-black text-slate-400 uppercase ml-1">尾部 (navAfter)</label>
-                  <input type="text" value={safeData.navAfter || ''} onChange={e => handleUpdate('navAfter', e.target.value)} placeholder="例如: 拾光集" className="w-full paper-card-strong border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm mt-1 outline-none focus:ring-2 focus:ring-indigo-500 transition-all font-bold" />
+                  <input type="text" value={safeData.navAfter || ''} onChange={e => handleUpdate('navAfter', e.target.value)} placeholder="例如: 拾光集" className="w-full paper-card-strong border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2.5 text-sm mt-1 outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all font-bold" />
                 </div>
               </div>
 
               {/* 网站总标题 Title */}
               <div className="col-span-1 md:col-span-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1">网站总标题 (Browser Title)</label>
-                <input type="text" value={safeData.title || ''} onChange={e => handleUpdate('title', e.target.value)} placeholder="例如: Meayu の 拾光集" className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none font-bold focus:ring-2 focus:ring-indigo-500" />
+                <input type="text" value={safeData.title || ''} onChange={e => handleUpdate('title', e.target.value)} placeholder="例如: Meayu の 拾光集" className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none font-bold focus:ring-2 focus:ring-[var(--accent-soft)]" />
               </div>
 
               {/* 网页图标 Favicon */}
@@ -92,8 +93,8 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
                   {safeData.faviconUrl && <img src={safeData.faviconUrl} alt="favicon" className="w-4 h-4 rounded-full object-cover" />}
                 </label>
                 <div className="flex gap-2 mt-1">
-                  <input type="text" value={safeData.faviconUrl || ''} onChange={e => handleUpdate('faviconUrl', e.target.value)} className="flex-1 paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
-                  <button onClick={() => openImageTool('faviconUrl')} className="px-4 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/40 text-indigo-600 dark:text-indigo-300 rounded-2xl font-black text-xs transition-colors whitespace-nowrap flex items-center gap-1 shadow-sm">
+                  <input type="text" value={safeData.faviconUrl || ''} onChange={e => handleUpdate('faviconUrl', e.target.value)} className="flex-1 paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-soft)]" />
+                  <button onClick={() => openImageTool('faviconUrl')} className="px-4 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] hover:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:hover:bg-[var(--accent)]/40 text-[var(--accent)] dark:text-[var(--accent)] rounded-2xl font-black text-xs transition-colors whitespace-nowrap flex items-center gap-1 shadow-sm">
                     图床
                   </button>
                 </div>
@@ -103,8 +104,8 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
               <div className="col-span-1 md:col-span-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1">头像 URL (Avatar)</label>
                 <div className="flex gap-2 mt-1">
-                  <input type="text" value={safeData.avatarUrl || ''} onChange={e => handleUpdate('avatarUrl', e.target.value)} className="flex-1 paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-indigo-500" />
-                  <button onClick={() => openImageTool('avatarUrl')} className="px-4 bg-indigo-100 hover:bg-indigo-200 dark:bg-indigo-500/20 dark:hover:bg-indigo-500/40 text-indigo-600 dark:text-indigo-300 rounded-2xl font-black text-xs transition-colors whitespace-nowrap flex items-center gap-1 shadow-sm">
+                  <input type="text" value={safeData.avatarUrl || ''} onChange={e => handleUpdate('avatarUrl', e.target.value)} className="flex-1 paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-[var(--accent-soft)]" />
+                  <button onClick={() => openImageTool('avatarUrl')} className="px-4 bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] hover:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:hover:bg-[var(--accent)]/40 text-[var(--accent)] dark:text-[var(--accent)] rounded-2xl font-black text-xs transition-colors whitespace-nowrap flex items-center gap-1 shadow-sm">
                     图床
                   </button>
                 </div>
@@ -112,11 +113,11 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
 
               <div className="col-span-1 md:col-span-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1">作者名称</label>
-                <input type="text" value={safeData.authorName || ''} onChange={e => handleUpdate('authorName', e.target.value)} className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none font-bold focus:ring-2 focus:ring-indigo-500" />
+                <input type="text" value={safeData.authorName || ''} onChange={e => handleUpdate('authorName', e.target.value)} className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none font-bold focus:ring-2 focus:ring-[var(--accent-soft)]" />
               </div>
               <div className="col-span-1 md:col-span-2">
                 <label className="text-[10px] font-black text-slate-400 uppercase ml-1">个人简介 (BIO)</label>
-                <textarea rows={2} value={safeData.bio || ''} onChange={e => handleUpdate('bio', e.target.value)} className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none resize-none focus:ring-2 focus:ring-indigo-500" />
+                <textarea rows={2} value={safeData.bio || ''} onChange={e => handleUpdate('bio', e.target.value)} className="w-full paper-card border border-slate-200 dark:border-slate-700 rounded-2xl px-4 py-3 text-sm mt-1 outline-none resize-none focus:ring-2 focus:ring-[var(--accent-soft)]" />
               </div>
 
               {/* 社交媒体区域 */}
@@ -149,7 +150,7 @@ export default function ProfileSection({ formData, handleUpdate, pushToQueue }: 
 
             </div>
 
-            <button onClick={handleSaveAll} className="px-10 py-3 bg-indigo-500 text-white rounded-2xl text-sm font-black shadow-md hover:bg-indigo-600 transition-all active:scale-95 w-full md:w-auto">
+            <button onClick={handleSaveAll} className="px-10 py-3 bg-[var(--accent)] text-white rounded-2xl text-sm font-black shadow-md hover:bg-[var(--accent)] transition-all active:scale-95 w-full md:w-auto">
               加入待保存
             </button>
           </div>

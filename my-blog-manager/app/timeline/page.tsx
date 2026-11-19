@@ -1,3 +1,4 @@
+import type { TimelinePost } from '../../lib/content-types';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
@@ -20,8 +21,8 @@ export default function TimelinePage() {
   // 与管理端其他页面一致：内容只读博客目录（唯一真相源）
   // 时间线 = 杂谈(chatters) 的自动汇总
   const blogRoot = getBlogRoot();
-  let posts: any[] = [];
-  let tagCounts: Record<string, number> = {};
+  const posts: TimelinePost[] = [];
+  const tagCounts: Record<string, number> = {};
 
   const collect = (dir: string) => {
     try {

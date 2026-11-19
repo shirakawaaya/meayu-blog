@@ -1,11 +1,14 @@
+import type { SettingsFormData } from './shared';
 import { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Save, Key, GitBranch, Hash, Tag, Loader2 } from 'lucide-react';
 
+interface GiscusCategory { name: string; node_id: string }
+
 interface CommentSectionProps {
-  formData: any;
-  handleUpdate: (field: string, value: any) => void;
-  pushToQueue: (label: string, key?: string, value?: any) => void;
+  formData: SettingsFormData;
+  handleUpdate: (field: string, value: unknown) => void;
+  pushToQueue: (label: string, key?: string, value?: unknown) => void;
 }
 
 export default function CommentSection({ formData, handleUpdate, pushToQueue }: CommentSectionProps) {
@@ -20,7 +23,7 @@ export default function CommentSection({ formData, handleUpdate, pushToQueue }: 
   const [fetching, setFetching] = useState(false);
   const [fetchMsg, setFetchMsg] = useState('');
 
-  const updateGiscus = (key: string, value: any) => {
+  const updateGiscus = (key: string, value: unknown) => {
     handleUpdate('giscusConfig', { ...giscus, [key]: value });
   };
 
@@ -60,7 +63,7 @@ export default function CommentSection({ formData, handleUpdate, pushToQueue }: 
         const cats = await catRes.json();
         const wanted = (giscus.category || 'Announcements').toLowerCase();
         const hit = Array.isArray(cats)
-          ? cats.find((c: any) => (c.name || '').toLowerCase() === wanted) || cats[0]
+          ? cats.find((c: GiscusCategory) => (c.name || '').toLowerCase() === wanted) || cats[0]
           : null;
         if (hit) {
           updateGiscus('category', hit.name);
@@ -72,8 +75,8 @@ export default function CommentSection({ formData, handleUpdate, pushToQueue }: 
       } else {
         setFetchMsg('已获取 repoId；分类读取失败，请手动填写');
       }
-    } catch (e: any) {
-      setFetchMsg(`获取失败：${e?.message || e}`);
+    } catch (e) {
+      setFetchMsg(`获取失败：${e instanceof Error ? e.message : String(e)}`);
     } finally {
       setFetching(false);
     }
@@ -84,7 +87,7 @@ export default function CommentSection({ formData, handleUpdate, pushToQueue }: 
   };
 
   const inputCls =
-    'w-full paper-card rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-indigo-500 text-sm font-mono dark:text-slate-200';
+    'w-full paper-card rounded-xl px-4 py-3 outline-none focus:ring-2 focus:ring-[var(--accent-soft)] text-sm font-mono dark:text-slate-200';
   const labelCls =
     'text-xs font-black uppercase text-slate-400 tracking-widest mb-2 flex items-center gap-2';
 
@@ -107,7 +110,7 @@ export default function CommentSection({ formData, handleUpdate, pushToQueue }: 
           </div>
           <button
             onClick={saveToQueue}
-            className="px-6 py-3 bg-indigo-500 text-white rounded-2xl font-black text-sm shadow-lg flex items-center gap-2 hover:bg-indigo-600 transition-colors"
+            className="px-6 py-3 bg-[var(--accent)] text-white rounded-2xl font-black text-sm shadow-lg flex items-center gap-2 hover:bg-[var(--accent)] transition-colors"
           >
             <Save size={16} /> 加入待保存
           </button>
@@ -138,14 +141,14 @@ export default function CommentSection({ formData, handleUpdate, pushToQueue }: 
             </div>
             <p className="text-xs text-slate-400 mt-2 ml-1">
               前置条件：仓库公开 + 已开启 Discussions + 已安装 giscus App。
-              {fetchMsg && <span className="block mt-1 text-indigo-500 font-bold">{fetchMsg}</span>}
+              {fetchMsg && <span className="block mt-1 text-[var(--accent)] font-bold">{fetchMsg}</span>}
             </p>
           </div>
 
           {/* repoId */}
           <div>
             <label className={labelCls}>
-              <Key size={14} className="text-indigo-400" /> 仓库 ID（repoId）
+              <Key size={14} className="text-[var(--accent)]" /> 仓库 ID（repoId）
             </label>
             <input
               type="text"

@@ -3,6 +3,7 @@ import path from 'path';
 import matter from 'gray-matter';
 import MomentList from './MomentList';
 import { siteConfig } from '../../siteConfig';
+import type { MomentListItem } from '../../lib/content-types';
 
 export const metadata = {
   title: "说说 | " + siteConfig.title,
@@ -10,36 +11,27 @@ export const metadata = {
 };
 
 export default function MomentsPage() {
-  let allMoments: any[] = [];
+  const allMoments: MomentListItem[] = [];
 
   try {
-    // 终极防漏绝招：同时扫描两个可能的文件夹，把所有的说说都抓出来！
-    const possibleDirs = [
-      path.join(process.cwd(), 'posts', 'moments'),
-      path.join(process.cwd(), 'moments')
-    ];
+    // 说说只存 moments/ 一个目录（旧 posts/moments 探测已随 post 模型下线删除）
+    const momentsDir = path.join(/*turbopackIgnore: true*/ process.cwd(), 'moments');
+    if (fs.existsSync(momentsDir)) {
+      const fileNames = fs.readdirSync(momentsDir).filter(f => f.endsWith('.md'));
+      fileNames.forEach(fileName => {
+        const fullPath = path.join(momentsDir, fileName);
+        const { data, content } = matter(fs.readFileSync(fullPath, 'utf8'));
+        if (data.private) return;
 
-    possibleDirs.forEach(dir => {
-      if (fs.existsSync(dir)) {
-        const fileNames = fs.readdirSync(dir).filter(f => f.endsWith('.md'));
-        fileNames.forEach(fileName => {
-          const fullPath = path.join(dir, fileName);
-          const { data, content } = matter(fs.readFileSync(fullPath, 'utf8'));
-          if (data.private) return;
-
-          allMoments.push({
-            id: fileName.replace(/\.md$/, ''),
-            date: data.date || '1970-01-01',
-            location: data.location || '',
-            images: data.images || [],
-            content: content.trim()
-          });
+        allMoments.push({
+          id: fileName.replace(/\.md$/, ''),
+          date: data.date || '1970-01-01',
+          location: data.location || '',
+          images: data.images || [],
+          content: content.trim()
         });
-      }
-    });
-
-    // 去重，防止你在两个文件夹放了同名文件
-    allMoments = Array.from(new Map(allMoments.map(item => [item.id, item])).values());
+      });
+    }
 
   } catch (e) {
     console.error("读取说说数据失败:", e);

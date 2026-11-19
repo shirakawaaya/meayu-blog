@@ -1,3 +1,4 @@
+import type { ChatterListItem } from '../../lib/content-types';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
@@ -18,7 +19,7 @@ export const metadata = {
 export default function ChatterPage() {
   // 内容只存在博客目录里（管理端写入也写那边），所以这里要读博客目录
   const chattersDirectory = getBlogDir('chatters');
-  let chatters: any[] = [];
+  let chatters: Array<ChatterListItem & { tags: string[]; content: string }> = [];
 
   try {
     if (!chattersDirectory) {

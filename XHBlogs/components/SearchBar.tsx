@@ -10,7 +10,6 @@ interface Post {
   description?: string;
   tags?: string[];
   date?: string;
-  [key: string]: any;
 }
 
 interface Moment {
@@ -18,7 +17,6 @@ interface Moment {
   content?: string;
   location?: string;
   date?: string;
-  [key: string]: any;
 }
 
 const escapeRegExp = (string: string) => {
@@ -48,7 +46,7 @@ const Highlight = ({ text = '', query = '' }) => {
 };
 
 const TypeBadge = ({ label }: { label: string }) => (
-  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-[color-mix(in_oklab,var(--accent)_8%,var(--paper))] text-indigo-600 dark:text-indigo-400 border border-indigo-500/15 shrink-0 mt-1">
+  <span className="text-[10px] font-black uppercase tracking-widest px-2 py-0.5 rounded-md bg-[color-mix(in_oklab,var(--accent)_8%,var(--paper))] text-[var(--accent)] border border-[var(--accent-soft)] shrink-0 mt-1">
     {label}
   </span>
 );
@@ -97,7 +95,7 @@ export default function SearchBar({ posts = [], moments = [] }: { posts?: Post[]
         {/* 先渲染 Input */}
         <input
           type="text"
-          className="w-full pl-14 pr-6 py-4 paper-card border border-[var(--card-border)] rounded-2xl shadow-md focus:outline-none focus:ring-2 focus:ring-indigo-500/50 text-slate-800 dark:text-slate-200 transition-all placeholder-slate-500 dark:placeholder-slate-400 font-medium text-lg relative z-0"
+          className="w-full pl-14 pr-6 py-4 paper-card border border-[var(--card-border)] rounded-2xl shadow-md focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] text-slate-800 dark:text-slate-200 transition-all placeholder-slate-500 dark:placeholder-slate-400 font-medium text-lg relative z-0"
           placeholder="搜索杂谈与说说…"
           value={searchQuery}
           onChange={(e) => {
@@ -119,7 +117,7 @@ export default function SearchBar({ posts = [], moments = [] }: { posts?: Post[]
             strokeWidth="2.5"
             strokeLinecap="round"
             strokeLinejoin="round"
-            className="w-5 h-5 text-slate-400 group-focus-within:text-indigo-500 transition-colors drop-shadow-sm"
+            className="w-5 h-5 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors drop-shadow-sm"
           >
             <circle cx="11" cy="11" r="8"></circle>
             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -148,7 +146,7 @@ export default function SearchBar({ posts = [], moments = [] }: { posts?: Post[]
                     href={`/chatter/${post.slug}`}
                     key={`chatter-${post.slug}`}
                     onClick={() => setIsOpen(false)}
-                    className="px-6 py-5 hover:bg-indigo-50/80 dark:hover:bg-indigo-500/10 transition-colors group border-b border-slate-100/50 dark:border-slate-800/50 flex flex-col gap-2"
+                    className="px-6 py-5 hover:bg-[var(--paper-deep)] dark:hover:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] transition-colors group border-b border-slate-100/50 dark:border-slate-800/50 flex flex-col gap-2"
                   >
                     <div className="flex items-start justify-between gap-4">
                       <h4 className="text-lg font-bold text-slate-800 dark:text-slate-200 transition-colors line-clamp-1">
@@ -190,7 +188,7 @@ export default function SearchBar({ posts = [], moments = [] }: { posts?: Post[]
                     href={`/moments#${m.id}`}
                     key={`moment-${m.id}`}
                     onClick={() => setIsOpen(false)}
-                    className="px-6 py-4 hover:bg-indigo-50/80 dark:hover:bg-indigo-500/10 transition-colors border-b border-slate-100/50 dark:border-slate-800/50 last:border-0 flex items-start gap-3"
+                    className="px-6 py-4 hover:bg-[var(--paper-deep)] dark:hover:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] transition-colors border-b border-slate-100/50 dark:border-slate-800/50 last:border-0 flex items-start gap-3"
                   >
                     <TypeBadge label="说说" />
                     <div className="min-w-0 flex-1">
@@ -214,7 +212,7 @@ export default function SearchBar({ posts = [], moments = [] }: { posts?: Post[]
                   </svg>
                 </div>
                 <p className="text-slate-500 dark:text-slate-400 font-medium">
-                  没有找到与 "<span className="text-indigo-500 font-bold">{searchQuery}</span>" 相关的内容
+                  没有找到与「<span className="text-[var(--accent)] font-bold">{searchQuery}</span>」相关的内容
                 </p>
               </div>
             )}

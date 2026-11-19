@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
  import type { Album, Photo } from '../../data/albums';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Pencil, Trash2, Search, Image as ImageIcon, X, Save, AlertTriangle, Sparkles, Edit3, CloudUpload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, X, Save, AlertTriangle, Edit3, CloudUpload } from 'lucide-react';
 import { useOperations } from '../../context/OperationContext';
 import { useToast } from '../../components/ToastProvider';
 import FloatingImageTool from '../../components/editor/FloatingImageTool';
@@ -20,6 +20,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 搜索防抖的过渡态：先亮过渡、250ms 后由定时器落定
     setIsTransitioning(true);
     const timer = setTimeout(() => {
       setActiveQuery(searchQuery.toLowerCase());
@@ -33,8 +34,8 @@ import { useEscapeClose } from '../../lib/use-escape-close';
   const [editableAlbums, setEditableAlbums] = useState<Album[]>(initialAlbums);
 
   const [deleteModal, setDeleteModal] = useState<{ isOpen: boolean; type: 'album' | 'photo'; id?: string; photoIndex?: number; title: string }>({ isOpen: false, type: 'album', title: '' });
-  const [albumModal, setAlbumModal] = useState<{ isOpen: boolean; mode: 'add' | 'edit'; data: any }>({ isOpen: false, mode: 'add', data: {} });
-  const [photoModal, setPhotoModal] = useState<{ isOpen: boolean; mode: 'add' | 'edit'; index?: number; data: any }>({ isOpen: false, mode: 'add', data: {} });
+  const [albumModal, setAlbumModal] = useState<{ isOpen: boolean; mode: 'add' | 'edit'; data: Partial<Album> }>({ isOpen: false, mode: 'add', data: {} });
+  const [photoModal, setPhotoModal] = useState<{ isOpen: boolean; mode: 'add' | 'edit'; index?: number; data: Partial<Photo> }>({ isOpen: false, mode: 'add', data: {} });
 
   const [isImgToolOpen, setIsImgToolOpen] = useState(false);
   const [imgToolTarget, setImgToolTarget] = useState<'album' | 'photo'>('album');
@@ -123,12 +124,12 @@ import { useEscapeClose } from '../../lib/use-escape-close';
             <motion.div initial={{ y: 50, opacity: 0 }} animate={{ y: 0, opacity: 1 }} className="relative w-full max-w-md paper-card-strong rounded-2xl border border-[var(--card-border)] p-8 shadow-lg">
               <h2 className="text-2xl font-black mb-6 dark:text-white">{albumModal.mode === 'add' ? '创建新相册' : '修改相册属性'}</h2>
               <div className="space-y-5">
-                <input type="text" value={albumModal.data.title || ''} onChange={e => setAlbumModal({...albumModal, data: {...albumModal.data, title: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 dark:text-white outline-none border border-transparent focus:border-indigo-500" placeholder="相册名称" />
-                <textarea value={albumModal.data.description || ''} onChange={e => setAlbumModal({...albumModal, data: {...albumModal.data, description: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 dark:text-white h-24 outline-none border border-transparent focus:border-indigo-500 resize-none" placeholder="描述这段记忆…" />
+                <input type="text" value={albumModal.data.title || ''} onChange={e => setAlbumModal({...albumModal, data: {...albumModal.data, title: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 dark:text-white outline-none border border-transparent focus:border-[var(--accent)]" placeholder="相册名称" />
+                <textarea value={albumModal.data.description || ''} onChange={e => setAlbumModal({...albumModal, data: {...albumModal.data, description: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 dark:text-white h-24 outline-none border border-transparent focus:border-[var(--accent)] resize-none" placeholder="描述这段记忆…" />
 
                 <div className="relative group">
-                   <input type="text" value={albumModal.data.cover || ''} onChange={e => setAlbumModal({...albumModal, data: {...albumModal.data, cover: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 pr-14 dark:text-white outline-none border border-transparent focus:border-indigo-500" placeholder="封面图片 URL" />
-                   <button onClick={() => { setImgToolTarget('album'); setIsImgToolOpen(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 transition-colors shadow-md" title="唤起图床">
+                   <input type="text" value={albumModal.data.cover || ''} onChange={e => setAlbumModal({...albumModal, data: {...albumModal.data, cover: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 pr-14 dark:text-white outline-none border border-transparent focus:border-[var(--accent)]" placeholder="封面图片 URL" />
+                   <button onClick={() => { setImgToolTarget('album'); setIsImgToolOpen(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--accent)] text-white hover:bg-[var(--accent)] transition-colors shadow-md" title="唤起图床">
                       <CloudUpload size={18} />
                    </button>
                 </div>
@@ -136,14 +137,15 @@ import { useEscapeClose } from '../../lib/use-escape-close';
               <div className="mt-8 flex gap-3">
                 <button onClick={() => setAlbumModal({ ...albumModal, isOpen: false })} className="flex-1 py-3 text-slate-500 font-bold uppercase text-xs hover:text-slate-800 dark:hover:text-white transition-colors">取消</button>
                 <button onClick={() => {
-                  let next;
+                  let next: Album[];
                   if(albumModal.mode === 'add') {
-                    next = [{ ...albumModal.data, id: `album_${Date.now()}`, photos: [], date: new Date().toLocaleDateString('sv-SE') }, ...editableAlbums];
+                    next = [{ title: '', description: '', cover: '', ...albumModal.data, id: `album_${Date.now()}`, photos: [], date: new Date().toLocaleDateString('sv-SE') }, ...editableAlbums];
                   } else {
-                    next = editableAlbums.map(a => a.id === albumModal.data.id ? albumModal.data : a);
+                    // 编辑态把表单增量合并回原相册，保证结果仍是完整 Album
+                    next = editableAlbums.map(a => a.id === albumModal.data.id ? { ...a, ...albumModal.data } : a);
                   }
                   setEditableAlbums(next); syncToQueue(next); setAlbumModal({ ...albumModal, isOpen: false });
-                }} className="flex-1 py-4 bg-indigo-500 text-white rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 hover:bg-indigo-600 transition-colors"><Save size={18} /> 加入待保存</button>
+                }} className="flex-1 py-4 bg-[var(--accent)] text-white rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 hover:bg-[var(--accent)] transition-colors"><Save size={18} /> 加入待保存</button>
               </div>
             </motion.div>
           </div>
@@ -159,13 +161,13 @@ import { useEscapeClose } from '../../lib/use-escape-close';
               <div className="space-y-5">
                 {photoModal.mode === 'add' && (
                   <div className="relative group">
-                    <input type="text" value={photoModal.data.url || ''} onChange={e => setPhotoModal({...photoModal, data: {...photoModal.data, url: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 pr-14 dark:text-white outline-none border border-transparent focus:border-indigo-500" placeholder="照片直链 URL" />
-                    <button onClick={() => { setImgToolTarget('photo'); setIsImgToolOpen(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl bg-indigo-500 text-white hover:bg-indigo-600 transition-colors shadow-md">
+                    <input type="text" value={photoModal.data.url || ''} onChange={e => setPhotoModal({...photoModal, data: {...photoModal.data, url: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 pr-14 dark:text-white outline-none border border-transparent focus:border-[var(--accent)]" placeholder="照片直链 URL" />
+                    <button onClick={() => { setImgToolTarget('photo'); setIsImgToolOpen(true); }} className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 flex items-center justify-center rounded-xl bg-[var(--accent)] text-white hover:bg-[var(--accent)] transition-colors shadow-md">
                         <CloudUpload size={18} />
                     </button>
                   </div>
                 )}
-                <textarea value={photoModal.data.caption || ''} onChange={e => setPhotoModal({...photoModal, data: {...photoModal.data, caption: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 dark:text-white h-24 outline-none border border-transparent focus:border-indigo-500 resize-none" placeholder="为这张照片写点什么…" />
+                <textarea value={photoModal.data.caption || ''} onChange={e => setPhotoModal({...photoModal, data: {...photoModal.data, caption: e.target.value}})} className="w-full bg-slate-100 dark:bg-black/20 rounded-2xl px-5 py-3.5 dark:text-white h-24 outline-none border border-transparent focus:border-[var(--accent)] resize-none" placeholder="为这张照片写点什么…" />
               </div>
               <div className="mt-8 flex gap-3">
                 <button onClick={() => setPhotoModal({ ...photoModal, isOpen: false })} className="flex-1 py-3 text-slate-500 font-bold uppercase text-xs hover:text-slate-800 dark:hover:text-white transition-colors">取消</button>
@@ -173,12 +175,12 @@ import { useEscapeClose } from '../../lib/use-escape-close';
                   if(!currentAlbum) return;
                   const album = editableAlbums.find(a => a.id === currentAlbum.id);
                   if(!album) return;
-                  if(photoModal.mode === 'add') album.photos = [{...photoModal.data}, ...album.photos];
+                  if(photoModal.mode === 'add') album.photos = [{ url: '', ...photoModal.data }, ...album.photos];
                   else album.photos[photoModal.index!] = { ...album.photos[photoModal.index!], caption: photoModal.data.caption };
                   const next = [...editableAlbums];
                   setEditableAlbums(next); setCurrentAlbum({...album}); syncToQueue(next);
                   setPhotoModal({ ...photoModal, isOpen: false });
-                }} className="flex-1 py-4 bg-indigo-500 text-white rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 hover:bg-indigo-600 transition-colors"><Save size={18} /> 加入待保存</button>
+                }} className="flex-1 py-4 bg-[var(--accent)] text-white rounded-2xl font-black shadow-lg flex items-center justify-center gap-2 hover:bg-[var(--accent)] transition-colors"><Save size={18} /> 加入待保存</button>
               </div>
             </motion.div>
           </div>
@@ -197,11 +199,11 @@ import { useEscapeClose } from '../../lib/use-escape-close';
                 </div>
 
                 <div className="relative w-full md:w-80 group">
-                  <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 z-10 text-slate-500 transition-colors group-focus-within:text-indigo-500" />
+                  <Search className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 z-10 text-slate-500 transition-colors group-focus-within:text-[var(--accent)]" />
                   <input
                     type="text" placeholder="搜索相册或描述…" value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-12 pl-12 pr-4 paper-card border border-[var(--card-border)] rounded-full text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm transition-all"
+                    className="w-full h-12 pl-12 pr-4 paper-card border border-[var(--card-border)] rounded-full text-sm text-slate-800 dark:text-white focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] shadow-sm transition-all"
                   />
                 </div>
               </div>
@@ -213,7 +215,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
                     <div className="columns-1 sm:columns-2 md:columns-4 gap-6 space-y-6">
                       {matchedPhotos.map((photo, i) => (
                         <div key={i} onClick={() => setSelectedImage(photo)} className="break-inside-avoid relative group rounded-2xl overflow-hidden shadow-lg hover:scale-[1.02] transition-transform">
-                          <img src={photo.url} className="w-full h-auto object-cover" />
+                          <img src={photo.url} alt={photo.caption || ""} className="w-full h-auto object-cover" />
                         </div>
                       ))}
                     </div>
@@ -223,8 +225,8 @@ import { useEscapeClose } from '../../lib/use-escape-close';
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-20 mt-10">
                   {!activeQuery && (
                     <div onClick={() => setAlbumModal({ isOpen: true, mode: 'add', data: {} })} className="group cursor-pointer flex flex-col items-center">
-                        <div className="relative w-[85%] aspect-[4/3] mb-8 border-4 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center bg-white/10 dark:bg-white/5 hover:border-indigo-500 transition-all duration-500">
-                          <Plus size={48} className="text-slate-400 group-hover:text-indigo-500 group-hover:rotate-90 transition-all duration-500" />
+                        <div className="relative w-[85%] aspect-[4/3] mb-8 border-4 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl flex flex-col items-center justify-center bg-white/10 dark:bg-white/5 hover:border-[var(--accent)] transition-all duration-500">
+                          <Plus size={48} className="text-slate-400 group-hover:text-[var(--accent)] group-hover:rotate-90 transition-all duration-500" />
                           <span className="mt-4 text-[10px] font-black uppercase tracking-widest text-slate-400">创建新相册</span>
                         </div>
                     </div>
@@ -233,7 +235,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
                   {matchedAlbums.map((album) => (
                     <div key={album.id} className="group cursor-pointer flex flex-col items-center relative">
                       <div className="absolute top-0 right-0 z-50 flex flex-col gap-2 opacity-0 group-hover:opacity-100 transition-all -translate-x-4 group-hover:translate-x-0">
-                         <button onClick={(e) => { e.stopPropagation(); setAlbumModal({ isOpen: true, mode: 'edit', data: album }); }} className="p-2.5 bg-indigo-500 text-white rounded-xl shadow-lg hover:scale-110 transition-transform"><Edit3 size={16}/></button>
+                         <button onClick={(e) => { e.stopPropagation(); setAlbumModal({ isOpen: true, mode: 'edit', data: album }); }} className="p-2.5 bg-[var(--accent)] text-white rounded-xl shadow-lg hover:scale-110 transition-transform"><Edit3 size={16}/></button>
                          <button onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, type: 'album', id: album.id, title: album.title }); }} className="p-2.5 bg-red-500 text-white rounded-xl shadow-lg hover:scale-110 transition-transform"><Trash2 size={16}/></button>
                       </div>
 
@@ -251,7 +253,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
 
                       <div className="text-center px-4 w-full" onClick={() => setCurrentAlbum(album)}>
                         <div className="flex items-center justify-center gap-2 mb-1">
-                          <h2 className="text-xl font-bold text-slate-900 dark:text-white transition-colors group-hover:text-indigo-600">{album.title}</h2>
+                          <h2 className="text-xl font-bold text-slate-900 dark:text-white transition-colors group-hover:text-[var(--accent)]">{album.title}</h2>
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-1">{album.description}</p>
                       </div>
@@ -266,18 +268,18 @@ import { useEscapeClose } from '../../lib/use-escape-close';
             <div className="animate-fade-in-up">
               <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-4 border-b border-slate-300/50 dark:border-slate-700/50 pb-6">
                 <div>
-                  <button onClick={() => setCurrentAlbum(null)} className="group flex items-center gap-1.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-indigo-500 mb-4 transition-colors">
+                  <button onClick={() => setCurrentAlbum(null)} className="group flex items-center gap-1.5 text-sm font-bold text-slate-500 dark:text-slate-400 hover:text-[var(--accent)] mb-4 transition-colors">
                     <div className="paper-card p-1.5 rounded-lg border border-[var(--card-border)] shadow-sm"><X size={16} /></div> 返回照片墙
                   </button>
                   <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-wider mb-2">{currentAlbum.title}</h1>
                 </div>
-                <button onClick={() => setAlbumModal({ isOpen: true, mode: 'edit', data: currentAlbum })} className="px-5 py-2.5 rounded-2xl paper-card border border-[var(--card-border)] text-xs font-black uppercase text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all shadow-sm">相册属性</button>
+                <button onClick={() => setAlbumModal({ isOpen: true, mode: 'edit', data: currentAlbum })} className="px-5 py-2.5 rounded-2xl paper-card border border-[var(--card-border)] text-xs font-black uppercase text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-all shadow-sm">相册属性</button>
               </div>
 
               <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
 
-                <div onClick={() => setPhotoModal({ isOpen: true, mode: 'add', data: {} })} className="break-inside-avoid group cursor-pointer border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl min-h-[200px] flex flex-col items-center justify-center bg-white/10 hover:border-indigo-500 transition-all duration-500">
-                   <Plus size={32} className="text-slate-400 group-hover:text-indigo-500 transition-all" />
+                <div onClick={() => setPhotoModal({ isOpen: true, mode: 'add', data: {} })} className="break-inside-avoid group cursor-pointer border-2 border-dashed border-slate-300 dark:border-slate-700 rounded-2xl min-h-[200px] flex flex-col items-center justify-center bg-white/10 hover:border-[var(--accent)] transition-all duration-500">
+                   <Plus size={32} className="text-slate-400 group-hover:text-[var(--accent)] transition-all" />
                    <span className="mt-3 text-[10px] font-black uppercase tracking-widest text-slate-400">添加照片</span>
                 </div>
 
@@ -285,7 +287,7 @@ import { useEscapeClose } from '../../lib/use-escape-close';
                   <div key={index} className="break-inside-avoid relative group rounded-2xl overflow-hidden shadow-lg bg-white/20 border border-[var(--card-border)] transition-all duration-500 hover:scale-[1.02] cursor-pointer">
 
                     <div className="absolute top-3 left-3 z-30 flex gap-1.5 opacity-0 group-hover:opacity-100 transition-all translate-y-2 group-hover:translate-y-0">
-                      <button onClick={(e) => { e.stopPropagation(); setPhotoModal({ isOpen: true, mode: 'edit', index, data: photo }); }} className="w-7 h-7 rounded-lg paper-card-strong text-slate-700 flex items-center justify-center shadow-sm hover:bg-indigo-500 hover:text-white transition-all"><Pencil size={12}/></button>
+                      <button onClick={(e) => { e.stopPropagation(); setPhotoModal({ isOpen: true, mode: 'edit', index, data: photo }); }} className="w-7 h-7 rounded-lg paper-card-strong text-slate-700 flex items-center justify-center shadow-sm hover:bg-[var(--accent)] hover:text-white transition-all"><Pencil size={12}/></button>
                       <button onClick={(e) => { e.stopPropagation(); setDeleteModal({ isOpen: true, type: 'photo', photoIndex: index, title: '这张照片' }); }} className="w-7 h-7 rounded-lg paper-card-strong text-red-500 flex items-center justify-center shadow-sm hover:bg-red-500 hover:text-white transition-all"><Trash2 size={12}/></button>
                     </div>
 

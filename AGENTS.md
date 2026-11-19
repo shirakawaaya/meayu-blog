@@ -28,7 +28,7 @@
 
 ## 4. 主题与样式
 
-- 纸张主题：`.theme-xuan`（宣纸）/ `.theme-journal`（手账）× 明/暗。
+- 纸张主题：只有宣纸一套（`.theme-xuan`），× 明/暗；手账版式已于 2026-11-19 下线（变量层与切换 UI 均已删除，导航只保留明暗切换按钮），不要恢复双版式。
 - CSS 变量：`--paper`、`--paper-deep`、`--ink`、`--ink-soft`、`--ink-faint`、`--rule`、`--accent`（印章红）、`--accent-soft`、`--card`、`--card-border`、`--code-bg`、`--paper-grain-*`、`--grid`、`--tape-*`。
 - **`indigo/pink/purple` 色族已重映射到 `--accent`**，所以 `bg-indigo-500` / `text-indigo-500` 就是强调色（印章红）。新增 UI 用这些工具类表达强调色，不要写死 hex。
 - 层级：**背景轮播 `z-0`** ← 纸纹 `body::after` `z-1` ← 内容 `z-10`。
@@ -75,10 +75,11 @@
 
 ## 8. 图片
 
-- 图片**只存本地** `XHBlogs/public/images/`，内容里写 `/images/xxx.png`。
-- 上传自动压缩：最长边 2000px + JPEG 质量 85（PNG 带透明通道保留）。
-- 不用 jsDelivr、不用远程 CDN。`defaultPostCover` / `photoWallImage` 的历史外链可保留，但**不要再新增外链依赖**。
-- 管理端预览图片走 `app/images/[name]/route.ts`（代理到博客目录，含目录穿越防护）。
+- **双存储**：存量图片在本地 `XHBlogs/public/images/`，内容里写 `/images/xxx.png`；**新图片默认走 Cloudflare R2 图床**（管理端设置 → 图库里启用并配置后，上传经后端 `POST /api/picbed/upload` 直传 R2，内容里写公开地址全 URL）。R2 未启用/未配全时自动回落本地存储，前端以 `GET /api/picbed/storage` 的返回为准，不要自己判断。
+- **R2 凭据只存后端本地 `my-blog-manager/data/r2_config.json`**（已 gitignore，脱敏回显），**绝不写入 siteConfig**。Lsky Pro 外链图床链路已于 2026-11-18 整体删除，不要恢复（`picBedName/picBedUrl/picBedToken` 字段与白名单条目一并清除）。
+- 上传自动压缩：最长边 2000px + JPEG 质量 85（PNG 带透明通道保留），本地与 R2 两条上传路径都先压缩再存。
+- 不用 jsDelivr、不用除 R2 外的远程 CDN。`defaultPostCover` / `photoWallImage` 的历史外链可保留，但**不要再新增外链依赖**。
+- 管理端预览图片走 `app/images/[name]/route.ts`（代理到博客目录，含目录穿越防护）；R2 图片是全 URL，预览直接用原地址。
 
 ## 9. AI 润色
 
@@ -114,6 +115,7 @@
 ## 14. `.gitignore` 已排除（不要提交）
 
 - `data/model_config.json`（含 API Key）
+- `data/r2_config.json`（含 R2 Access Key / Secret）
 - `data/deploy_config.json`（本机博客路径）
 - `public/backend_config.json`（端口）
 - `window_config.json`、`__pycache__/`、`manager_data/`

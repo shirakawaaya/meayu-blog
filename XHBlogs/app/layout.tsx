@@ -8,6 +8,7 @@ import Navbar from "../components/Navbar";
 import GlobalSearchModal from "../components/GlobalSearchModal";
 import BackgroundSlideshow from "../components/BackgroundSlideshow";
 import Footer from "../components/Footer";
+import BackToTop from "../components/BackToTop";
 import { siteConfig } from "../siteConfig";
 import MobileBackButton from '../components/MobileBackButton';
 
@@ -58,7 +59,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var m=localStorage.getItem('blog-theme');var s=localStorage.getItem('blog-style');var d=document.documentElement;if(m==='dark')d.classList.add('dark');d.classList.remove('theme-xuan','theme-journal');d.classList.add(s==='journal'?'theme-journal':'theme-xuan');}catch(e){}})();`
+            __html: `(function(){try{var m=localStorage.getItem('blog-theme');if(m==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`
           }}
         />
       </head>
@@ -79,6 +80,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
               </div>
 
               <Footer />
+              <BackToTop />
 
               <div className="md:hidden block">
                 <MobileBackButton />

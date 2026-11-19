@@ -34,7 +34,7 @@
 - 写杂谈（TipTap 富文本 + Markdown 源码模式，粘贴 md 自动转富文本，AI 润色带预览确认）、草稿箱（仅杂谈）、说说弹窗直发
 - 设置页：个人名片、视觉背景（全站背景轮播开关）、图库、评论、模型、项目仓库
 - AI 能力：润色与摘要共用一份模型配置（`data/model_config.json`，支持 OpenAI 兼容 / Gemini 原生协议，Key 不出服务端）；杂谈发布时自动生成 80 字摘要写入 frontmatter
-- 图片管理：本地存储 `XHBlogs/public/images/`，上传自动压缩（最长边 2000px + JPEG 85，PNG 透明通道保留）
+- 图片管理：存量图本地存储 `XHBlogs/public/images/`；新图可启用 Cloudflare R2 图床（设置 → 图库配置，凭据只存后端本地文件不入库）；上传自动压缩（最长边 2000px + JPEG 85，PNG 透明通道保留）
 - 部署助手：项目仓库设置 → 源码同步 GitHub → Vercel 自动构建（`cms_core/api/deploy.py`）
 
 ## 快速开始
@@ -61,7 +61,7 @@
 - **站点配置**：`siteConfig.ts` 存在两份（`XHBlogs/` 与 `my-blog-manager/`），新增根字段需要四处同步（两份 siteConfig + `cms_core/api/config.py` 白名单 + 设置页 formData），详见根目录 `AGENTS.md`
 - **模型配置**：`my-blog-manager/data/model_config.json`（含 API Key，已被 gitignore 排除，不入库）
 - **评论**：giscus（基于 GitHub Discussions），配置写入 `siteConfig` 的 `giscusConfig`
-- **图片**：只存本地 `public/images/`，内容中引用 `/images/xxx.png`，不依赖外部图床
+- **图片**：存量图在本地 `public/images/`，内容中引用 `/images/xxx.png`；R2 图床启用后新图引用 R2 公开地址全 URL
 
 ## 与上游的主要差异
 

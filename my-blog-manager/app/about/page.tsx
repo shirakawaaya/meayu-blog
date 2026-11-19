@@ -11,6 +11,9 @@ import remarkMath from 'remark-math';
 import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeStringify from 'rehype-stringify';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { sanitizeSchema } from '../../lib/sanitize-schema';
 import rehypeKatex from 'rehype-katex';
 
 import 'highlight.js/styles/atom-one-dark.css';
@@ -51,7 +54,7 @@ function getDirActivities(dirPath: string, typeLabel: '杂谈' | '说说', linkP
 export default async function AboutPage() {
   const blogRoot = getBlogRoot();
   let contentHtml = "博主很懒，还没有写自我介绍…";
-  let coverImage = "/images/20261007_103854_34868a.jpg";
+  let coverImage = "";
 
   // 与管理端其他页面一致：about.md 也只读博客目录
   const fullPath = blogRoot ? path.join(blogRoot, 'app', 'about', 'about.md') : '';
@@ -59,7 +62,8 @@ export default async function AboutPage() {
   try {
     if (!fullPath || !fs.existsSync(fullPath)) throw new Error('about.md 不存在或未配置博客路径');
     const fileContents = fs.readFileSync(fullPath, 'utf8');
-    let { data, content } = matter(fileContents);
+    const { data, content: rawContent } = matter(fileContents);
+    let content = rawContent; // content 后续要做文本预清洗重赋值
     if (data.cover) coverImage = data.cover;
 
     // 解析前物理清洗（与博客前端保持一致）
@@ -80,13 +84,14 @@ export default async function AboutPage() {
       .use(remarkGfm)
       .use(remarkMath)
       .use(remarkRehype, { allowDangerousHtml: true })
-      // @ts-ignore
+      .use(rehypeRaw)
       .use(rehypeHighlight, {
         detect: true,
         ignoreMissing: true,
         subset: ['cpp', 'c', 'python', 'java', 'javascript', 'typescript', 'go', 'rust', 'bash', 'json', 'html', 'css', 'sql', 'xml']
       })
       .use(rehypeKatex)
+      .use(rehypeSanitize, sanitizeSchema)
       .use(rehypeStringify, { allowDangerousHtml: true })
       .process(content);
 
@@ -111,7 +116,7 @@ export default async function AboutPage() {
           <div className="flex justify-end mb-6">
             <Link
               href="/editor?id=about&type=about"
-              className="px-5 py-2.5 rounded-2xl paper-card border border-[var(--card-border)] text-xs font-black uppercase tracking-widest text-indigo-500 hover:bg-indigo-500 hover:text-white transition-all shadow-sm flex items-center gap-2"
+              className="px-5 py-2.5 rounded-2xl paper-card border border-[var(--card-border)] text-xs font-black uppercase tracking-widest text-[var(--accent)] hover:bg-[var(--accent)] hover:text-white transition-all shadow-sm flex items-center gap-2"
             >
               编辑关于页
             </Link>

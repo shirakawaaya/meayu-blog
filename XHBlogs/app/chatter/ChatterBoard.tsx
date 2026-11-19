@@ -40,17 +40,21 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
     // 核心修改：缩紧整体容器的左右边距 px-3 md:px-10
     <div className="w-full max-w-7xl mx-auto px-3 sm:px-10 py-6 md:py-10 pt-24 md:pt-28 relative z-10">
 
-      <div className="mb-8 md:mb-14 text-center">
-        {/* 核心修改：标题字号响应式 */}
-        <h1 className="text-3xl md:text-5xl font-black text-slate-900 dark:text-white mb-2 md:mb-4 tracking-tighter">
-          {siteConfig.chatterTitle || "杂谈"}
-        </h1>
-        <p className="text-xs md:text-base text-slate-500 dark:text-slate-400 font-medium italic opacity-80">
-          “ {siteConfig.chatterDescription || "日常记录"} ”
-        </p>
+      <div className="mb-8 md:mb-12 border-b-2 border-[var(--ink)] pb-5 md:pb-7">
+        <div className="flex items-stretch gap-3 md:gap-4">
+          <span className="w-1 md:w-1.5 bg-[var(--accent)] rounded-full shrink-0"></span>
+          <div>
+            <h1 className="text-3xl md:text-5xl font-black text-[var(--ink)] tracking-tighter leading-none">
+              {siteConfig.chatterTitle || "杂谈"}
+            </h1>
+            <p className="text-xs md:text-base text-[var(--ink-soft)] font-medium italic opacity-80 mt-2 md:mt-3">
+              “ {siteConfig.chatterDescription || "日常记录"} ” · 共 {chatters.length} 篇
+            </p>
+          </div>
+        </div>
       </div>
 
-      <div className="mb-8 md:mb-12 flex flex-col items-center gap-5 md:gap-8">
+      <div className="mb-8 md:mb-12 flex flex-col items-start gap-5 md:gap-8">
         <div className="relative w-full max-w-lg group px-2 md:px-0">
           {/* 核心修改：搜索框在手机端更扁凑 */}
           <input
@@ -58,20 +62,20 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
             placeholder="搜索杂谈…"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full paper-card border border-[var(--card-border)] rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 pl-10 md:pl-14 text-sm md:text-base text-slate-800 dark:text-white shadow-lg md:shadow-2xl focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all placeholder-slate-400 font-medium"
+            className="w-full paper-card border border-[var(--card-border)] rounded-xl md:rounded-2xl px-4 md:px-6 py-3 md:py-4 pl-10 md:pl-14 text-sm md:text-base text-[var(--ink)] shadow-lg md:shadow-2xl focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all placeholder-slate-400 font-medium"
           />
-          <svg className="w-4 h-4 md:w-6 md:h-6 absolute left-5 md:left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+          <svg className="w-4 h-4 md:w-6 md:h-6 absolute left-5 md:left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
         </div>
 
-        <div className="flex flex-wrap justify-center gap-1.5 md:gap-2 px-2 md:px-0">
+        <div className="flex flex-wrap justify-start gap-1.5 md:gap-2 px-2 md:px-0">
           {allTags.map(tag => (
             <button
               key={tag}
               onClick={() => setActiveTag(tag)}
               className={`px-3 py-1.5 md:px-5 md:py-2 rounded-lg md:rounded-xl text-[10px] md:text-xs font-black transition-all duration-500 border ${
                 activeTag === tag 
-                ? 'bg-indigo-500 text-white border-indigo-500 shadow-md md:shadow-lg scale-105' 
-                : 'bg-white/30 text-slate-600 dark:text-slate-400 border-white/20 hover:paper-card dark:hover:bg-slate-700/60'
+                ? 'bg-[var(--ink)] text-[var(--paper)] border-[var(--ink)] shadow-md md:shadow-lg scale-105' 
+                : 'bg-white/30 text-[var(--ink-soft)] border-white/20 hover:paper-card dark:hover:bg-slate-700/60'
               }`}
             >
               {tag === "全部" ? tag : `# ${tag}`}
@@ -83,7 +87,7 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
       {/* 空状态：没有内容或筛选无结果时，不要留下一片空白 */}
       {filteredChatters.length === 0 && (
         <div className="text-center py-20 rounded-2xl paper-card border border-[var(--card-border)]">
-          <p className="text-slate-500 dark:text-slate-400 font-bold">
+          <p className="text-[var(--ink-faint)] font-bold">
             {chatters.length === 0
               ? "还没有内容"
               : "没有匹配的杂谈，换个关键词或标签试试"}
@@ -110,8 +114,8 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
               >
                 {chatter.cover && (
                   // 核心修改 3：图片高度自适应 h-28 -> h-52
-                  <div className="w-full h-28 md:h-52 overflow-hidden relative">
-                    <img src={chatter.cover} alt="cover" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
+                  <div className="w-full h-28 md:h-52 overflow-hidden relative bg-[var(--paper-deep)]">
+                    <img loading="lazy" decoding="async" src={chatter.cover} alt="cover" className="w-full h-full object-cover transition-transform duration-1000 group-hover:scale-110" />
                     <div className="absolute inset-0 bg-gradient-to-t from-slate-900/60 via-transparent to-transparent"></div>
 
                     {/* 核心修改 4：心情徽章微缩 */}
@@ -126,12 +130,12 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
                 {/* 核心修改 5：内部 padding 极致压缩 p-3 md:p-7 */}
                 <div className="p-3 md:p-7">
                   <div className="flex items-center justify-between mb-2 md:mb-4">
-                    <div className="text-[8px] md:text-[10px] font-black text-indigo-600 dark:text-indigo-400 uppercase tracking-wider md:tracking-[0.2em] bg-indigo-500/5 dark:bg-indigo-400/10 px-1.5 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg border border-indigo-500/10">
+                    <div className="text-[8px] md:text-[10px] font-black text-[var(--accent)] uppercase tracking-wider md:tracking-[0.2em] bg-[color-mix(in_oklab,var(--accent)_7%,transparent)] px-1.5 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg border border-[var(--accent-soft)]">
                       {chatter.date}
                     </div>
                     {/* 心情展示 - 无封面版 */}
                     {!chatter.cover && chatter.mood && (
-                      <div className="text-[8px] md:text-[10px] font-black text-pink-600 dark:text-pink-400 bg-pink-500/5 dark:bg-pink-400/10 px-1.5 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg border border-pink-500/10">
+                      <div className="text-[8px] md:text-[10px] font-black text-[var(--warn)] bg-[color-mix(in_oklab,var(--warn)_9%,transparent)] px-1.5 py-0.5 md:px-3 md:py-1 rounded-md md:rounded-lg border border-[color-mix(in_oklab,var(--warn)_28%,transparent)]">
                         {chatter.mood}
                       </div>
                     )}
@@ -139,7 +143,7 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
 
                   {chatter.title && (
                     // 核心修改 6：标题压缩 text-sm md:text-xl
-                    <h3 className="text-sm md:text-xl font-bold text-slate-800 dark:text-white mb-1.5 md:mb-4 leading-tight group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 md:line-clamp-none">{chatter.title}</h3>
+                    <h3 className="text-sm md:text-xl font-bold text-[var(--ink)] mb-1.5 md:mb-4 leading-tight group-hover:text-[var(--accent)] transition-colors line-clamp-2 md:line-clamp-none">{chatter.title}</h3>
                   )}
 
                   {/* 核心修改 7：正文压缩，限制行数 */}
@@ -151,7 +155,7 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
                   {chatter.tags && chatter.tags.length > 0 && (
                     <div className="mt-3 md:mt-6 flex flex-wrap gap-1 md:gap-2">
                       {chatter.tags.map(t => (
-                        <span key={t} className="text-[8px] md:text-[9px] font-black text-slate-500 dark:text-slate-400 bg-slate-500/5 dark:bg-white/5 px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-md border border-slate-500/10 transition-all group-hover:bg-indigo-500/10 group-hover:text-indigo-500">
+                        <span key={t} className="text-[8px] md:text-[9px] font-black text-slate-500 dark:text-slate-400 bg-slate-500/5 dark:bg-white/5 px-1.5 py-0.5 md:px-2.5 md:py-1 rounded-md border border-slate-500/10 transition-all group-hover:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] group-hover:text-[var(--accent)]">
                           #{t}
                         </span>
                       ))}

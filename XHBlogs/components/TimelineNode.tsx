@@ -1,9 +1,10 @@
 "use client";
 
+import type { TimelinePost } from '../lib/content-types';
 import { motion } from "framer-motion";
 import { Link } from "next-view-transitions";
 
-export default function TimelineNode({ post, index }: { post: any, index: number }) {
+export default function TimelineNode({ post, index }: { post: TimelinePost, index: number }) {
   // 判断是放在左边还是右边（偶数左，奇数右）
   const isLeft = index % 2 === 0;
 
@@ -19,7 +20,7 @@ export default function TimelineNode({ post, index }: { post: any, index: number
       <div className="order-1 w-5/12 hidden md:block"></div>
 
       {/* 中间的圆形节点 */}
-      <div className="z-20 flex items-center justify-center order-1 bg-white dark:bg-slate-900 shadow-md w-6 h-6 rounded-full border-4 border-indigo-400 ring-4 ring-indigo-200/50 dark:ring-indigo-900/30 transition-colors duration-1000"></div>
+      <div className="z-20 flex items-center justify-center order-1 bg-white dark:bg-slate-900 shadow-md w-6 h-6 rounded-full border-4 border-[var(--accent)] ring-4 ring-[var(--accent-soft)] dark:ring-[var(--accent-soft)] transition-colors duration-1000"></div>
 
       {/* 卡片实体 */}
       <Link href={`/chatter/${post.slug}`} className="order-1 w-full md:w-5/12 group">
@@ -27,7 +28,7 @@ export default function TimelineNode({ post, index }: { post: any, index: number
 
           {/* 上半部分：封面图 */}
           <div className="w-full h-40 sm:h-48 overflow-hidden relative bg-slate-200 dark:bg-slate-700">
-            <img
+            <img loading="lazy" decoding="async"
               src={post.cover}
               alt={post.title}
               className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
@@ -38,13 +39,13 @@ export default function TimelineNode({ post, index }: { post: any, index: number
           {/* 下半部分：文本信息 */}
           <div className="p-6">
             <div className="flex items-center justify-between mb-3">
-              <div className="text-indigo-600 dark:text-indigo-400 font-bold text-[11px] flex items-center gap-1 uppercase tracking-wider">
+              <div className="text-[var(--accent)] font-bold text-[11px] flex items-center gap-1 uppercase tracking-wider">
                 <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 {post.type === 'chatter' ? `杂谈 · ${post.date}` : post.date}
               </div>
             </div>
 
-            <h3 className="font-bold text-lg text-slate-800 dark:text-white mb-3 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors line-clamp-2 leading-tight">
+            <h3 className="font-bold text-lg text-slate-800 dark:text-white mb-3 group-hover:text-[var(--accent)] transition-colors line-clamp-2 leading-tight">
               {post.title}
             </h3>
 
@@ -54,7 +55,7 @@ export default function TimelineNode({ post, index }: { post: any, index: number
                 {post.tags.map((tag: string) => (
                   <span
                     key={tag}
-                    className="px-2 py-0.5 rounded-md text-[10px] font-black bg-indigo-500/10 text-indigo-600 dark:bg-indigo-400/10 dark:text-indigo-400 border border-indigo-500/10 dark:border-indigo-400/10"
+                    className="px-2 py-0.5 rounded-md text-[10px] font-black bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] text-[var(--accent)] dark:bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] dark:text-[var(--accent)] border border-[var(--accent-soft)] dark:border-[var(--accent-soft)]"
                   >
                     #{tag}
                   </span>

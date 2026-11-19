@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 // 定义操作的类型
 // 操作类型：必须覆盖全仓实际提交的所有 type 值，
@@ -26,8 +26,8 @@ export interface Operation {
   label: string;      // 显示在列表里的简短描述，如 "修改杂谈：某篇标题"
   description?: string; // 详细描述（可选，多数调用方省略）
   timestamp: string;
-  payload?: any;      // 实际要修改的数据内容
-  value?: any;        // 部分操作（照片墙 / 项目）用它携带全量数组
+  payload?: Record<string, unknown>; // 实际要修改的数据内容（键值包，由 Navbar 按 type 分发）
+  value?: unknown;        // 部分操作（照片墙 / 项目）用它携带全量数组
   key?: string;       // 设置类操作：被改的字段名
 }
 

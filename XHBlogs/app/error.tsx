@@ -33,7 +33,7 @@ export default function Error({
         )}
         <button
           onClick={reset}
-          className="px-6 py-2.5 rounded-2xl bg-indigo-500 text-white text-sm font-black shadow-sm hover:bg-indigo-600 transition-colors"
+          className="px-6 py-2.5 rounded-2xl bg-[var(--accent)] text-white text-sm font-black shadow-sm hover:bg-[var(--accent)] transition-colors"
         >
           重试
         </button>

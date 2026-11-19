@@ -5,6 +5,7 @@ import "./globals.css";
 import { ThemeProvider } from "../components/ThemeProvider";
 import { siteConfig } from "../siteConfig";
 import { OperationProvider } from "../context/OperationContext";
+import BackendAuthInit from "../components/BackendAuthInit";
 import { ToastProvider } from '../components/ToastProvider';
 import Navbar from "../components/Navbar";
 
@@ -26,12 +27,13 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var m=localStorage.getItem('manager-theme');var s=localStorage.getItem('manager-style');var d=document.documentElement;if(m==='dark')d.classList.add('dark');d.classList.remove('theme-xuan','theme-journal');d.classList.add(s==='journal'?'theme-journal':'theme-xuan');}catch(e){}})();`
+            __html: `(function(){try{var m=localStorage.getItem('manager-theme');if(m==='dark')document.documentElement.classList.add('dark');}catch(e){}})();`
           }}
         />
       </head>
 
       <body className="w-screen overflow-x-hidden min-h-full flex flex-col relative font-serif">
+        <BackendAuthInit />
         <ThemeProvider>
           <OperationProvider>
             <ToastProvider>

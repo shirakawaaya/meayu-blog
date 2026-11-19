@@ -26,6 +26,7 @@ export default function Comments() {
   const [mounted, setMounted] = useState(false);
 
   // Giscus 是客户端 iframe，挂载后再渲染，避免 SSR 期间访问 window
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- giscus 为客户端 iframe，mounted 守卫用于避开 SSR
   useEffect(() => setMounted(true), []);
 
   // 配置未填写时给出明确提示，而不是渲染一个空白区域

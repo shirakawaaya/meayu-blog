@@ -16,35 +16,41 @@ export default function ProfileCard({ chatterCount, momentCount, photoCount }: {
   return (
     <div
       onClick={() => router.push('/about')}
-      className="md:col-span-7 rounded-2xl paper-card border border-[var(--card-border)] p-5 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-soft)] cursor-pointer group relative overflow-hidden h-full min-h-[220px] md:min-h-[280px]"
+      className="md:col-span-7 rounded-2xl paper-card border border-[var(--card-border)] p-5 sm:p-6 md:p-8 flex flex-col justify-between transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-soft)] cursor-pointer group relative overflow-hidden h-full min-h-[220px] md:min-h-[280px] xl:pr-24"
     >
+      {/* 竖排题字：宽屏时悬在名片右侧，纯装饰 */}
+      <div aria-hidden="true" className="pointer-events-none absolute right-6 top-1/2 z-0 hidden -translate-y-1/2 flex-col items-center gap-4 xl:flex">
+        <span className="text-sm tracking-[0.5em] text-[var(--ink-faint)] [writing-mode:vertical-rl]">拾光留档 · 字里行间</span>
+        <span className="seal-stamp">光</span>
+      </div>
       <div className="flex items-start justify-between relative z-10">
         <div className="flex items-center gap-4 md:gap-6 w-full">
           <div className="w-16 h-16 sm:w-20 sm:h-20 md:w-24 md:h-24 rounded-xl md:rounded-2xl border-2 border-[var(--accent)] p-1 shadow-md flex-shrink-0 transition-transform duration-500 group-hover:rotate-3">
-            <img src={siteConfig.avatarUrl} alt="avatar" className="vt-avatar w-full h-full rounded-lg md:rounded-xl object-cover bg-white" />
+            {siteConfig.avatarUrl ? <img src={siteConfig.avatarUrl} alt="avatar" className="vt-avatar w-full h-full rounded-lg md:rounded-xl object-cover bg-white" /> : <div className="w-full h-full rounded-lg md:rounded-xl bg-[var(--accent)] text-white flex items-center justify-center text-3xl font-black">{siteConfig.authorName.charAt(0)}</div>}
           </div>
           <div className="flex-1 min-w-0">
             {/* 核心修复点：
                 1. 增加了 pb-1 (padding-bottom) 给字母降部留空间
                 2. 增加了 leading-snug 确保行高不至于太扁
             */}
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900 dark:text-white mb-1 md:mb-2 pb-1 leading-snug tracking-wider transition-colors duration-700 truncate flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-[var(--ink)] mb-1 md:mb-2 pb-1 leading-snug tracking-wider transition-colors duration-700 truncate flex items-center gap-2">
               <span>{siteConfig.authorName}</span>
               <span className="seal-mark rounded-[1px] ml-1" title="印" />
             </h1>
-            <p className="text-xs sm:text-sm md:text-base text-slate-700 dark:text-slate-300 font-medium leading-relaxed max-w-md transition-colors duration-700 line-clamp-2 md:line-clamp-none">
+            <p className="text-xs sm:text-sm md:text-base text-[var(--ink-soft)] font-medium leading-relaxed max-w-md transition-colors duration-700 line-clamp-2 md:line-clamp-none">
               {siteConfig.bio}
             </p>
+            <div className="w-11 h-[3px] bg-[var(--accent)] rounded-full mt-3"></div>
           </div>
         </div>
       </div>
 
       <div className="flex flex-col md:flex-row items-center md:items-end justify-between mt-6 md:mt-8 gap-5 md:gap-6 relative z-10">
         <div className="flex gap-2 sm:gap-6 w-full md:w-auto justify-between sm:justify-around md:justify-start px-2 sm:px-0">
-          <StatItem count={chatterCount} label="杂谈" color="text-indigo-600 dark:text-indigo-400" />
-          <div className="w-px h-8 md:h-10 bg-slate-300/50 dark:bg-slate-700 hidden md:block"></div>
+          <StatItem count={chatterCount} label="杂谈" color="text-[var(--accent)]" />
+          <div className="w-px h-8 md:h-10 bg-[var(--rule)] hidden md:block"></div>
           <StatItem count={momentCount} label="说说" color="text-[var(--ok)]" />
-          <div className="w-px h-8 md:h-10 bg-slate-300/50 dark:bg-slate-700 hidden md:block"></div>
+          <div className="w-px h-8 md:h-10 bg-[var(--rule)] hidden md:block"></div>
           <StatItem count={photoCount} label="照片" color="text-[var(--warn)]" />
         </div>
 
@@ -65,7 +71,7 @@ function StatItem({ count, label, color }: { count: number, label: string, color
   return (
     <div className="text-center group/stat px-2">
       <div className={`text-xl md:text-2xl font-black ${color} transition-transform group-hover/stat:scale-110`}>{count}</div>
-      <div className="text-[9px] md:text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-widest mt-0.5">{label}</div>
+      <div className="text-[9px] md:text-[10px] font-bold text-[var(--ink-faint)] uppercase tracking-widest mt-0.5">{label}</div>
     </div>
   );
 }
@@ -89,7 +95,7 @@ function SocialBtn({ type, url, onClick }: { type: string, url?: string, onClick
   const content = (
     <div
       onClick={onClick}
-      className="w-9 h-9 md:w-10 md:h-10 rounded-xl paper-card flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all duration-300 border border-[var(--card-border)] shadow-sm"
+      aria-label={type} className="w-9 h-9 md:w-10 md:h-10 rounded-xl paper-card flex items-center justify-center text-[var(--ink-soft)] hover:bg-[var(--accent)] hover:text-white transition-all duration-300 border border-[var(--card-border)] shadow-sm"
       title={type}
     >
       {getIcon()}

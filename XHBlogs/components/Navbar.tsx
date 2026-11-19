@@ -19,7 +19,7 @@ export default function Navbar() {
   const smoothRotation = useSpring(rawRotation, { stiffness: 200, damping: 25 });
   const inverseRotation = useTransform(smoothRotation, (r) => -r);
 
-  const handlePan = (event: any, info: PanInfo) => {
+  const handlePan = (event: PointerEvent, info: PanInfo) => {
     if (!wheelRef.current) return;
     const rect = wheelRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -43,6 +43,7 @@ export default function Navbar() {
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const vh = window.innerHeight;
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 约束值依赖挂载后实测的 window.innerHeight
       setConstraints({
         top: -(vh / 2) + 80,
         bottom: (vh / 2) - 80
@@ -87,19 +88,20 @@ export default function Navbar() {
       {/* PC端导航栏 */}
       <header className={`hidden md:block w-full fixed top-0 left-0 right-0 z-50 transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-[color-mix(in_oklab,var(--paper)_88%,transparent)] border-[var(--rule)] shadow-sm`}>
         <div className="w-[90%] max-w-6xl mx-auto h-16 flex items-center justify-between px-4 sm:px-[30px] box-border">
-          <Link href="/" className="text-xl font-black text-slate-800 dark:text-white tracking-tighter hover:text-indigo-600 dark:hover:text-indigo-400 transition-all duration-300">
+          <Link href="/" className="text-xl font-black text-[var(--ink)] tracking-tighter hover:text-[var(--accent)] transition-all duration-300">
             {siteConfig.navTitle || siteConfig.authorName}
-            <span className="text-indigo-500 mx-1">{siteConfig.navSuffix || 'の'}</span>
+            <span className="text-[var(--accent)] mx-1">{siteConfig.navSuffix || 'の'}</span>
             {siteConfig.navAfter || '拾光集'}
+            <span className="seal-stamp ml-2 align-middle">印</span>
           </Link>
           <nav className="flex items-center gap-5 text-sm font-bold">
             {/* PC端依然使用全量的 navLinks */}
             {navLinks.map((link) => {
               const isActive = pathname === link.href || pathname === `${link.href}/`;
               return (
-                <Link key={link.href} href={link.href} className={`relative py-1 transition-colors ${isActive ? 'text-indigo-600 dark:text-indigo-400' : 'text-slate-700 dark:text-slate-200 hover:text-indigo-600'}`}>
+                <Link key={link.href} href={link.href} className={`relative py-1 transition-colors ${isActive ? 'text-[var(--accent)]' : 'text-[var(--ink-soft)] hover:text-[var(--accent)]'}`}>
                   {link.name}
-                  {isActive && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-indigo-500 rounded-full animate-pulse"></span>}
+                  {isActive && <span className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-1 h-1 bg-[var(--accent)] rounded-full animate-pulse"></span>}
                 </Link>
               );
             })}
@@ -107,7 +109,7 @@ export default function Navbar() {
             <button
               onClick={() => window.dispatchEvent(new CustomEvent('open-global-search'))}
               className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg text-xs font-medium text-slate-700 dark:text-slate-300 hover:text-[var(--accent)] hover:bg-[color-mix(in_oklab,var(--card)_80%,transparent)] border border-[var(--rule)] transition-all ml-1"
-              title="快捷搜索 (Ctrl + K)"
+              title="快捷搜索 (Ctrl + K)" aria-label="全局搜索"
             >
               <svg className="w-3.5 h-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />

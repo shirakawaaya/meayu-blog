@@ -23,7 +23,7 @@ function SocialBtn({ type, url, onClick }: { type: string, url?: string, onClick
   const content = (
     <div
       onClick={onClick}
-      className="w-8 h-8 rounded-lg paper-card flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all duration-300 border border-[var(--card-border)] shadow-sm cursor-pointer"
+      className="w-8 h-8 rounded-lg paper-card flex items-center justify-center text-slate-700 dark:text-slate-300 hover:bg-[var(--accent)] hover:text-white dark:hover:bg-[var(--accent)] dark:hover:text-white transition-all duration-300 border border-[var(--card-border)] shadow-sm cursor-pointer"
       title={type}
     >
       {getIcon()}

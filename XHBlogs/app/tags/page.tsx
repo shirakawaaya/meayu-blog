@@ -32,7 +32,7 @@ export default function TagsPage() {
               className="group rounded-2xl paper-card border border-[var(--card-border)] shadow-lg p-6 hover:shadow-xl hover:-translate-y-1 transition-all"
             >
               <div className="flex items-center justify-between mb-3">
-                <span className="text-lg font-black text-indigo-600 dark:text-indigo-400 group-hover:scale-105 origin-left transition-transform">#{tag}</span>
+                <span className="text-lg font-black text-[var(--accent)] group-hover:scale-105 origin-left transition-transform">#{tag}</span>
                 <span className="text-[10px] font-black uppercase tracking-widest text-slate-400 bg-slate-500/5 dark:bg-white/5 px-2.5 py-1 rounded-full border border-slate-500/10">{posts.length} 篇</span>
               </div>
               <div className="space-y-1.5">

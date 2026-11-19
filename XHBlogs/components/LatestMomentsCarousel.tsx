@@ -1,7 +1,8 @@
 // components/LatestMomentsCarousel.tsx
 "use client";
 
-import { useState, useEffect } from 'react';
+import type { MomentListItem } from '../lib/content-types';
+import { useState, useEffect, useRef } from 'react';
 import { Link } from 'next-view-transitions';
 import { motion, AnimatePresence } from 'framer-motion';
 import { MapPin } from 'lucide-react';
@@ -10,16 +11,19 @@ import { MapPin } from 'lucide-react';
  * 首页「最近说说」轮播。
  * 展示最新几条说说（含首图、正文摘要、地点、时间），点击跳说说页。
  */
-export default function LatestMomentsCarousel({ moments }: { moments: any[] }) {
+export default function LatestMomentsCarousel({ moments }: { moments: MomentListItem[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [paused, setPaused] = useState(false);
+  const touchX = useRef<number | null>(null);
 
   useEffect(() => {
-    if (moments.length <= 1) return;
+    if (moments.length <= 1 || paused) return;
     const timer = setInterval(() => {
+      if (document.hidden) return;
       setCurrentIndex((prev) => (prev + 1) % moments.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [moments.length]);
+  }, [moments.length, paused]);
 
   if (!moments || moments.length === 0) return null;
 
@@ -27,7 +31,7 @@ export default function LatestMomentsCarousel({ moments }: { moments: any[] }) {
   const cover = current.images && current.images.length > 0 ? current.images[0] : '';
 
   return (
-    <div className="w-full h-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden relative group min-h-[220px] flex flex-col transition-all duration-300 hover:-translate-y-1">
+    <div className="w-full h-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden relative group min-h-[220px] flex flex-col transition-all duration-300 hover:-translate-y-1" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }} onTouchEnd={(e) => { if (touchX.current === null) return; const dx = e.changedTouches[0].clientX - touchX.current; if (Math.abs(dx) > 40) setCurrentIndex((prev) => (prev + (dx < 0 ? 1 : -1) + moments.length) % moments.length); touchX.current = null; }}>
       <Link href="/moments" className="absolute inset-0 z-20" aria-label="查看说说" />
 
       <AnimatePresence mode="wait">
@@ -52,7 +56,7 @@ export default function LatestMomentsCarousel({ moments }: { moments: any[] }) {
 
       <div className="relative z-10 flex flex-col justify-center p-6 md:p-8 h-full pointer-events-none w-full md:w-[85%]">
         <div className="flex items-center gap-2 mb-3">
-          <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${cover ? 'text-indigo-300 bg-[color-mix(in_oklab,var(--card)_80%,transparent)] border-white/10' : 'text-indigo-600 dark:text-indigo-300 paper-card border-white/20'}`}>
+          <span className={`text-[10px] font-black uppercase tracking-widest px-2.5 py-1 rounded-md border ${cover ? 'text-[var(--accent)] bg-[color-mix(in_oklab,var(--card)_80%,transparent)] border-white/10' : 'text-[var(--accent)] dark:text-[var(--accent)] paper-card border-white/20'}`}>
             说说 · Moments
           </span>
           {current.date && (
@@ -79,7 +83,7 @@ export default function LatestMomentsCarousel({ moments }: { moments: any[] }) {
             <button
               key={i}
               onClick={(e) => { e.stopPropagation(); setCurrentIndex(i); }}
-              className={`h-1.5 rounded-full transition-all duration-500 shadow-sm ${i === currentIndex ? 'w-6 bg-indigo-400' : 'w-2 bg-white/40 hover:bg-white/80'}`}
+              className={`h-1.5 rounded-full transition-all duration-500 shadow-sm ${i === currentIndex ? 'w-6 bg-[var(--accent)]' : 'w-2 bg-white/40 hover:bg-white/80'}`}
               aria-label="跳转"
             />
           ))}

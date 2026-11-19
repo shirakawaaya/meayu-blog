@@ -3,8 +3,8 @@
 import { useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useToast } from '../ToastProvider';
-import { siteConfig } from '../../siteConfig';
 import { toPreviewSrc } from '../imagePreview';
+import { resolvePicbedUpload } from '../../lib/picbed';
 
 interface FloatingImageToolProps {
   isOpen: boolean;
@@ -21,32 +21,21 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
   const [isDragging, setIsDragging] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // 上传逻辑：把图片存进博客前端的 public/images/，插入本地相对路径。
-  //（若日后在设置里填了 Lsky Pro 的 URL+Token，则优先走第三方图床）
+  // 上传逻辑：目标由后端决定——R2 图床已启用走 R2，否则存博客前端 public/images（本地相对路径）。
   const handleFileUpload = async (file: File) => {
-    const picUrl = (siteConfig as any).picBedUrl || "";
-    const picToken = (siteConfig as any).picBedToken;
-    const useRemote = Boolean(picUrl && picToken);   // 两个都填了才走第三方
-
     setIsUploading(true);
-    showToast(
-      useRemote ? "正在上传到图床…" : "正在保存到本地…",
-      "success"
-    );
 
     try {
-      const configRes = await fetch(`/backend_config.json?t=${Date.now()}`);
-      const configData = await configRes.json();
-      const base = `http://127.0.0.1:${configData.api_port}/api/picbed`;
+      const { endpoint, useRemote } = await resolvePicbedUpload();
+      showToast(
+        useRemote ? "正在上传到 R2 图床…" : "正在保存到本地…",
+        "success"
+      );
 
       const uploadData = new FormData();
       uploadData.append('file', file);
-      if (useRemote) {
-        uploadData.append('url', picUrl);
-        uploadData.append('token', picToken);
-      }
 
-      const res = await fetch(useRemote ? `${base}/upload` : `${base}/local`, {
+      const res = await fetch(endpoint, {
         method: 'POST',
         body: uploadData,
       });
@@ -63,8 +52,8 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
       } else {
         showToast(`上传失败：${data.message || '未知错误'}`, "error");
       }
-    } catch (error: any) {
-      showToast(`连接异常：${error.message}`, "error");
+    } catch (error) {
+      showToast(`连接异常：${error instanceof Error ? error.message : '未知错误'}`, "error");
     } finally {
       setIsUploading(false);
       if (fileInputRef.current) fileInputRef.current.value = '';
@@ -186,8 +175,8 @@ export default function FloatingImageTool({ isOpen, onClose, onInsert }: Floatin
                   </button>
                 </div>
                 <div className="grid grid-cols-2 gap-3">
-                  <button onClick={copyUrlToClipboard} className="py-2.5 rounded-xl paper-card text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-indigo-500 hover:text-white dark:hover:bg-indigo-600 dark:hover:text-white transition-all shadow-sm">复制链接</button>
-                  <button onClick={() => { onInsert(uploadedUrl); setUploadedUrl(''); setExternalUrl(''); }} className="py-2.5 rounded-xl bg-indigo-500 hover:bg-indigo-600 text-white font-black text-xs shadow-sm transition-all active:scale-95">嵌入正文</button>
+                  <button onClick={copyUrlToClipboard} className="py-2.5 rounded-xl paper-card text-slate-700 dark:text-slate-200 font-bold text-xs hover:bg-[var(--accent)] hover:text-white dark:hover:bg-[var(--accent)] dark:hover:text-white transition-all shadow-sm">复制链接</button>
+                  <button onClick={() => { onInsert(uploadedUrl); setUploadedUrl(''); setExternalUrl(''); }} className="py-2.5 rounded-xl bg-[var(--accent)] hover:bg-[var(--accent)] text-white font-black text-xs shadow-sm transition-all active:scale-95">嵌入正文</button>
                 </div>
               </div>
             )}

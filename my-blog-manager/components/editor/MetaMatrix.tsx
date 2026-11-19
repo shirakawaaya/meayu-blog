@@ -2,6 +2,7 @@
 
 import React, { useState, KeyboardEvent } from 'react';
 import { ImageIcon, Tag, FileText, X, Clock, CloudUpload, Smile, Save, Send, Lock } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 
 interface Props {
   type: 'post' | 'chatter' | 'about';
@@ -20,6 +21,14 @@ interface Props {
   onOpenImageTool: () => void;
 }
 
+// 分区小标题：不依赖组件状态，定义在模块作用域，避免每次渲染新建组件
+const Label = ({ icon: Icon, text, color }: { icon: LucideIcon; text: string; color: string }) => (
+  <div className={`flex items-center gap-2 mb-3 border-l-4 ${color} pl-4`}>
+    <Icon size={14} className="text-slate-400" />
+    <span className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-800 dark:text-slate-200">{text}</span>
+  </div>
+);
+
 export default function MetaMatrix({
   type, tags, setTags, cover, setCover, summary, setSummary, mood, setMood,
   isPrivate = false, setIsPrivate,
@@ -36,18 +45,11 @@ export default function MetaMatrix({
     }
   };
 
-  const Label = ({ icon: Icon, text, color }: any) => (
-    <div className={`flex items-center gap-2 mb-3 border-l-4 ${color} pl-4`}>
-      <Icon size={14} className="text-slate-400" />
-      <span className="font-black text-[10px] uppercase tracking-[0.2em] text-slate-800 dark:text-slate-200">{text}</span>
-    </div>
-  );
-
   return (
     <div className="flex flex-col h-full overflow-hidden relative">
       {/* 头部标题 */}
       <div className="shrink-0 p-8 pb-4 flex flex-col border-b border-white/10 bg-white/5">
-        <span className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.3em]">{type === 'about' ? '关于 · About Mode' : '杂谈 · Chatter Mode'}</span>
+        <span className="text-[10px] font-black text-[var(--accent)] uppercase tracking-[0.3em]">{type === 'about' ? '关于 · About Mode' : '杂谈 · Chatter Mode'}</span>
         <h2 className="text-xl font-black text-slate-900 dark:text-white">文章信息</h2>
       </div>
 
@@ -55,13 +57,13 @@ export default function MetaMatrix({
 
         {/* 1. 封面图区 */}
         <div className="flex flex-col">
-          <Label icon={ImageIcon} text="封面 · Cover Image" color="border-indigo-500" />
+          <Label icon={ImageIcon} text="封面 · Cover Image" color="border-[var(--accent)]" />
           <div onClick={onOpenImageTool} className="w-full aspect-video bg-black/10 dark:bg-black/40 rounded-2xl border-2 border-dashed border-white/10 flex items-center justify-center overflow-hidden mb-4 group relative cursor-pointer shadow-inner transition-all">
             {cover ? (
-              <img src={cover} className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
+              <img src={cover} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform" />
             ) : (
               <div className="flex flex-col items-center gap-2 text-slate-400">
-                <CloudUpload size={28} className="opacity-30 group-hover:opacity-100 group-hover:text-indigo-400 transition-all" />
+                <CloudUpload size={28} className="opacity-30 group-hover:opacity-100 group-hover:text-[var(--accent)] transition-all" />
                 <span className="text-[9px] font-black uppercase tracking-widest">点击上传 · Click to Upload</span>
               </div>
             )}
@@ -71,7 +73,7 @@ export default function MetaMatrix({
           </div>
           <input
             type="text" value={cover} onChange={(e) => setCover(e.target.value)} placeholder="或手动粘贴 URL…"
-            className="w-full bg-white/10 dark:bg-black/20 rounded-2xl px-5 py-3.5 text-xs text-slate-800 dark:text-slate-200 border border-[var(--card-border)] outline-none focus:ring-2 focus:ring-indigo-500 transition-all"
+            className="w-full bg-white/10 dark:bg-black/20 rounded-2xl px-5 py-3.5 text-xs text-slate-800 dark:text-slate-200 border border-[var(--card-border)] outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all"
           />
         </div>
 
@@ -81,7 +83,7 @@ export default function MetaMatrix({
             <Label icon={Tag} text="标签 · Relevant Tags" color="border-pink-500" />
             <div className="flex flex-wrap gap-2 mb-4 p-3 bg-black/5 dark:bg-white/5 rounded-2xl border border-[var(--card-border)] shadow-inner">
               {tags.map(t => (
-                <span key={t} className="px-3 py-1.5 bg-indigo-500/20 text-indigo-700 dark:text-indigo-300 text-[10px] font-black rounded-xl flex items-center gap-2 shadow-sm border border-indigo-500/10">
+                <span key={t} className="px-3 py-1.5 bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] text-[var(--accent)] dark:text-[var(--accent)] text-[10px] font-black rounded-xl flex items-center gap-2 shadow-sm border border-[var(--accent-soft)]">
                   #{t}
                   <button onClick={() => setTags(tags.filter(x => x !== t))} className="hover:text-red-500 transition-colors"><X size={10}/></button>
                 </span>
@@ -101,7 +103,7 @@ export default function MetaMatrix({
                     className={`px-3 py-1.5 rounded-xl text-[10px] font-bold border transition-all ${
                       tags.includes(t) 
                       ? 'bg-slate-200 dark:bg-slate-700 text-slate-400 border-transparent opacity-50 cursor-not-allowed' 
-                      : 'bg-white/10 text-slate-500 dark:text-slate-400 border-white/10 hover:bg-indigo-500 hover:text-white hover:border-indigo-500'
+                      : 'bg-white/10 text-slate-500 dark:text-slate-400 border-white/10 hover:bg-[var(--accent)] hover:text-white hover:border-[var(--accent)]'
                     }`}
                   >
                     + {t}
@@ -189,7 +191,7 @@ export default function MetaMatrix({
             </button>
             <button
               onClick={() => onSave(true)} disabled={isSaving}
-              className="flex-1 py-3.5 bg-indigo-600 hover:bg-indigo-500 text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
+              className="flex-1 py-3.5 bg-[var(--accent)] hover:bg-[var(--accent)] text-white font-black text-[10px] uppercase tracking-widest rounded-2xl shadow-md transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50"
             >
               <Send size={14} /> 加入待保存
             </button>

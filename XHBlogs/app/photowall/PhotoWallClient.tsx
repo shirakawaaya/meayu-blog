@@ -16,6 +16,7 @@ export default function PhotoWallClient() {
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- 搜索防抖的过渡态：先亮过渡、250ms 后由定时器落定
     setIsTransitioning(true);
 
     const timer = setTimeout(() => {
@@ -51,12 +52,13 @@ export default function PhotoWallClient() {
             <div className="animate-fade-in-up">
               <div className="flex flex-col md:flex-row justify-between items-center mb-16 gap-6">
                 <div>
-                  <h1 className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white tracking-widest mb-2 transition-colors duration-700">照片墙</h1>
+                  <h1 className="text-4xl md:text-5xl font-black text-[var(--ink)] tracking-widest mb-2 transition-colors duration-700">照片墙</h1>
+                  <div className="w-11 h-[3px] bg-[var(--accent)] rounded-full mb-3"></div>
                   <p className="text-slate-600 dark:text-slate-400 font-medium tracking-wider transition-colors duration-700">随手拍下的一些照片</p>
                 </div>
 
                 <div className="relative w-full md:w-80 group">
-                  <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-slate-500 dark:text-slate-400 group-focus-within:text-indigo-500 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 z-10 pointer-events-none text-slate-500 dark:text-slate-400 group-focus-within:text-[var(--accent)] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
                   </svg>
                   <input
@@ -64,7 +66,7 @@ export default function PhotoWallClient() {
                     placeholder="搜索相册名或照片描述…"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="w-full h-12 pl-12 pr-4 paper-card border border-[var(--card-border)] rounded-full text-sm text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/50 shadow-sm transition-all duration-700"
+                    className="w-full h-12 pl-12 pr-4 paper-card border border-[var(--card-border)] rounded-full text-sm text-slate-800 dark:text-white placeholder-slate-500 dark:placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] shadow-sm transition-all duration-700"
                   />
                 </div>
               </div>
@@ -74,7 +76,7 @@ export default function PhotoWallClient() {
                 {activeQuery && matchedPhotos.length > 0 && (
                   <div className="mb-16">
                     <h3 className="text-xl font-bold text-slate-800 dark:text-slate-200 mb-6 flex items-center gap-2">
-                      <span className="w-2 h-6 bg-indigo-500 rounded-full"></span>
+                      <span className="w-2 h-6 bg-[var(--accent)] rounded-full"></span>
                       匹配的照片 ({matchedPhotos.length})
                     </h3>
                     <div className="columns-1 sm:columns-2 md:columns-3 lg:columns-4 gap-6 space-y-6">
@@ -84,9 +86,9 @@ export default function PhotoWallClient() {
                           onClick={() => setSelectedImage(photo)}
                           className="break-inside-avoid relative group rounded-2xl overflow-hidden cursor-zoom-in shadow-lg bg-white/20 border border-[var(--card-border)] transition-transform duration-500 hover:scale-[1.02] hover:shadow-2xl"
                         >
-                          <img src={photo.url} alt={photo.caption} className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                          <img src={photo.url} alt={photo.caption} className="w-full h-auto object-cover bg-[var(--paper-deep)] transform transition-transform duration-700 group-hover:scale-105" loading="lazy" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-5">
-                            <span className="text-indigo-300 font-black text-[10px] tracking-widest uppercase mb-1 drop-shadow-md">{photo.albumName}</span>
+                            <span className="text-[var(--accent)] font-black text-[10px] tracking-widest uppercase mb-1 drop-shadow-md">{photo.albumName}</span>
                             <p className="text-white font-medium text-sm drop-shadow-md translate-y-4 group-hover:translate-y-0 transition-transform duration-500">{photo.caption}</p>
                           </div>
                         </div>
@@ -103,7 +105,7 @@ export default function PhotoWallClient() {
                 )}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-8 gap-y-20 mt-10">
-                  {matchedAlbums.map((album, index) => (
+                  {matchedAlbums.map((album) => (
                     <div
                       key={album.id}
                       onClick={() => { setSearchQuery(''); setCurrentAlbum(album); }}
@@ -111,23 +113,23 @@ export default function PhotoWallClient() {
                     >
                       <div className="relative w-[85%] aspect-[4/3] mb-8">
                         <div className="absolute inset-0 bg-slate-300 dark:bg-slate-700 rounded-[4px] shadow-md transform rotate-6 translate-x-4 translate-y-2 group-hover:rotate-12 group-hover:translate-x-8 transition-all duration-500 border-[6px] border-white dark:border-slate-200 overflow-hidden opacity-60">
-                           {album.photos[2] && <img src={album.photos[2].url} className="w-full h-full object-cover grayscale blur-[2px]" alt="" />}
+                           {album.photos[2] && <img loading="lazy" decoding="async" src={album.photos[2].url} className="w-full h-full object-cover bg-[var(--paper-deep)] grayscale blur-[2px]" alt="" />}
                         </div>
                         <div className="absolute inset-0 bg-slate-200 dark:bg-slate-600 rounded-[4px] shadow-lg transform -rotate-3 -translate-x-2 -translate-y-1 group-hover:-rotate-6 group-hover:-translate-x-6 transition-all duration-500 border-[6px] border-white dark:border-slate-200 overflow-hidden opacity-80 z-10">
-                           {album.photos[1] && <img src={album.photos[1].url} className="w-full h-full object-cover grayscale-[50%]" alt="" />}
+                           {album.photos[1] && <img loading="lazy" decoding="async" src={album.photos[1].url} className="w-full h-full object-cover bg-[var(--paper-deep)] grayscale-[50%]" alt="" />}
                         </div>
                         <div className="absolute inset-0 bg-white dark:bg-slate-200 rounded-[4px] shadow-lg border-[6px] border-white dark:border-slate-200 overflow-hidden z-20 transform group-hover:-translate-y-2 group-hover:scale-105 transition-all duration-500 relative">
-                          <img src={album.cover} alt={album.title} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                          <img loading="lazy" decoding="async" src={album.cover} alt={album.title} className="w-full h-full object-cover bg-[var(--paper-deep)] transition-transform duration-700 group-hover:scale-105" />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-5">
                             <span className="text-white font-bold text-lg drop-shadow-md translate-y-2 group-hover:translate-y-0 transition-transform duration-500">{album.photos.length} 张照片</span>
-                            <span className="text-indigo-300 font-medium text-xs mt-1 drop-shadow-md translate-y-2 group-hover:translate-y-0 transition-transform duration-500 delay-75">点击展开 · Click to Open</span>
+                            <span className="text-[var(--accent)] font-medium text-xs mt-1 drop-shadow-md translate-y-2 group-hover:translate-y-0 transition-transform duration-500 delay-75">点击展开 · Click to Open</span>
                           </div>
                         </div>
                       </div>
 
                       <div className="text-center px-4 w-full">
                         <div className="flex items-center justify-center gap-2 mb-1">
-                          <h2 className="text-xl font-bold text-slate-900 dark:text-white transition-colors group-hover:text-indigo-600 dark:group-hover:text-indigo-400">{album.title}</h2>
+                          <h2 className="text-xl font-bold text-slate-900 dark:text-white transition-colors group-hover:text-[var(--accent)]">{album.title}</h2>
                           <span className="text-[10px] font-black text-slate-500 dark:text-slate-400 paper-card px-2 py-0.5 rounded-sm uppercase tracking-wider">{album.date}</span>
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-1">{album.description}</p>
@@ -167,7 +169,7 @@ export default function PhotoWallClient() {
                 </div>
 
                 <div className="text-sm font-bold text-slate-500 dark:text-slate-400 paper-card px-5 py-2.5 rounded-2xl border border-[var(--card-border)] shadow-sm">
-                  共 <span className="text-indigo-500 dark:text-indigo-400 text-lg">{currentAlbum.photos.length}</span> 张
+                  共 <span className="text-[var(--accent)] dark:text-[var(--accent)] text-lg">{currentAlbum.photos.length}</span> 张
                 </div>
               </div>
 
@@ -179,7 +181,7 @@ export default function PhotoWallClient() {
                     className="break-inside-avoid relative group rounded-2xl overflow-hidden cursor-zoom-in shadow-lg bg-white/20 border border-[var(--card-border)] transition-transform duration-500 hover:scale-[1.02] hover:shadow-2xl animate-fade-in-up"
                     style={{ animationDelay: `${index * 50}ms` }}
                   >
-                    <img src={photo.url} alt={photo.caption || '照片'} className="w-full h-auto object-cover transform transition-transform duration-700 group-hover:scale-105" loading="lazy" />
+                    <img src={photo.url} alt={photo.caption || '照片'} className="w-full h-auto object-cover bg-[var(--paper-deep)] transform transition-transform duration-700 group-hover:scale-105" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 flex flex-col justify-end p-5">
                       {photo.caption && (
                         <p className="text-white font-medium text-sm drop-shadow-md translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
@@ -210,7 +212,7 @@ export default function PhotoWallClient() {
             <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
           </button>
 
-          <img
+          <img loading="lazy" decoding="async"
             src={selectedImage.url}
             alt={selectedImage.caption || '全屏照片'}
             className="max-w-full max-h-[85vh] object-contain rounded-lg shadow-lg"

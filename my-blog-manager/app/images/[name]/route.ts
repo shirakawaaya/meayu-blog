@@ -49,7 +49,7 @@ export async function GET(
   const ext = path.extname(name).toLowerCase();
   const buf = fs.readFileSync(filePath);
 
-  return new NextResponse(buf as any, {
+  return new NextResponse(new Uint8Array(buf), {
     status: 200,
     headers: {
       'Content-Type': MIME[ext] || 'application/octet-stream',

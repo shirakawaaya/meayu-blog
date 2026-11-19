@@ -1,3 +1,4 @@
+import type { ChatterListItem, MomentListItem } from '../lib/content-types';
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
@@ -31,7 +32,7 @@ export default function Home() {
 
   // ---- 杂谈（chatters）----
   const chattersDirectory = path.join(process.cwd(), 'chatters');
-  let allChatters: any[] = [];
+  let allChatters: ChatterListItem[] = [];
   try {
     if (fs.existsSync(chattersDirectory)) {
       const chatterFiles = fs.readdirSync(chattersDirectory).filter(f => f.endsWith('.md'));
@@ -56,14 +57,14 @@ export default function Home() {
         return b.slug.localeCompare(a.slug);
       });
     }
-  } catch (e) {}
+  } catch {}
   const top5Chatters = allChatters.length > 0
     ? allChatters.slice(0, 5)
     : [{ slug: 'none', title: '还没有内容', description: '去写下第一条吧', cover: siteConfig.defaultPostCover, date: '', formattedDate: '' }];
 
   // ---- 说说（moments）----
   const momentsDirectory = path.join(process.cwd(), 'moments');
-  let allMoments: any[] = [];
+  let allMoments: MomentListItem[] = [];
   try {
     if (fs.existsSync(momentsDirectory)) {
       const momentFiles = fs.readdirSync(momentsDirectory).filter(f => f.endsWith('.md'));
@@ -85,7 +86,7 @@ export default function Home() {
         return b.id.localeCompare(a.id);
       });
     }
-  } catch (e) {}
+  } catch {}
   const top5Moments = allMoments.slice(0, 5);
 
   const chatterCount = allChatters.length;
@@ -131,7 +132,7 @@ export default function Home() {
 
                   {/* 照片墙大海报 */}
                   <Link href="/photowall" className="w-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden transition-all duration-500 hover:-translate-y-1 relative group min-h-[200px] sm:min-h-[220px] flex-shrink-0">
-                    <img src={latestAlbum.cover} className="w-full h-full absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"/>
+                    {latestAlbum.cover && <img loading="lazy" decoding="async" src={latestAlbum.cover} alt="" className="w-full h-full absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"/>}
                     <div className="absolute inset-0 bg-[color-mix(in_oklab,var(--paper-deep)_35%,transparent)] dark:bg-[color-mix(in_oklab,var(--paper)_50%,transparent)] group-hover:bg-[color-mix(in_oklab,var(--paper-deep)_15%,transparent)] transition-colors duration-500"></div>
                     <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 right-6">
                       <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 underline decoration-[var(--accent)] decoration-2 underline-offset-4">{latestAlbum.title}</h3>

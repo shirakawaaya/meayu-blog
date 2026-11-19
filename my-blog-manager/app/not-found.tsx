@@ -20,7 +20,7 @@ export default function NotFound() {
         </p>
         <Link
           href="/editor"
-          className="inline-block px-6 py-2.5 rounded-2xl bg-indigo-500 text-white text-sm font-black shadow-sm hover:bg-indigo-600 transition-colors"
+          className="inline-block px-6 py-2.5 rounded-2xl bg-[var(--accent)] text-white text-sm font-black shadow-sm hover:bg-[var(--accent)] transition-colors"
         >
           去写杂谈
         </Link>

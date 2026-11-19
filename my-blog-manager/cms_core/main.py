@@ -1,3 +1,5 @@
+import hmac
+import os
 import re
 
 from fastapi import FastAPI, Request
@@ -5,7 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 
 # 引入所有 API 路由
-from cms_core.api import config, picbed, drafts, moments, model_config
+from cms_core.api import config, picbed, drafts, moments, model_config, r2_config
 from cms_core.api import gallery, projects
 from cms_core.api import deploy
 
@@ -24,6 +26,28 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+@app.middleware("http")
+async def require_local_token(request: Request, call_next):
+    """本地令牌校验（2026-11-18 加固）：launcher 启动时生成随机令牌，
+    经环境变量 BLOG_LOCAL_TOKEN 交给后端（同进程线程）、经 backend_config.json 交给前端，
+    前端请求统一带 X-Local-Token 头。未设环境变量时不启用，兼容直接跑后端的调试场景。
+    /api/status 保持开放作健康检查；OPTIONS 预检不带业务头，必须放行。"""
+    token = os.environ.get("BLOG_LOCAL_TOKEN")
+    if (
+        token
+        and request.method != "OPTIONS"
+        and request.url.path.startswith("/api/")
+        and request.url.path != "/api/status"
+    ):
+        supplied = request.headers.get("x-local-token", "")
+        if not hmac.compare_digest(supplied, token):
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "message": "本地令牌缺失或无效，请通过启动器打开管理端"},
+            )
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -51,6 +75,7 @@ def get_status():
 
 # 注册所有路由
 app.include_router(model_config.router, prefix="/api/model", tags=["ModelConfig"])
+app.include_router(r2_config.router, prefix="/api/r2", tags=["R2Config"])
 app.include_router(config.router, prefix="/api/config", tags=["Config"])
 app.include_router(picbed.router, prefix="/api/picbed", tags=["PicBed"])
 app.include_router(drafts.router, prefix="/api/drafts", tags=["Drafts"])

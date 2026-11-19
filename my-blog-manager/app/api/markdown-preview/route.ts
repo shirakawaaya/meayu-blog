@@ -6,6 +6,9 @@ import remarkRehype from 'remark-rehype';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeKatex from 'rehype-katex';
 import rehypeStringify from 'rehype-stringify';
+import rehypeRaw from 'rehype-raw';
+import rehypeSanitize from 'rehype-sanitize';
+import { sanitizeSchema } from '../../../lib/sanitize-schema';
 
 export const runtime = 'nodejs';
 
@@ -31,20 +34,21 @@ export async function POST(request: Request) {
       .use(remarkGfm)
       .use(remarkMath)
       .use(remarkRehype, { allowDangerousHtml: true })
-      // @ts-ignore rehype-highlight 的选项类型声明不全，与博客端保持同样的写法
+      .use(rehypeRaw)
       .use(rehypeHighlight, {
         detect: true,
         ignoreMissing: true,
         subset: ['cpp', 'c', 'python', 'java', 'javascript', 'typescript', 'go', 'rust', 'bash', 'json', 'html', 'css', 'sql', 'xml'],
       })
       .use(rehypeKatex)
+      .use(rehypeSanitize, sanitizeSchema)
       .use(rehypeStringify, { allowDangerousHtml: true })
       .process(markdown);
 
     return Response.json({ success: true, html: String(html) });
-  } catch (e: any) {
+  } catch (e) {
     // 预览失败只影响右侧渲染，不阻塞写作；如实记日志并回传原因
     console.error('[api/markdown-preview] 渲染失败:', e);
-    return Response.json({ success: false, message: e?.message || '渲染失败' }, { status: 500 });
+    return Response.json({ success: false, message: e instanceof Error ? e.message : '渲染失败' }, { status: 500 });
   }
 }

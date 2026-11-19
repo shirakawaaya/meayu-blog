@@ -1,6 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
+import type { ChatterListItem } from '../../lib/content-types';
 import ChatterBoard from './ChatterBoard';
 import { siteConfig } from '@/siteConfig';
 
@@ -13,7 +14,8 @@ export const metadata = {
 export default function ChatterPage() {
   // 注意：这里我们假设你的 md 文件放在根目录的 chatters 文件夹里
   const chattersDirectory = path.join(process.cwd(), 'chatters');
-  let chatters: any[] = [];
+  // 列表页生产端 tags/content 必填，与 ChatterBoard 的 Chatter 形状对齐
+  let chatters: Array<ChatterListItem & { tags: string[]; content: string }> = [];
 
   try {
     // 确保文件夹存在

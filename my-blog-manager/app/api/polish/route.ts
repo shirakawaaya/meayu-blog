@@ -99,8 +99,8 @@ export async function POST(req: Request) {
       : await callOpenAI(cfg, prompt, String(content));
 
     return Response.json({ success: true, polished });
-  } catch (e: any) {
-    console.error('[api/polish] 润色失败:', e?.message || e);
-    return Response.json({ success: false, message: e?.message || '润色请求失败' }, { status: 500 });
+  } catch (e) {
+    console.error('[api/polish] 润色失败:', e instanceof Error ? e.message : e);
+    return Response.json({ success: false, message: e instanceof Error ? e.message : '润色请求失败' }, { status: 500 });
   }
 }

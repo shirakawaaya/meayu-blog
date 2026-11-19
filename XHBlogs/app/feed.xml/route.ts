@@ -42,7 +42,7 @@ export async function GET(request: Request) {
           `    <item>\n      <title>${title}</title>\n      <link>${link}</link>\n      <guid isPermaLink="true">${link}</guid>\n      <pubDate>${pubDate}</pubDate>\n      <description>${description}</description>\n    </item>`
         );
       });
-  } catch (e) {
+  } catch {
     // 目录不存在时输出空频道，保持 feed 可访问
   }
 

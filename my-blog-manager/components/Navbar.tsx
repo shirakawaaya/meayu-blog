@@ -10,6 +10,17 @@ import { useToast } from './ToastProvider';
 import { siteConfig } from '../siteConfig';
 
 import NavThemeSwitch from './NavThemeSwitch';
+// pywebview 桌面壳注入的窗口 API（浏览器里打开时不存在，必须可选）
+type PyWebViewWindow = Window & {
+  pywebview?: {
+    api: {
+      minimize_window: () => void;
+      maximize_window: () => void;
+      close_window: () => void;
+    };
+  };
+};
+
 export default function Navbar() {
   const [showNav, setShowNav] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);
@@ -51,19 +62,13 @@ export default function Navbar() {
   ];
 
   const handleMinimize = () => {
-    if (typeof window !== 'undefined' && (window as any).pywebview?.api) {
-      (window as any).pywebview.api.minimize_window();
-    }
+    (window as PyWebViewWindow).pywebview?.api?.minimize_window();
   };
   const handleMaximize = () => {
-    if (typeof window !== 'undefined' && (window as any).pywebview?.api) {
-      (window as any).pywebview.api.maximize_window();
-    }
+    (window as PyWebViewWindow).pywebview?.api?.maximize_window();
   };
   const handleClose = () => {
-    if (typeof window !== 'undefined' && (window as any).pywebview?.api) {
-      (window as any).pywebview.api.close_window();
-    }
+    (window as PyWebViewWindow).pywebview?.api?.close_window();
   };
 
   // 监控增强版更新逻辑
@@ -86,7 +91,7 @@ export default function Navbar() {
 
         for (const [index, op] of operations.entries()) {
           let apiUrl = '';
-          let body = {};
+          let body: unknown = {};
 
           switch (op.type) {
             case 'sync_photowall':
@@ -103,7 +108,7 @@ export default function Navbar() {
               break;
             case 'create_moment':
               apiUrl = `${apiBase}/api/moments/save`;
-              body = op.payload;
+              body = op.payload ?? {};
               break;
             default:
               apiUrl = `${apiBase}/api/drafts/sync_local`;
@@ -137,7 +142,7 @@ export default function Navbar() {
           window.location.reload();
         }, 1200);
 
-    } catch (error) {
+    } catch {
       showToast("无法连接到后端，请确认管理端后端在运行", "error");
     } finally {
       writingRef.current = false;
@@ -152,7 +157,7 @@ export default function Navbar() {
 
           <Link href="/" className="text-xl font-black text-slate-800 dark:text-white tracking-tighter">
             {siteConfig.navTitle}
-            <span className="text-indigo-500 mx-1">
+            <span className="text-[var(--accent)] mx-1">
               {siteConfig.navSuffix || 'の'}
             </span>
             {siteConfig.navAfter}
@@ -161,7 +166,7 @@ export default function Navbar() {
           <div className="flex items-center gap-6" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
             <nav className="hidden lg:flex gap-8 text-sm font-bold">
               {navLinks.map((link) => (
-                <Link key={link.href} href={link.href} className={`relative py-1 transition-colors ${pathname === link.href ? 'text-indigo-600' : 'text-slate-700 dark:text-slate-200'}`}>
+                <Link key={link.href} href={link.href} className={`relative py-1 transition-colors ${pathname === link.href ? 'text-[var(--accent)]' : 'text-slate-700 dark:text-slate-200'}`}>
                   {link.name}
                 </Link>
               ))}
@@ -214,7 +219,7 @@ export default function Navbar() {
                     </div>
 
                     {/* 只有"更新本地"一步：内容直接写进博客前端目录，不再需要同步 */}
-                    <button onClick={handleUpdateLocal} disabled={isWriting} className="w-full py-2.5 rounded-xl bg-indigo-500 text-white text-xs font-black shadow-lg hover:bg-indigo-600 transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <button onClick={handleUpdateLocal} disabled={isWriting} className="w-full py-2.5 rounded-xl bg-[var(--accent)] text-white text-xs font-black shadow-lg hover:bg-[var(--accent)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
                       {isWriting ? <><Loader2 size={14} className="animate-spin" /> 正在保存...</> : "保存到博客"}
                     </button>
                   </motion.div>

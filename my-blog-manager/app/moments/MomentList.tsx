@@ -1,11 +1,15 @@
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import type { MomentListItem } from '../../lib/content-types';
+
+// 管理端说说在博客字段之外多了暂缓队列标记（isPending/opId）
+type ManagerMoment = MomentListItem & { isPending?: boolean; opId?: string };
+import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
 import { MapPin, MessageSquare, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost, Plus, Image as ImageIcon, X, Send, Link as LinkIcon, Zap, Trash2, AlertTriangle, Loader2, RefreshCw, Edit3, Lock } from 'lucide-react';
 import MomentComments from '../../components/MomentComments';
 import { useToast } from '../../components/ToastProvider';
-import { siteConfig } from '../../siteConfig';
+import { resolvePicbedUpload } from '../../lib/picbed';
 import { useOperations } from '../../context/OperationContext';
 import { toPreviewSrc } from '../../components/imagePreview';
 
@@ -22,7 +26,7 @@ function timeAgo(dateStr: string) {
   return `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
 }
 
-export default function MomentList({ moments, authorName, avatarUrl }: any) {
+export default function MomentList({ moments, authorName, avatarUrl }: { moments: ManagerMoment[]; authorName: string; avatarUrl: string }) {
   const [openCommentId, setOpenCommentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
@@ -58,7 +62,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
     setIsPublishOpen(true);
   };
 
-  const handleEditClick = (moment: any) => {
+  const handleEditClick = (moment: ManagerMoment) => {
     setIsEditing(true);
     momentIdRef.current = moment.id;
     setNewMoment({
@@ -124,16 +128,17 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
   const [isDeleting, setIsDeleting] = useState(false);
 
   const processedMoments = useMemo(() => {
-    let baseMoments = moments ? [...moments] : [];
+    const baseMoments = moments ? [...moments] : [];
 
     // 拦截并在顶层混合暂缓队列的数据
     const pendingMoments = operations
       .filter(op => op.type === 'create_moment')
+      // create_moment 的 payload 就是一条说说草稿，字段与 ManagerMoment 一致
       .map(op => ({
         ...op.payload,
         opId: op.id,
         isPending: true
-      }));
+      }) as ManagerMoment);
 
     let result = [...pendingMoments, ...baseMoments];
 
@@ -166,25 +171,15 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
   };
 
   const handleFileUpload = async (files: FileList | File[]) => {
-    const picUrl = (siteConfig as any).picBedUrl || "";
-    const picToken = (siteConfig as any).picBedToken;
-    const useRemote = Boolean(picUrl && picToken);   // 两个都填了才走第三方图床
-
     setIsUploading(true);
     showToast(`正在上传 ${files.length} 张图片...`, "info");
     try {
-      const configRes = await fetch(`/backend_config.json?t=${Date.now()}`);
-      const configData = await configRes.json();
-      const base = `http://127.0.0.1:${configData.api_port}/api/picbed`;
+      const { endpoint } = await resolvePicbedUpload();
       const newUrls: string[] = [];
       for (let i = 0; i < files.length; i++) {
         const uploadData = new FormData();
         uploadData.append('file', files[i]);
-        if (useRemote) {
-          uploadData.append('url', picUrl);
-          uploadData.append('token', picToken);
-        }
-        const res = await fetch(useRemote ? `${base}/upload` : `${base}/local`, {
+        const res = await fetch(endpoint, {
           method: 'POST',
           body: uploadData,
         });
@@ -196,8 +191,8 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
         setNewMoment(prev => ({ ...prev, images: [...prev.images, ...newUrls] }));
         showToast(`成功添加 ${newUrls.length} 张图片`, "success");
       }
-    } catch (error: any) {
-      showToast(`连接异常: ${error.message}`, "error");
+    } catch (error) {
+      showToast(`连接异常: ${error instanceof Error ? error.message : '未知错误'}`, "error");
     } finally {
       setIsUploading(false);
       setIsDragging(false);
@@ -289,8 +284,8 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
       } else {
         showToast(`保存失败：${data.message}`, "error");
       }
-    } catch (error: any) {
-      showToast(`发布失败：${error.message}`, "error");
+    } catch (error) {
+      showToast(`发布失败：${error instanceof Error ? error.message : '未知错误'}`, "error");
     } finally {
       setIsSubmitting(false);
       submitLockRef.current = false;
@@ -318,17 +313,17 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
       } else {
         showToast(`删除失败: ${data.message}`, "error");
       }
-    } catch (error: any) {
-      showToast(`连接失败: ${error.message}`, "error");
+    } catch (error) {
+      showToast(`连接失败: ${error instanceof Error ? error.message : '未知错误'}`, "error");
     } finally {
       setIsDeleting(false);
       setDeleteConfirmId(null);
     }
   };
 
-  const handleDeleteClick = (moment: any) => {
+  const handleDeleteClick = (moment: ManagerMoment) => {
     if (moment.isPending) {
-      removeOperation(moment.opId);
+      if (moment.opId) removeOperation(moment.opId);
       showToast("已撤销暂缓的说说", "success");
     } else {
       setDeleteConfirmId(moment.id);
@@ -374,7 +369,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
   };
 
   // 将卡片渲染抽象为一个函数，方便分列渲染
-  const renderMomentCard = (moment: any) => (
+  const renderMomentCard = (moment: ManagerMoment) => (
     <motion.div
       key={moment.id}
       layout
@@ -397,7 +392,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
           <button
             onClick={() => handleEditClick(moment)}
             title="编辑说说"
-            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-indigo-500 hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
+            className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 text-slate-400 hover:bg-[var(--accent)] hover:text-white flex items-center justify-center transition-all duration-300 shadow-sm"
           >
             <Edit3 size={14} />
           </button>
@@ -413,7 +408,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
 
       <div className={`flex items-center gap-4 mb-8 pb-6 border-b border-slate-200/50 dark:border-slate-700/50 relative ${moment.isPending ? 'mt-4' : ''}`}>
         <div className="w-14 h-14 shrink-0 rounded-2xl overflow-hidden shadow-md border-2 border-white dark:border-slate-700">
-          <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" />
+          {avatarUrl ? <img src={avatarUrl} alt="avatar" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-white font-black">{authorName.charAt(0)}</div>}
         </div>
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
@@ -429,13 +424,13 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
       </div>
       <p className="text-slate-800 dark:text-slate-200 text-[16px] leading-relaxed whitespace-pre-wrap font-medium break-words">{moment.content}</p>
 
-      {renderImages(moment.images)}
+      {renderImages(moment.images ?? [])}
 
       <div className="mt-10 flex items-center justify-between">
         <div className="min-w-0 flex-1">
-          {moment.location && <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 max-w-full truncate border border-indigo-500/10"><MapPin size={12} /> {moment.location}</span>}
+          {moment.location && <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] text-[var(--accent)] max-w-full truncate border border-[var(--accent-soft)]"><MapPin size={12} /> {moment.location}</span>}
         </div>
-        <button onClick={() => setOpenCommentId(openCommentId === moment.id ? null : moment.id)} className={`w-10 h-10 flex items-center justify-center shrink-0 rounded-full transition-all shadow-sm ${openCommentId === moment.id ? 'bg-indigo-500 text-white rotate-12' : 'paper-card-strong text-slate-400 hover:text-indigo-500 hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
+        <button onClick={() => setOpenCommentId(openCommentId === moment.id ? null : moment.id)} className={`w-10 h-10 flex items-center justify-center shrink-0 rounded-full transition-all shadow-sm ${openCommentId === moment.id ? 'bg-[var(--accent)] text-white rotate-12' : 'paper-card-strong text-slate-400 hover:text-[var(--accent)] hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
           <MessageSquare size={16} />
         </button>
       </div>
@@ -459,14 +454,14 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
       <div className="mb-14 text-center relative">
         <motion.h1 initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-4xl md:text-5xl font-black text-slate-900 dark:text-white mb-4 tracking-tighter">说说</motion.h1>
         <p className="text-slate-500 dark:text-slate-400 font-medium italic opacity-80 flex items-center justify-center gap-2">
-          <Sparkles size={14} className="text-indigo-500" /> “ 随手记下的日常 ”
+          <Sparkles size={14} className="text-[var(--accent)]" /> “ 随手记下的日常 ”
         </p>
       </div>
 
       <div className="mb-16 flex flex-col items-center gap-8">
         <button
           onClick={handleOpenCreate}
-          className="group relative px-10 py-3.5 bg-indigo-500 rounded-xl shadow-md text-white font-black text-sm hover:bg-indigo-600 hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 overflow-hidden"
+          className="group relative px-10 py-3.5 bg-[var(--accent)] rounded-xl shadow-md text-white font-black text-sm hover:bg-[var(--accent)] hover:-translate-y-0.5 transition-all duration-300 flex items-center gap-2 overflow-hidden"
         >
           {/* hover 轻微压暗而非提亮，保证浅色主题下白字始终可读 */}
           <div className="absolute inset-0 bg-black/15 translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
@@ -475,15 +470,15 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
         </button>
 
         <div className="relative w-full max-w-lg group">
-          <Search className="w-6 h-6 absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors z-20 pointer-events-none" />
-          <input type="text" placeholder="搜索说说..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full paper-card border border-[var(--card-border)] rounded-2xl px-6 py-4 pl-14 text-slate-800 dark:text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-indigo-500/50 transition-all font-medium relative z-10" />
+          <Search className="w-6 h-6 absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors z-20 pointer-events-none" />
+          <input type="text" placeholder="搜索说说..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="w-full paper-card border border-[var(--card-border)] rounded-2xl px-6 py-4 pl-14 text-slate-800 dark:text-white shadow-lg focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)] transition-all font-medium relative z-10" />
         </div>
 
         <div className="flex paper-card p-1.5 rounded-2xl border border-[var(--card-border)] shadow-sm relative z-10">
-          <button onClick={() => setSortOrder('desc')} className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-black transition-all duration-300 ${sortOrder === 'desc' ? 'bg-indigo-500 text-white shadow-lg scale-105' : 'text-slate-500 hover:text-indigo-500'}`}>
+          <button onClick={() => setSortOrder('desc')} className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-black transition-all duration-300 ${sortOrder === 'desc' ? 'bg-[var(--accent)] text-white shadow-lg scale-105' : 'text-slate-500 hover:text-[var(--accent)]'}`}>
             <ArrowDownAZ size={14} /> 最新
           </button>
-          <button onClick={() => setSortOrder('asc')} className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-black transition-all duration-300 ${sortOrder === 'asc' ? 'bg-indigo-500 text-white shadow-lg scale-105' : 'text-slate-500 hover:text-indigo-500'}`}>
+          <button onClick={() => setSortOrder('asc')} className={`flex items-center gap-2 px-6 py-2 rounded-xl text-xs font-black transition-all duration-300 ${sortOrder === 'asc' ? 'bg-[var(--accent)] text-white shadow-lg scale-105' : 'text-slate-500 hover:text-[var(--accent)]'}`}>
             <ArrowUpZA size={14} /> 最早
           </button>
         </div>
@@ -509,9 +504,9 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-24 min-h-[450px]">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center px-10 py-20 paper-card rounded-2xl border border-[var(--card-border)] shadow-lg max-w-lg w-full mx-auto">
-              <div className="w-24 h-24 bg-indigo-500/10 rounded-2xl flex items-center justify-center mb-8 relative">
-                <div className="absolute inset-0 bg-indigo-500/20 blur-2xl rounded-full animate-pulse"></div>
-                <Ghost size={48} className="text-indigo-500 relative z-10" strokeWidth={1.5} />
+              <div className="w-24 h-24 bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] rounded-2xl flex items-center justify-center mb-8 relative">
+                <div className="absolute inset-0 bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] blur-2xl rounded-full animate-pulse"></div>
+                <Ghost size={48} className="text-[var(--accent)] relative z-10" strokeWidth={1.5} />
               </div>
               <h2 className="text-3xl font-black text-slate-900 dark:text-white mb-4 tracking-tight">{searchQuery ? "没找到相关记忆" : "还没有说说"}</h2>
               <p className="text-slate-500 dark:text-slate-400 font-medium text-lg leading-relaxed px-4">{searchQuery ? `换个关键词再试试` : `还没有说说，去写下第一条吧`}</p>
@@ -535,7 +530,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
             >
               <div className="flex justify-between items-center mb-5">
                 <h2 className="text-lg font-black text-[var(--ink)] flex items-center gap-2">
-                  <Sparkles size={18} className="text-indigo-500" /> {isEditing ? '编辑说说' : '发条说说'}
+                  <Sparkles size={18} className="text-[var(--accent)]" /> {isEditing ? '编辑说说' : '发条说说'}
                 </h2>
                 <button
                   onClick={() => setIsPublishOpen(false)}
@@ -551,7 +546,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
                 value={newMoment.content}
                 onChange={(e) => setNewMoment(prev => ({...prev, content: e.target.value}))}
                 placeholder="这一刻的想法…"
-                className="w-full paper-card rounded-2xl p-4 text-sm text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-indigo-500/40 min-h-[110px] resize-none mb-3 leading-relaxed custom-scrollbar"
+                className="w-full paper-card rounded-2xl p-4 text-sm text-[var(--ink)] focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)]/40 min-h-[110px] resize-none mb-3 leading-relaxed custom-scrollbar"
               />
 
               {/* AI 润色：结果进对照面板，可改后再应用 */}
@@ -634,13 +629,13 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
 
               <div className="flex items-center gap-4 mb-6">
                 <div className="relative flex-1 group">
-                  <MapPin className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                  <MapPin className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors" />
                   <input
                     type="text"
                     placeholder="所在位置（可选）"
                     value={newMoment.location}
                     onChange={(e) => setNewMoment(prev => ({...prev, location: e.target.value}))}
-                    className="w-full paper-card border border-slate-200 dark:border-slate-700/50 rounded-2xl py-3 pl-12 pr-4 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                    className="w-full paper-card border border-slate-200 dark:border-slate-700/50 rounded-2xl py-3 pl-12 pr-4 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)]"
                   />
                 </div>
               </div>
@@ -653,13 +648,13 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
                   onClick={() => fileInputRef.current?.click()}
                   className={`w-full border-2 border-dashed rounded-2xl p-5 flex flex-col items-center justify-center gap-2 cursor-pointer transition-all ${
                     isDragging 
-                      ? 'border-indigo-500 bg-indigo-50/50 dark:bg-indigo-900/20' 
+                      ? 'border-[var(--accent)] bg-[var(--paper-deep)]/50 dark:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)]' 
                       : 'border-slate-300 dark:border-slate-600 hover:bg-slate-50 dark:hover:bg-slate-800/50'
                   }`}
                 >
                   <input type="file" multiple ref={fileInputRef} onChange={(e) => e.target.files && handleFileUpload(e.target.files)} accept="image/*" className="hidden" />
                   {isUploading ? (
-                    <Clock className="animate-spin text-indigo-500" size={28} />
+                    <Clock className="animate-spin text-[var(--accent)]" size={28} />
                   ) : (
                     <ImageIcon className="text-slate-400" size={28} />
                   )}
@@ -670,19 +665,19 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
 
                 <div className="flex items-center gap-3">
                   <div className="relative flex-1 group">
-                    <LinkIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-indigo-500 transition-colors" />
+                    <LinkIcon className="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-[var(--accent)] transition-colors" />
                     <input
                       type="text"
                       placeholder="粘贴图片链接"
                       value={imageUrlInput}
                       onChange={(e) => setImageUrlInput(e.target.value)}
-                      className="w-full paper-card border border-slate-200 dark:border-slate-700/50 rounded-2xl py-3 pl-12 pr-4 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
+                      className="w-full paper-card border border-slate-200 dark:border-slate-700/50 rounded-2xl py-3 pl-12 pr-4 text-sm text-slate-800 dark:text-slate-200 focus:outline-none focus:ring-2 focus:ring-[var(--accent-soft)]"
                     />
                   </div>
                   <button
                     onClick={handleAddImageUrl}
                     disabled={!imageUrlInput.trim()}
-                    className="px-5 py-3 rounded-2xl bg-indigo-100 text-indigo-600 dark:bg-indigo-500/20 dark:text-indigo-400 font-bold text-sm hover:bg-indigo-200 dark:hover:bg-indigo-500/30 transition-all disabled:opacity-50 shrink-0"
+                    className="px-5 py-3 rounded-2xl bg-[color-mix(in_oklab,var(--accent)_12%,transparent)] text-[var(--accent)] dark:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:text-[var(--accent)] font-bold text-sm hover:bg-[color-mix(in_oklab,var(--accent)_20%,transparent)] dark:hover:bg-[var(--accent)]/30 transition-all disabled:opacity-50 shrink-0"
                   >
                     添加
                   </button>
@@ -768,7 +763,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: any) {
                 <button
                   onClick={handleDirectPublish}
                   disabled={isUploading || isSubmitting}
-                  className="sm:flex-1 py-3 px-4 rounded-2xl bg-indigo-500 hover:bg-indigo-600 text-white text-sm font-black shadow-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="sm:flex-1 py-3 px-4 rounded-2xl bg-[var(--accent)] hover:bg-[var(--accent)] text-white text-sm font-black shadow-sm transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? <Clock className="animate-spin" size={16} /> : <Zap size={16} />}
                   {isEditing ? '确认修改' : '立即发布'}

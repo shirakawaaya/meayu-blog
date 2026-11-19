@@ -23,11 +23,11 @@ import CodeBlockLowlight from '@tiptap/extension-code-block-lowlight';
 import { createLowlight, common } from 'lowlight';
 
 import {
-  Undo2, Redo2, Eraser, Bold, Italic, Underline as UnderlineIcon, Strikethrough,
+  Undo2, Redo2, Bold, Italic, Underline as UnderlineIcon, Strikethrough,
   AlignLeft, AlignCenter, AlignRight, List, ListOrdered, ListTodo,
   Highlighter, Code2, Heading1, Heading2, Heading3,
   Type, ImageIcon, Quote, RemoveFormatting, ChevronDown,
-  Pipette, Hash, Check, Link2, Superscript as SupIcon, Subscript as SubIcon, Minus, Palette, Lock,
+  Pipette, Hash, Check, Link2, Superscript as SupIcon, Subscript as SubIcon, Palette, Lock,
   Sparkles, FileCode2, SquarePen, Loader2
 } from 'lucide-react';
 
@@ -65,7 +65,10 @@ const FontSize = Extension.create({
  * 浏览器判定 mousedown/mouseup 不是同一个元素，click 事件不会派发 ——
  * 表现为"点了完全没反应"（AI 润色曾经就是这样）。
  */
-const Btn = ({ onClick, active, children, title, disabled }: any) => (
+// tiptap markdown 扩展往 editor.storage.markdown 上挂 getMarkdown，官方类型未覆盖，这里按实际形状声明
+interface MarkdownStorage { markdown?: { getMarkdown?: () => string } }
+
+const Btn = ({ onClick, active, children, title, disabled }: { onClick?: () => void; active?: boolean; children: React.ReactNode; title?: string; disabled?: boolean }) => (
   <button
     type="button"
     onClick={onClick}
@@ -73,7 +76,7 @@ const Btn = ({ onClick, active, children, title, disabled }: any) => (
     disabled={disabled}
     className={`p-2.5 rounded-xl transition-all duration-300 ease-out flex items-center justify-center 
       ${disabled ? 'opacity-40 cursor-not-allowed' : ''}
-      ${active ? 'bg-indigo-500 text-white shadow-md scale-110' : 'text-slate-500 dark:text-slate-400 hover:bg-slate-200/50 dark:hover:bg-slate-700/50'}`}
+      ${active ? 'bg-[var(--accent)] text-white shadow-md scale-110' : 'text-[var(--ink-faint)] hover:bg-[var(--paper-deep)] hover:text-[var(--ink)]'}`}
   >
     {children}
   </button>
@@ -81,7 +84,7 @@ const Btn = ({ onClick, active, children, title, disabled }: any) => (
 
 // 终极修复：彻底废弃 absolute 下拉框，升级为 Fixed 居中模态框 (Modal)！
 // 这样就能 100% 逃脱父级容器的 overflow 限制，绝对不可能再被遮挡！
-const CustomColorPicker = ({ activeColor, onSelect, onConfirm, recentColors, onClose }: any) => {
+const CustomColorPicker = ({ activeColor, onSelect, onConfirm, recentColors, onClose }: { activeColor: string; onSelect: (color: string) => void; onConfirm: (color: string) => void; recentColors: string[]; onClose: () => void }) => {
   const presets = ['#000000', 'var(--accent)', '#EC4899', '#10B981', '#F59E0B', '#EF4444', '#3B82F6', '#8B5CF6'];
   const [hex, setHex] = useState(activeColor);
   return (
@@ -94,7 +97,7 @@ const CustomColorPicker = ({ activeColor, onSelect, onConfirm, recentColors, onC
         <div className="flex flex-col gap-5">
           <div className="flex justify-between items-center">
             <span className="text-[10px] font-black uppercase tracking-widest text-slate-400">取色 · Color Palette</span>
-            <button onClick={() => onConfirm(hex)} className="w-8 h-8 flex items-center justify-center bg-indigo-500 text-white rounded-full hover:scale-110 transition-transform">
+            <button onClick={() => onConfirm(hex)} className="w-8 h-8 flex items-center justify-center bg-[var(--accent)] text-white rounded-full hover:scale-110 transition-transform">
               <Check size={16}/>
             </button>
           </div>
@@ -185,7 +188,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
         },
       }),
       Underline, Subscript, Superscript, TextStyle, Color, FontSize, CustomImage,
-      Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-indigo-500 underline cursor-pointer font-bold' } }),
+      Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-[var(--accent)] underline cursor-pointer font-bold' } }),
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Highlight.configure({ multicolor: true }),
       TaskList.configure({ HTMLAttributes: { class: 'not-prose space-y-3' } }),
@@ -230,7 +233,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
   const getMarkdownText = () => {
     if (mode === 'source') return sourceText;
     if (!editor) return '';
-    return (editor.storage as any).markdown?.getMarkdown?.() ?? '';
+    return (editor.storage as MarkdownStorage).markdown?.getMarkdown?.() ?? '';
   };
 
   useImperativeHandle(ref, () => ({
@@ -254,7 +257,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
     setContent: (html: string) => {
       if (editor) {
         editor.commands.setContent(html, { emitUpdate: true });
-        if (mode === 'source') setSourceText((editor.storage as any).markdown?.getMarkdown?.() ?? '');
+        if (mode === 'source') setSourceText((editor.storage as MarkdownStorage).markdown?.getMarkdown?.() ?? '');
         if (onChange) onChange();
       }
     },
@@ -301,7 +304,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
       setMode('rich');
       if (onChange) onChange();
     } else {
-      setSourceText((editor.storage as any).markdown?.getMarkdown?.() ?? '');
+      setSourceText((editor.storage as MarkdownStorage).markdown?.getMarkdown?.() ?? '');
       setMode('source');
     }
   };
@@ -329,28 +332,28 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
   return (
     <div className="flex flex-col h-full w-full min-h-0 bg-transparent relative">
 
-      <div className="shrink-0 px-12 pt-14 pb-4 flex items-center gap-4">
+      <div className="shrink-0 px-8 pt-8 pb-3 flex items-center gap-4">
         <input
           type="text"
           value={title}
           onChange={(e) => !isTitleLocked && setTitle(e.target.value)}
           readOnly={isTitleLocked}
           placeholder="文章大标题…"
-          className={`flex-1 text-5xl font-black bg-transparent border-none outline-none transition-all tracking-tighter 
-            ${isTitleLocked ? 'text-slate-400 dark:text-slate-600 cursor-default select-none' : 'text-slate-900 dark:text-white placeholder:text-slate-200 dark:placeholder:text-slate-800'}
+          className={`flex-1 text-4xl font-black bg-transparent border-none outline-none transition-all tracking-tighter 
+            ${isTitleLocked ? 'text-[var(--ink-faint)] cursor-default select-none' : 'text-[var(--ink)] placeholder:text-[var(--ink-faint)] placeholder:opacity-50'}
           `}
         />
         {isTitleLocked && (
-          <div className="px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-2xl flex items-center gap-2 text-slate-400 border border-slate-200 dark:border-slate-700 animate-in fade-in slide-in-from-right duration-500">
+          <div className="px-4 py-2 bg-[var(--paper-deep)] rounded-2xl flex items-center gap-2 text-[var(--ink-faint)] border border-[var(--card-border)] animate-in fade-in slide-in-from-right duration-500">
             <Lock size={16} />
             <span className="text-[10px] font-black uppercase tracking-widest">标题已锁定 · System Locked</span>
           </div>
         )}
       </div>
 
-      <div className={`shrink-0 px-8 py-2.5 border-y border-white/20 flex flex-wrap items-center gap-1.5 bg-white/10 dark:bg-black/20 z-50 ${mode === 'source' ? 'hidden' : ''}`}>
+      <div className={`shrink-0 px-8 py-2.5 border-y border-[var(--card-border)] flex flex-wrap items-center gap-1.5 bg-[color-mix(in_oklab,var(--card)_92%,transparent)] backdrop-blur-sm z-50 ${mode === 'source' ? 'hidden' : ''}`}>
         <div className="flex items-center gap-1"><Btn onClick={() => editor.chain().focus().undo().run()}><Undo2 size={16}/></Btn><Btn onClick={() => editor.chain().focus().redo().run()}><Redo2 size={16}/></Btn><Btn onClick={() => editor.chain().focus().unsetAllMarks().run()}><RemoveFormatting size={16}/></Btn></div>
-        <div className="w-px h-6 bg-slate-400/20 mx-1" />
+        <div className="w-px h-6 bg-[var(--rule)] mx-1" />
 
         <div className="flex items-center gap-1 bg-black/5 dark:bg-white/5 rounded-xl px-2">
           <ChevronDown size={12} className="text-slate-400" />
@@ -379,7 +382,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
           </Btn>
         </div>
 
-        <div className="w-px h-6 bg-slate-400/20 mx-1" />
+        <div className="w-px h-6 bg-[var(--rule)] mx-1" />
         <div className="flex items-center gap-1">
           <Btn onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')}><Bold size={16}/></Btn>
           <Btn onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')}><Italic size={16}/></Btn>
@@ -387,17 +390,17 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
           <Btn onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')}><Strikethrough size={16}/></Btn>
           <Btn onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')}><Code2 size={16}/></Btn>
         </div>
-        <div className="w-px h-6 bg-slate-400/20 mx-1" />
+        <div className="w-px h-6 bg-[var(--rule)] mx-1" />
         <div className="flex items-center gap-1"><Btn onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })}><AlignLeft size={16}/></Btn><Btn onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })}><AlignCenter size={16}/></Btn><Btn onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })}><AlignRight size={16}/></Btn></div>
-        <div className="w-px h-6 bg-slate-400/20 mx-1" />
+        <div className="w-px h-6 bg-[var(--rule)] mx-1" />
         <div className="flex items-center gap-1"><Btn onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')}><List size={16}/></Btn><Btn onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')}><ListOrdered size={16}/></Btn><Btn onClick={() => editor.chain().focus().toggleTaskList().run()} active={editor.isActive('taskList')}><ListTodo size={16}/></Btn><Btn onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')}><Quote size={16}/></Btn></div>
-        <div className="w-px h-6 bg-slate-400/20 mx-1" />
+        <div className="w-px h-6 bg-[var(--rule)] mx-1" />
 
         <div className="flex items-center gap-1">
           <Btn onClick={() => editor.chain().focus().toggleSuperscript().run()} active={editor.isActive('superscript')}><SupIcon size={16}/></Btn>
           <Btn onClick={() => editor.chain().focus().toggleSubscript().run()} active={editor.isActive('subscript')}><SubIcon size={16}/></Btn>
           <Btn onClick={toggleLink} active={editor.isActive('link')}><Link2 size={16}/></Btn>
-          <Btn onClick={onOpenImageTool}><ImageIcon size={16} className="text-indigo-500"/></Btn>
+          <Btn onClick={onOpenImageTool}><ImageIcon size={16} className="text-[var(--accent)]"/></Btn>
           {onPolishClick && (
             <Btn onClick={onPolishClick} disabled={isPolishing} title={isPolishing ? '正在润色…' : 'AI 润色'}>
               {isPolishing
@@ -410,7 +413,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
           </Btn>
         </div>
 
-        {editor.isActive('image') && <div className="flex items-center gap-1 ml-4 bg-indigo-500/10 p-1 px-3 rounded-2xl border border-indigo-500/20 border-dashed animate-in slide-in-from-left">{['25%', '50%', '75%', '100%'].map(s => <button key={s} onClick={() => editor.chain().focus().updateAttributes('image', { width: s }).run()} className="px-2 py-1 text-[9px] font-bold hover:bg-indigo-500 hover:text-white rounded-lg transition-all">{s}</button>)}</div>}
+        {editor.isActive('image') && <div className="flex items-center gap-1 ml-4 bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] p-1 px-3 rounded-2xl border border-[color-mix(in_oklab,var(--accent)_20%,transparent)] border-dashed animate-in slide-in-from-left">{['25%', '50%', '75%', '100%'].map(s => <button key={s} onClick={() => editor.chain().focus().updateAttributes('image', { width: s }).run()} className="px-2 py-1 text-[9px] font-bold hover:bg-[var(--accent)] hover:text-white rounded-lg transition-all">{s}</button>)}</div>}
         <div className="flex-1" />
         <div className="flex items-center gap-4">
           <div className="relative">
@@ -419,8 +422,8 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
               <div className="flex items-center gap-1 pr-2 border-r border-white/10">
                 {textColors.map(c => <button key={c} onClick={() => editor.chain().focus().setColor(c).run()} onContextMenu={(e) => { e.preventDefault(); setTextColors(prev => prev.filter(col => col !== c)); }} className="w-4 h-4 rounded-full border border-[var(--card-border)] hover:scale-125 transition-all shadow-sm" style={{ backgroundColor: c }} />)}
               </div>
-              <button onClick={() => { setShowTextPicker(true); setShowHighlightPicker(false); }} className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-indigo-500/30 ml-1">
-                <Pipette size={14} className="text-indigo-500" />
+              <button onClick={() => { setShowTextPicker(true); setShowHighlightPicker(false); }} className="w-8 h-8 rounded-xl bg-white dark:bg-slate-800 shadow-md flex items-center justify-center border border-[var(--accent)]/30 ml-1">
+                <Pipette size={14} className="text-[var(--accent)]" />
               </button>
             </div>
           </div>
@@ -444,7 +447,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
         <div className="shrink-0 px-8 py-2.5 border-y border-white/20 flex items-center gap-3 flex-wrap bg-white/10 dark:bg-black/20 z-50">
           <button
             onClick={toggleSourceMode}
-            className="px-4 py-2 rounded-xl bg-indigo-500 text-white text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-indigo-600 transition-colors flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-[var(--accent)] text-white text-[10px] font-black uppercase tracking-widest shadow-md hover:bg-[var(--accent)] transition-colors flex items-center gap-1.5"
           >
             <SquarePen size={14} /> 退出源码模式
           </button>

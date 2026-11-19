@@ -19,7 +19,7 @@ export default function BlogPathWarning() {
       <p className="text-xs text-[var(--ink-soft)] leading-relaxed">
         下面显示为空是因为管理端还不知道博客目录在哪，不代表内容不存在。
         请到
-        <Link href="/settings" className="mx-1 font-bold text-indigo-600 dark:text-indigo-400 hover:underline">
+        <Link href="/settings" className="mx-1 font-bold text-[var(--accent)] hover:underline">
           【设置 → 项目仓库设置】
         </Link>
         填写本地博客目录并保存。
