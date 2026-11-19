@@ -128,7 +128,7 @@ export default function ModelSection() {
           <button
             onClick={save}
             disabled={saving}
-            className="px-6 py-3 bg-[var(--accent)] text-white rounded-2xl font-black text-sm shadow-lg flex items-center gap-2 hover:bg-[var(--accent)] transition-colors disabled:opacity-50"
+            className="ed-btn px-6 py-3 text-sm"
           >
             {saving ? <Loader2 size={16} className="animate-spin" /> : <Save size={16} />} 保存修改
           </button>
@@ -252,7 +252,7 @@ export default function ModelSection() {
             <button
               onClick={test}
               disabled={testing}
-              className="px-5 py-3 bg-slate-700 dark:bg-slate-600 text-white rounded-xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+              className="ed-btn-quiet px-5 py-3 text-sm"
             >
               {testing ? <Loader2 size={16} className="animate-spin" /> : <PlugZap size={16} />}
               测试连接

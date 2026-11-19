@@ -19,7 +19,7 @@ export default function BackToTop() {
       aria-label="回到顶部"
       title="回到顶部"
       onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className={`paper-card fixed bottom-6 right-6 z-40 grid h-11 w-11 place-items-center rounded-full border border-[var(--card-border)] text-[var(--ink-soft)] transition-all duration-300 hover:text-[var(--accent)] ${
+      className={`ed-press paper-card fixed bottom-6 right-6 z-40 grid h-11 w-11 place-items-center rounded-full border border-[var(--card-border)] text-[var(--ink-soft)] duration-300 hover:text-[var(--accent)] ${
         visible
           ? 'translate-y-0 opacity-100'
           : 'pointer-events-none translate-y-3 opacity-0'

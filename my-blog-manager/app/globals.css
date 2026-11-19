@@ -13,18 +13,18 @@
    ======================================================== */
 :root,
 .theme-xuan {
-  --paper: #faf5ea;
-  --paper-deep: #f2ead8;
-  --ink: #2b2620;
-  --ink-soft: #6f6558;
-  --ink-faint: #776d60;
-  --rule: rgba(43, 38, 32, .16);
-  --accent: #c8401f;
-  --accent-soft: rgba(200, 64, 31, .38);
-  --card: #fffdf7;
-  --card-border: rgba(43, 38, 32, .13);
-  --card-shadow: 0 1px 2px 0 rgba(90, 70, 40, .05), 0 4px 10px -2px rgba(90, 70, 40, .07), 0 16px 32px -16px rgba(90, 70, 40, .16);
-  --card-shadow-hover: 0 2px 3px 0 rgba(90, 70, 40, .06), 0 8px 16px -4px rgba(90, 70, 40, .1), 0 24px 40px -16px rgba(90, 70, 40, .22);
+  --paper: #faf9f6;
+  --paper-deep: #f1efe8;
+  --ink: #14110f;
+  --ink-soft: #6b6459;
+  --ink-faint: #8c8375;
+  --rule: rgba(20, 17, 15, .18);
+  --accent: #2e4e7e;
+  --accent-soft: rgba(46, 78, 126, .38);
+  --card: #ffffff;
+  --card-border: rgba(20, 17, 15, .12);
+  --card-shadow: 0 1px 0 0 rgba(20, 17, 15, .05);
+  --card-shadow-hover: 0 1px 0 0 rgba(20, 17, 15, .08);
   --ok: #4a7c59;
   --warn: #9a6b2f;
   --danger: #8c2f26;
@@ -35,18 +35,18 @@
 }
 
 .theme-xuan.dark {
-  --paper: #17140f;
-  --paper-deep: #1e1a14;
-  --ink: #e6ded0;
-  --ink-soft: #a49883;
-  --ink-faint: #877e70;
-  --rule: rgba(230, 222, 208, .15);
-  --accent: #e0684c;
-  --accent-soft: rgba(224, 104, 76, .45);
-  --card: #201b14;
-  --card-border: rgba(230, 222, 208, .1);
-  --card-shadow: 0 2px 14px -2px rgba(0, 0, 0, .3), 0 1px 3px 0 rgba(0, 0, 0, .2);
-  --card-shadow-hover: 0 10px 28px -4px rgba(0, 0, 0, .55), 0 3px 8px 0 rgba(0, 0, 0, .3);
+  --paper: #14120f;
+  --paper-deep: #1c1a16;
+  --ink: #eee9df;
+  --ink-soft: #a8a093;
+  --ink-faint: #857d70;
+  --rule: rgba(238, 233, 223, .16);
+  --accent: #7d9bc7;
+  --accent-soft: rgba(125, 155, 199, .45);
+  --card: #1b1915;
+  --card-border: rgba(238, 233, 223, .1);
+  --card-shadow: 0 1px 0 0 rgba(0, 0, 0, .3);
+  --card-shadow-hover: 0 1px 0 0 rgba(0, 0, 0, .45);
   --ok: #7fb98d;
   --warn: #d0a15c;
   --danger: #d4685a;
@@ -617,6 +617,110 @@ textarea::placeholder {
   background: linear-gradient(90deg, transparent 0%, var(--rule) 20%, var(--rule) 80%, transparent 100%);
 }
 
+/* 编辑部留白风（Editorial）：极小标签 + 大衬线标题 + 硬墨线，靠字号反差与留白出质感 */
+@utility ed-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-family: var(--font-sans, inherit);
+  font-size: 0.625rem;
+  font-weight: 800;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+  color: var(--ink-faint);
+  &::before {
+    content: '';
+    display: inline-block;
+    width: 0.5rem;
+    height: 0.5rem;
+    background: var(--accent);
+    flex: none;
+  }
+}
+@utility ed-title {
+  font-family: var(--font-serif);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+  line-height: 1.12;
+  color: var(--ink);
+}
+@utility ed-rule {
+  height: 2px;
+  width: 100%;
+  background: var(--ink);
+}
+
+/* 编辑风微交互：下划线从左生长、按压回弹、卡片细线位移。只动 transform/opacity/border，GPU 友好。 */
+@utility ed-link {
+  position: relative;
+  display: inline-block;
+  &::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -2px;
+    height: 1px;
+    background: currentColor;
+    transform: scaleX(0);
+    transform-origin: left center;
+    transition: transform 0.28s cubic-bezier(0.23, 1, 0.32, 1);
+  }
+  &:hover::after,
+  &:focus-visible::after {
+    transform: scaleX(1);
+  }
+}
+@utility ed-press {
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1), background-color 0.2s ease, color 0.2s ease;
+  &:active {
+    transform: translateY(1px) scale(0.985);
+  }
+}
+@utility ed-card {
+  transition: transform 0.3s cubic-bezier(0.23, 1, 0.32, 1), border-color 0.3s ease;
+  &:hover {
+    transform: translateY(-2px);
+    border-color: var(--ink);
+  }
+}
+@utility ed-num {
+  font-variant-numeric: tabular-nums;
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+  letter-spacing: 0.05em;
+  color: var(--ink-faint);
+}
+
+/* 编辑风按钮：扁平、细边、按压回弹，去掉浮夸阴影与胶囊化 */
+@utility ed-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  background: var(--accent);
+  color: #fff;
+  transition: transform 0.16s cubic-bezier(0.23, 1, 0.32, 1), filter 0.2s ease;
+  &:hover { filter: brightness(1.08); }
+  &:active { transform: translateY(1px) scale(0.985); }
+  &:disabled { opacity: 0.5; pointer-events: none; }
+}
+@utility ed-btn-quiet {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  font-weight: 700;
+  border: 1px solid var(--card-border);
+  background: transparent;
+  color: var(--ink-soft);
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+  &:hover { border-color: var(--accent); color: var(--accent); background: color-mix(in oklab, var(--accent) 6%, transparent); }
+}
+
 /* 宣纸方印小红章（小巧红印点缀） */
 /* 和纸手帐：带字的方印（与博客端 globals.css 保持同步） */
 @utility seal-stamp {
@@ -654,38 +758,6 @@ textarea::placeholder {
   box-shadow: 0 0 1px 1px var(--accent-soft);
   transform: translateY(-1px);
   transition: transform 0.25s ease, filter 0.25s ease;
-}
-
-/* 和纸胶带贴条（手账风） */
-@utility tape-strip-mint {
-  background-color: var(--tape-mint, #b6dcc8);
-  color: var(--on-tape, #2f4a3c);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-@utility tape-strip-pink {
-  background-color: var(--tape-pink, #f3c6c6);
-  color: var(--on-tape, #2f4a3c);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-@utility tape-strip-butter {
-  background-color: var(--tape-butter, #f2e6ad);
-  color: var(--on-tape, #2f4a3c);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-/* 手账荧光笔划线标记 */
-@utility mark-butter {
-  background: linear-gradient(transparent 62%, var(--tape-butter, #f2e6ad) 62%);
-}
-
-@utility mark-pink {
-  background: linear-gradient(transparent 62%, var(--tape-pink, #f3c6c6) 62%);
-}
-
-@utility mark-mint {
-  background: linear-gradient(transparent 62%, var(--tape-mint, #b6dcc8) 62%);
 }
 
 /* ========================================================

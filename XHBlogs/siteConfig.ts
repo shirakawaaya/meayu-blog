@@ -6,7 +6,7 @@ export const siteConfig = {
 
   // 1. 网站标题与博主信息
   title: "Meayu の 拾光集",
-  faviconUrl: "",
+  faviconUrl: "https://pub-fb69f942aae94d15ae8765a54b31b18c.r2.dev/20261119_163026_592f72.jpg",
   authorName: "Meayu",
   bio: "随便写点。",
 
@@ -18,7 +18,7 @@ export const siteConfig = {
   navAfter: "拾光集",
 
   // 2. 头像设置 (支持网络链接，或将图片放入 public 文件夹后使用 "/me.jpg")
-  avatarUrl: "",
+  avatarUrl: "https://pub-fb69f942aae94d15ae8765a54b31b18c.r2.dev/20261119_163004_b7646f.jpg",
 
   // 3. 网站背景设置 (二选一)
   // 如果想用纯图片背景，请在下面 bgImage 写路径，并将 useGradient 设为 false

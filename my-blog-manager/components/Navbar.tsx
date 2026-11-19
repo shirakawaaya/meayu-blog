@@ -219,7 +219,7 @@ export default function Navbar() {
                     </div>
 
                     {/* 只有"更新本地"一步：内容直接写进博客前端目录，不再需要同步 */}
-                    <button onClick={handleUpdateLocal} disabled={isWriting} className="w-full py-2.5 rounded-xl bg-[var(--accent)] text-white text-xs font-black shadow-lg hover:bg-[var(--accent)] transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                    <button onClick={handleUpdateLocal} disabled={isWriting} className="ed-btn w-full py-2.5 text-xs">
                       {isWriting ? <><Loader2 size={14} className="animate-spin" /> 正在保存...</> : "保存到博客"}
                     </button>
                   </motion.div>

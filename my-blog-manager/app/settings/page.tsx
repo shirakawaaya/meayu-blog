@@ -105,14 +105,32 @@ function SettingsContent() {
         <main className="w-[95%] max-w-7xl mx-auto mt-24 flex flex-col md:flex-row gap-8 items-start relative z-10">
 
           <div className="w-full md:w-72 shrink-0 flex flex-col gap-4">
-            <div className="paper-card border border-[var(--card-border)] dark:border-slate-800/50 rounded-2xl p-4 shadow-md">
-              <p className="text-[10px] font-black text-slate-400 uppercase mb-4 ml-2 tracking-widest">设置分类</p>
-              <nav className="flex flex-col gap-2">
-                {menuItems.map((item) => (
-                  <button key={item.id} onClick={() => setActiveTab(item.id)} className={`flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 font-bold text-sm ${activeTab === item.id ? 'bg-[var(--accent)] text-white shadow-lg translate-x-1' : 'text-slate-600 dark:text-slate-300 hover:paper-card dark:hover:bg-slate-800/50'}`}>
-                  <span>{item.name}</span>
-                  </button>
-                ))}
+            <div className="paper-card border border-[var(--card-border)] dark:border-slate-800/50 rounded-2xl p-4 shadow-sm">
+              <p className="text-[10px] font-black text-[var(--ink-faint)] uppercase mb-4 px-3 tracking-[0.2em]">设置分类 · Settings</p>
+              <nav className="flex flex-col gap-1" aria-label="设置分类">
+                {menuItems.map((item) => {
+                  const active = activeTab === item.id;
+                  return (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => setActiveTab(item.id)}
+                      aria-current={active ? 'page' : undefined}
+                      className={`group relative w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left text-sm transition-colors duration-200 ${
+                        active
+                          ? 'bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] text-[var(--accent)] font-extrabold'
+                          : 'text-[var(--ink-soft)] font-bold hover:bg-[var(--paper-deep)] hover:text-[var(--ink)]'
+                      }`}
+                    >
+                      <span
+                        aria-hidden="true"
+                        className={`absolute left-0 top-1/2 -translate-y-1/2 w-[3px] h-5 rounded-full bg-[var(--accent)] transition-opacity duration-200 ${active ? 'opacity-100' : 'opacity-0'}`}
+                      />
+                      <span className="truncate">{item.name}</span>
+                      {active && <span aria-hidden="true" className="ml-auto text-[var(--accent)] text-xs">→</span>}
+                    </button>
+                  );
+                })}
               </nav>
             </div>
           </div>

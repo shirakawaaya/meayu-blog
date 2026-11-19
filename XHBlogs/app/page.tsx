@@ -99,7 +99,15 @@ export default function Home() {
       <div className="min-h-screen relative pb-10">
         <div>
           {/* 调整整体容器的内边距，适应手机端更小的屏幕 */}
-          <div className="w-full max-w-6xl mx-auto mt-24 sm:mt-28 px-4 sm:px-6 lg:px-10 relative z-10">
+          <div className="w-full max-w-6xl mx-auto mt-20 sm:mt-24 px-4 sm:px-6 lg:px-10 relative z-10">
+            {/* 编辑部刊头：极小标签 + 大衬线标题 + 硬墨线，建立字号反差与留白节奏 */}
+            <header className="mb-10 sm:mb-14">
+              <span className="ed-label page-enter-soft">Journal · 拾光手记</span>
+              <h1 className="ed-title page-enter mt-4 text-4xl sm:text-5xl md:text-6xl">{siteConfig.title}</h1>
+              <p className="mt-4 text-sm sm:text-base text-[var(--ink-soft)] font-medium max-w-2xl leading-relaxed page-enter-soft">{siteConfig.bio}</p>
+              <div className="ed-rule mt-7 sm:mt-9" />
+            </header>
+
             <SearchBar posts={allChatters} moments={allMoments} />
 
             <main className="flex flex-col gap-6 w-full mt-6">
@@ -119,10 +127,11 @@ export default function Home() {
                   {top5Moments.length > 0 ? (
                     <LatestMomentsCarousel moments={top5Moments} />
                   ) : (
-                    <Link href="/moments" className="rounded-2xl paper-card border border-[var(--card-border)] min-h-[420px] h-full flex flex-col items-center justify-center gap-3 group transition-all duration-300 hover:-translate-y-1">
+                    <Link href="/moments" className="rounded-2xl paper-card border border-[var(--card-border)] min-h-[420px] h-full flex flex-col items-center justify-center gap-3 group transition-all duration-300 hover:-translate-y-1 relative">
+                      <span className="ed-num absolute top-5 left-6 text-xs">01 / MOMENTS</span>
                       <span className="text-[10px] font-black text-[var(--accent)] uppercase tracking-widest bg-[color-mix(in_oklab,var(--card)_85%,transparent)] px-2.5 py-1 rounded-md border border-[var(--card-border)]">说说 · Moments</span>
-                      <p className="text-slate-600 dark:text-slate-300 font-bold">还没有说说</p>
-                      <p className="text-sm text-slate-500 dark:text-slate-400">去写下第一条吧</p>
+                      <p className="text-[var(--ink-soft)] font-bold">还没有说说</p>
+                      <p className="text-sm text-[var(--ink-faint)]">去写下第一条吧</p>
                     </Link>
                   )}
                 </div>
@@ -131,7 +140,8 @@ export default function Home() {
                 <div className="col-span-1 lg:col-span-8 flex flex-col gap-6">
 
                   {/* 照片墙大海报 */}
-                  <Link href="/photowall" className="w-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden transition-all duration-500 hover:-translate-y-1 relative group min-h-[200px] sm:min-h-[220px] flex-shrink-0">
+                  <Link href="/photowall" className="ed-card w-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden relative group min-h-[200px] sm:min-h-[220px] flex-shrink-0">
+                    <span className="ed-num absolute top-5 left-6 z-10 text-xs">02 / ARCHIVE</span>
                     {latestAlbum.cover && <img loading="lazy" decoding="async" src={latestAlbum.cover} alt="" className="w-full h-full absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"/>}
                     <div className="absolute inset-0 bg-[color-mix(in_oklab,var(--paper-deep)_35%,transparent)] dark:bg-[color-mix(in_oklab,var(--paper)_50%,transparent)] group-hover:bg-[color-mix(in_oklab,var(--paper-deep)_15%,transparent)] transition-colors duration-500"></div>
                     <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 right-6">

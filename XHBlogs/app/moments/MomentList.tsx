@@ -136,9 +136,6 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
   };
 
   const renderMomentCard = (moment: MomentListItem, index: number = 0) => {
-    const tapeColor = index % 3 === 0 ? 'var(--tape-mint, #b6dcc8)' : index % 3 === 1 ? 'var(--tape-pink, #f3c6c6)' : 'var(--tape-butter, #f2e6ad)';
-    const tapeRotate = index % 2 === 0 ? '-rotate-1' : 'rotate-1';
-
     return (
       <motion.div
         key={moment.id}
@@ -150,12 +147,6 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
         transition={{ duration: 0.4, type: 'spring', stiffness: 100 }}
         className="flex flex-col paper-card rounded-2xl md:rounded-2xl border border-[var(--card-border)] p-5 md:p-8 transition-all duration-300 hover:-translate-y-1 hover:border-[var(--accent-soft)] overflow-hidden relative group w-full"
       >
-        {/* 手账和纸胶带装饰条 */}
-        <div
-          className={`absolute -top-2 left-1/2 -translate-x-1/2 z-10 w-20 h-4.5 rounded-[1px] opacity-80 shadow-xs transform ${tapeRotate} pointer-events-none border border-black/5`}
-          style={{ backgroundColor: tapeColor }}
-        />
-
         <div className="flex items-center gap-3 md:gap-4 mb-4 md:mb-6 pb-4 border-b border-[var(--rule)] relative">
           <div className="w-10 h-10 md:w-12 md:h-12 shrink-0 rounded-xl overflow-hidden shadow-sm border border-[var(--card-border)]">
             {avatarUrl ? <img loading="lazy" decoding="async" src={avatarUrl} alt="avatar" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-white font-black">{authorName.charAt(0)}</div>}

@@ -535,23 +535,23 @@ function EditorContent() {
 
       <div>
         {/* 左右并排；min-w-0 让主区在窄屏可收缩，不会撑开容器 */}
-        <main className="mx-auto w-[96%] max-w-[1750px] flex flex-row gap-6 relative min-[1400px]:h-[calc(100vh-144px-32px)]" style={{ marginTop: '144px', marginBottom: '32px' }}>
+        <main className="mx-auto w-[96%] max-w-[1750px] flex flex-col gap-5 relative min-[1400px]:h-[calc(100vh-120px-32px)]" style={{ marginTop: '104px', marginBottom: '32px' }}>
 
-          <div className="absolute -top-14 left-2 right-2 flex items-center justify-between z-50">
+          {/* 编辑器控制行：独立于导航栏，作为内容区第一行，不与顶部 nav 挤在一起 */}
+          <div className="flex items-center justify-between gap-3 shrink-0">
             <button
               onClick={handleBackClick}
-              className="px-4 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-[var(--ink-soft)] font-black text-xs uppercase tracking-widest hover:scale-105 active:scale-95 transition-all group"
+              className="ed-btn-quiet px-3.5 py-2 text-xs uppercase tracking-widest group"
             >
               <ArrowLeft size={15} className="group-hover:-translate-x-1 transition-transform text-[var(--accent)]" />
               返回上一级
             </button>
 
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1.5">
               <button
                 onClick={() => setIsOutlineOpen(!isOutlineOpen)}
-                className={`px-3.5 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-xs font-bold transition-all ${
-                  isOutlineOpen ? 'bg-[var(--accent)] text-white' : 'text-[var(--ink-soft)] hover:text-[var(--accent)]'
-                }`}
+                aria-pressed={isOutlineOpen}
+                className={`ed-btn-quiet px-3 py-2 text-xs ${isOutlineOpen ? '!border-[var(--accent)] !text-[var(--accent)] !bg-[color-mix(in_oklab,var(--accent)_8%,transparent)]' : ''}`}
                 title="切换文章大纲"
               >
                 <ListTree size={14} />
@@ -560,18 +560,19 @@ function EditorContent() {
 
               <button
                 onClick={() => setIsMetaOpen(!isMetaOpen)}
-                className={`px-3.5 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-xs font-bold transition-all ${
-                  isMetaOpen ? 'bg-[var(--accent)] text-white' : 'text-[var(--ink-soft)] hover:text-[var(--accent)]'
-                }`}
+                aria-pressed={isMetaOpen}
+                className={`ed-btn-quiet px-3 py-2 text-xs ${isMetaOpen ? '!border-[var(--accent)] !text-[var(--accent)] !bg-[color-mix(in_oklab,var(--accent)_8%,transparent)]' : ''}`}
                 title="切换右侧信息面板（标签/封面/心情）"
               >
                 <PanelRight size={14} />
                 <span>信息</span>
               </button>
 
+              <span className="mx-1 h-5 w-px bg-[var(--card-border)]" aria-hidden="true" />
+
               <button
                 onClick={() => setIsZenMode(true)}
-                className="px-3.5 py-2 paper-card border border-[var(--card-border)] rounded-xl shadow-md flex items-center gap-1.5 text-[var(--ink-soft)] hover:text-[var(--accent)] font-bold text-xs transition-all hover:scale-105 active:scale-95"
+                className="ed-btn-quiet px-3 py-2 text-xs !border-[var(--accent)] !text-[var(--accent)]"
                 title="开启全屏专注书写模式 (Esc 退出)"
               >
                 <Maximize2 size={14} />
@@ -580,6 +581,8 @@ function EditorContent() {
             </div>
           </div>
 
+          {/* 编辑器主体：编辑器 + 大纲侧栏 + 信息侧栏 三列并排 */}
+          <div className="flex-1 min-h-0 flex flex-row gap-6">
           <section className="flex-1 min-w-0 paper-card rounded-2xl border border-[var(--card-border)] flex flex-col overflow-hidden min-[1400px]:min-h-0 min-h-[70vh]">
             {/* 本地未保存防丢快照恢复提示 */}
             <AnimatePresence>
@@ -681,6 +684,7 @@ function EditorContent() {
               </motion.aside>
             )}
           </AnimatePresence>
+          </div>
         </main>
       </div>
 
@@ -693,29 +697,30 @@ function EditorContent() {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-[160] bg-[var(--paper)] flex flex-col p-4 sm:p-8 overflow-y-auto custom-scrollbar"
           >
-            <div className="w-full max-w-4xl mx-auto flex items-center justify-between pb-4 border-b border-[var(--rule)] mb-6 shrink-0">
-              <div className="flex items-center gap-3 text-xs font-bold text-[var(--ink-soft)]">
-                <span className="flex items-center gap-1.5"><span className="seal-mark rounded-[1px]" /> 专注书写中</span>
-                <span>约 {content.replace(/<[^>]*>/g, '').replace(/\s+/g, '').length} 字</span>
-                {lastSaved && <span className="text-[var(--ink-faint)]">保存于 {lastSaved}</span>}
+            <div className="w-full max-w-4xl mx-auto flex items-center justify-between pb-4 border-b-2 border-[var(--ink)] mb-8 shrink-0">
+              <div className="flex items-baseline gap-4">
+                <span className="ed-label">Focus · 专注书写</span>
+                <span className="ed-num text-sm">{content.replace(/<[^>]*>/g, '').replace(/\s+/g, '').length} 字</span>
+                {lastSaved && <span className="text-xs text-[var(--ink-faint)]">· 保存于 {lastSaved}</span>}
               </div>
 
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => handleSave(false, false)}
                   disabled={isSaving}
-                  className="px-4 py-1.5 paper-card border border-[var(--card-border)] rounded-xl text-xs font-bold text-[var(--ink)] hover:text-[var(--accent)] transition-all flex items-center gap-1.5"
+                  className="ed-btn-quiet px-3.5 py-1.5 text-xs"
                 >
                   {isSaving ? <Loader2 size={13} className="animate-spin" /> : <Save size={13} />}
                   <span>存草稿</span>
                 </button>
                 <button
                   onClick={() => setIsZenMode(false)}
-                  className="px-4 py-1.5 bg-[var(--accent)] text-white rounded-xl text-xs font-bold hover:opacity-90 transition-all flex items-center gap-1.5"
+                  className="group flex items-center gap-1.5 px-2 py-1.5 text-xs font-bold text-[var(--ink-faint)] hover:text-[var(--accent)] transition-colors"
                   title="退出专注模式 (Esc)"
                 >
-                  <Minimize2 size={13} />
-                  <span>退出专注 (Esc)</span>
+                  <Minimize2 size={14} />
+                  <span>退出</span>
+                  <kbd className="ed-num ml-0.5 rounded border border-[var(--card-border)] px-1 py-0.5 text-[9px] bg-[var(--paper-deep)] group-hover:border-[var(--accent)]">Esc</kbd>
                 </button>
               </div>
             </div>

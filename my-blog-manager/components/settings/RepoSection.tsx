@@ -335,8 +335,8 @@ export default function RepoSection() {
                         <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">执行自动化改造？</h3>
                         <p className="text-sm text-slate-500 mb-8 leading-relaxed">自动绑定 Git 仓库、安装 gh-pages，并写入部署配置</p>
                         <div className="flex gap-3">
-                            <button onClick={() => setModalConfig({isOpen: false, type: null})} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black transition-colors hover:bg-slate-200">取消</button>
-                            <button onClick={executeInitEnv} className="flex-1 py-4 bg-[var(--accent)] text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all">确认执行</button>
+                            <button onClick={() => setModalConfig({isOpen: false, type: null})} className="ed-btn-quiet flex-1 py-4 text-xs">取消</button>
+                            <button onClick={executeInitEnv} className="ed-btn flex-1 py-4 text-xs">确认执行</button>
                         </div>
                     </>
                 )}
@@ -347,8 +347,8 @@ export default function RepoSection() {
                         <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">执行编译并部署？</h3>
                         <p className="text-sm text-slate-500 mb-8 leading-relaxed">打包前端静态文件，推送到「仓库一（静态页面）」。</p>
                         <div className="flex gap-3">
-                            <button onClick={() => setModalConfig({isOpen: false, type: null})} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black transition-colors hover:bg-slate-200">取消</button>
-                            <button onClick={executeDeploy} className="flex-1 py-4 bg-[var(--accent)] text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all">确认执行</button>
+                            <button onClick={() => setModalConfig({isOpen: false, type: null})} className="ed-btn-quiet flex-1 py-4 text-xs">取消</button>
+                            <button onClick={executeDeploy} className="ed-btn flex-1 py-4 text-xs">确认执行</button>
                         </div>
                     </>
                 )}
@@ -359,8 +359,8 @@ export default function RepoSection() {
                         <h3 className="text-xl font-black text-slate-900 dark:text-white mb-2">推送源码至 Vercel？</h3>
                         <p className="text-sm text-slate-500 mb-8 leading-relaxed">把本地源码提交并推送到「仓库二（博客源码）」，Vercel 会自动构建。</p>
                         <div className="flex gap-3">
-                            <button onClick={() => setModalConfig({isOpen: false, type: null})} className="flex-1 py-4 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-2xl text-xs font-black transition-colors hover:bg-slate-200">取消</button>
-                            <button onClick={executeUploadSource} className="flex-1 py-4 bg-[var(--accent)] text-white rounded-2xl text-xs font-black shadow-lg active:scale-95 transition-all">开始推送</button>
+                            <button onClick={() => setModalConfig({isOpen: false, type: null})} className="ed-btn-quiet flex-1 py-4 text-xs">取消</button>
+                            <button onClick={executeUploadSource} className="ed-btn flex-1 py-4 text-xs">开始推送</button>
                         </div>
                     </>
                 )}

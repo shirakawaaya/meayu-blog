@@ -143,7 +143,7 @@ export default function BackgroundSection({ formData, handleUpdate, pushToQueue 
           <p className="text-[10px] font-bold text-slate-400 mt-2 uppercase">管理网站的全局轮播背景图 ({formData.bgImages?.length || 0} 张)</p>
         </div>
         {/* 修复暂存参数：传入真正的 key 和 value */}
-        <button onClick={() => pushToQueue('视觉背景图', 'bgImages', formData.bgImages)} className="px-6 py-2 bg-[var(--accent)] text-white rounded-xl text-xs font-black shadow-lg active:scale-95 transition-all">
+        <button onClick={() => pushToQueue('视觉背景图', 'bgImages', formData.bgImages)} className="ed-btn px-6 py-2 text-xs">
           加入待保存
         </button>
       </header>

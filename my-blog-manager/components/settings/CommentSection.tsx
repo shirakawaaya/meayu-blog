@@ -110,7 +110,7 @@ export default function CommentSection({ formData, handleUpdate, pushToQueue }: 
           </div>
           <button
             onClick={saveToQueue}
-            className="px-6 py-3 bg-[var(--accent)] text-white rounded-2xl font-black text-sm shadow-lg flex items-center gap-2 hover:bg-[var(--accent)] transition-colors"
+            className="ed-btn px-6 py-3 text-sm"
           >
             <Save size={16} /> 加入待保存
           </button>
@@ -133,7 +133,7 @@ export default function CommentSection({ formData, handleUpdate, pushToQueue }: 
               <button
                 onClick={fetchIds}
                 disabled={fetching}
-                className="shrink-0 px-5 py-3 bg-slate-700 dark:bg-slate-600 text-white rounded-xl font-black text-sm flex items-center gap-2 hover:opacity-90 transition-opacity disabled:opacity-50"
+                className="ed-btn-quiet shrink-0 px-5 py-3 text-sm"
               >
                 {fetching ? <Loader2 size={16} className="animate-spin" /> : <Hash size={16} />}
                 自动获取 ID
