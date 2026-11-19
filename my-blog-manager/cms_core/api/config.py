@@ -105,7 +105,7 @@ def get_site_config():
         root_content = content
 
         # 1. 先提取已知的嵌套对象，避免内部属性泄露到外层
-        known_dicts = ['social', 'giscusConfig', 'icpConfig']
+        known_dicts = ['social', 'icpConfig']
         for dict_name in known_dicts:
             dict_match = re.search(rf'{dict_name}\s*:\s*\{{([\s\S]+?)\}}', content)
             if dict_match:
@@ -159,7 +159,7 @@ def update_site_config(payload: Dict[str, Any] = Body(...)):
         "siteUrl", "title", "authorName", "bio", "avatarUrl", "useGradient", "themeColors",
         "bgImages", "bgEnabled", "defaultPostCover", "photoWallImage", "social",
         "counts", "chatterTitle", "chatterDescription",
-        "giscusConfig", "buildDate",
+        "buildDate",
         "icpConfig",
         "faviconUrl",
         "navTitle",

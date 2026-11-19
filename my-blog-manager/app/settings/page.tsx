@@ -11,8 +11,7 @@ import ProfileSection from '../../components/settings/ProfileSection';
 import BackgroundSection from '../../components/settings/BackgroundSection';
 import GallerySection from '../../components/settings/GallerySection';
 import RepoSection from '../../components/settings/RepoSection';
- import CommentSection from '../../components/settings/CommentSection';
- import ModelSection from '../../components/settings/ModelSection';
+  import ModelSection from '../../components/settings/ModelSection';
 
 function SettingsContent() {
   const { addOperation } = useOperations();
@@ -27,12 +26,6 @@ function SettingsContent() {
     social: siteConfig.social || {},
     bgImages: [...(siteConfig.bgImages || [])],
     bgEnabled: siteConfig.bgEnabled || false,
-    giscusConfig: siteConfig.giscusConfig || {
-      repo: '',
-      repoId: '',
-      category: 'Announcements',
-      categoryId: '',
-    },
     buildDate: siteConfig.buildDate || "2026-03-23T00:00:00",
     icpConfig: siteConfig.icpConfig || { name: "", link: "" },
   });
@@ -53,7 +46,6 @@ function SettingsContent() {
             ...prev,
             ...data.data,
             social: { ...(prev.social || {}), ...(data.data.social || {}) },
-            giscusConfig: { ...(prev.giscusConfig || {}), ...(data.data.giscusConfig || {}) },
             buildDate: data.data.buildDate || prev.buildDate,
             icpConfig: data.data.icpConfig || prev.icpConfig,
           }));
@@ -93,7 +85,6 @@ function SettingsContent() {
     { id: 'profile', name: '个人名片设置' },
     { id: 'background', name: '视觉背景配置' },
     { id: 'gallery', name: '图库配置管理' },
-    { id: 'comment', name: '评论系统配置' },
     { id: 'model', name: '模型设置' },
     { id: 'repo', name: '项目仓库设置' },
   ];
@@ -140,7 +131,6 @@ function SettingsContent() {
               {activeTab === 'profile' && <ProfileSection key="profile" formData={formData} handleUpdate={handleUpdate} pushToQueue={pushToQueue} />}
               {activeTab === 'background' && <BackgroundSection key="background" formData={formData} handleUpdate={handleUpdate} pushToQueue={pushToQueue} />}
               {activeTab === 'gallery' && <GallerySection key="gallery" formData={formData} handleUpdate={handleUpdate} pushToQueue={pushToQueue} />}
-              {activeTab === 'comment' && <CommentSection key="comment" formData={formData} handleUpdate={handleUpdate} pushToQueue={pushToQueue} />}
               {activeTab === 'model' && <ModelSection key="model" />}
 
               {activeTab === 'repo' && <RepoSection key="repo" />}

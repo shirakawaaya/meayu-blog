@@ -3,8 +3,7 @@
 import type { MomentListItem } from '../../lib/content-types';
 import { useState, useMemo } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { MapPin, MessageSquare, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost, X } from 'lucide-react';
-import MomentComments from '../../components/MomentComments';
+import { MapPin, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost, X } from 'lucide-react';
 import { useEscapeClose } from '../../lib/use-escape-close';
 
 function timeAgo(dateStr: string) {
@@ -21,7 +20,6 @@ function timeAgo(dateStr: string) {
 }
 
 export default function MomentList({ moments, authorName, avatarUrl }: { moments: MomentListItem[]; authorName: string; avatarUrl: string }) {
-  const [openCommentId, setOpenCommentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [lightbox, setLightbox] = useState<{ images: string[], index: number } | null>(null);
@@ -184,21 +182,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
               </button>
             )}
           </div>
-          <button onClick={() => setOpenCommentId(openCommentId === moment.id ? null : moment.id)} className={`w-8 h-8 md:w-9 md:h-9 flex items-center justify-center shrink-0 rounded-full transition-all shadow-sm ${openCommentId === moment.id ? 'bg-[var(--accent)] text-white rotate-12' : 'paper-card-strong text-slate-400 hover:text-[var(--accent)] hover:border-[var(--accent-soft)]'}`}>
-            <MessageSquare size={13} className="md:w-3.5 md:h-3.5" />
-          </button>
         </div>
-
-        <AnimatePresence>
-          {openCommentId === moment.id && (
-            <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1, marginTop: 14 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-              <div className="bg-[var(--paper-deep)] rounded-xl p-4 md:p-5 border border-[var(--card-border)] relative shadow-inner">
-                <div className="absolute -top-2 right-6 md:right-8 w-4 h-4 bg-[var(--paper-deep)] rotate-45 border-l border-t border-[var(--card-border)]"></div>
-                <MomentComments id={`/moments/${moment.id}`} />
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
       </motion.div>
     );
   };

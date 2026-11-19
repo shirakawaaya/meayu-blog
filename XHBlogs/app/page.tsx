@@ -3,7 +3,6 @@ import fs from 'fs';
 import path from 'path';
 import matter from 'gray-matter';
 import { Link } from 'next-view-transitions';
-import SearchBar from '../components/SearchBar';
 import { siteConfig } from '../siteConfig';
 import ProfileCard from '../components/ProfileCard';
 import { albums } from '../data/albums';
@@ -102,15 +101,13 @@ export default function Home() {
           <div className="w-full max-w-6xl mx-auto mt-20 sm:mt-24 px-4 sm:px-6 lg:px-10 relative z-10">
             {/* 编辑部刊头：极小标签 + 大衬线标题 + 硬墨线，建立字号反差与留白节奏 */}
             <header className="mb-10 sm:mb-14">
-              <span className="ed-label page-enter-soft">Journal · 拾光手记</span>
+              <span className="ed-label page-enter-soft">拾光手记 · Notes</span>
               <h1 className="ed-title page-enter mt-4 text-4xl sm:text-5xl md:text-6xl">{siteConfig.title}</h1>
-              <p className="mt-4 text-sm sm:text-base text-[var(--ink-soft)] font-medium max-w-2xl leading-relaxed page-enter-soft">{siteConfig.bio}</p>
+              <p className="mt-4 text-sm sm:text-base text-[var(--ink-soft)] font-medium max-w-2xl leading-relaxed page-enter-soft">写下来，就是留住了。</p>
               <div className="ed-rule mt-7 sm:mt-9" />
             </header>
 
-            <SearchBar posts={allChatters} moments={allMoments} />
-
-            <main className="flex flex-col gap-6 w-full mt-6">
+            <main className="flex flex-col gap-6 w-full mt-2">
 
               {/* 第一行：个人信息（占满整行） */}
               <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 w-full">
@@ -140,13 +137,13 @@ export default function Home() {
                 <div className="col-span-1 lg:col-span-8 flex flex-col gap-6">
 
                   {/* 照片墙大海报 */}
-                  <Link href="/photowall" className="ed-card w-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden relative group min-h-[200px] sm:min-h-[220px] flex-shrink-0">
-                    <span className="ed-num absolute top-5 left-6 z-10 text-xs">02 / ARCHIVE</span>
+                  <Link href="/photowall" className="ed-card w-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden relative group min-h-[200px] sm:min-h-[220px] flex-shrink-0 bg-[var(--paper-deep)]">
+                    <span className="ed-num absolute top-5 left-6 z-10 text-xs">02 / PHOTOS</span>
                     {latestAlbum.cover && <img loading="lazy" decoding="async" src={latestAlbum.cover} alt="" className="w-full h-full absolute inset-0 object-cover transition-transform duration-700 group-hover:scale-105 opacity-90"/>}
-                    <div className="absolute inset-0 bg-[color-mix(in_oklab,var(--paper-deep)_35%,transparent)] dark:bg-[color-mix(in_oklab,var(--paper)_50%,transparent)] group-hover:bg-[color-mix(in_oklab,var(--paper-deep)_15%,transparent)] transition-colors duration-500"></div>
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/25 to-transparent group-hover:from-black/80 transition-colors duration-500"></div>
                     <div className="absolute bottom-4 left-4 sm:bottom-6 sm:left-6 right-6">
-                      <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 underline decoration-[var(--accent)] decoration-2 underline-offset-4">{latestAlbum.title}</h3>
-                      <p className="text-white/90 text-sm sm:text-lg line-clamp-1">{latestAlbum.description}</p>
+                      <h3 className="text-2xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 underline decoration-[var(--accent)] decoration-2 underline-offset-4 drop-shadow-md">{latestAlbum.title}</h3>
+                      <p className="text-white/90 text-sm sm:text-lg line-clamp-1 drop-shadow">{latestAlbum.description}</p>
                     </div>
                   </Link>
 

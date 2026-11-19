@@ -901,6 +901,23 @@ textarea::placeholder {
   height: auto;
 }
 
+/* 图片图注：Markdown alt/title 由 rehypeFigcaption 包成 figure，正文里呈现编辑风小字 */
+.prose figure.article-figure {
+  margin: 2rem 0;
+  text-align: center;
+}
+.prose figure.article-figure img {
+  margin: 0 auto;
+}
+.prose figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.78rem;
+  line-height: 1.6;
+  color: var(--ink-faint);
+  letter-spacing: 0.02em;
+  font-family: var(--font-serif);
+}
+
 /* 代码高亮配色（Atom One Dark 色板，仅用于深色代码块内部） */
 .prose pre code .hljs-comment,
 .prose pre code .hljs-quote { color: #5c6370; font-style: italic; }

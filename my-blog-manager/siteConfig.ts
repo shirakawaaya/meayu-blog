@@ -48,12 +48,6 @@ export const siteConfig = {
   chatterDescription: "代码与日常碎片的记录",
 
   // 评论（Giscus，基于 GitHub Discussions）
-  giscusConfig: {
-    repo: "meayu-lomie/XinghuisamaBlogs",
-    repoId: "R_kgDOU994Lg",
-    category: "Announcements",
-    categoryId: "DIC_kwDOU994Ls4DHK0P",
-  },
   buildDate: "2026-03-23T00:00:00", // 建站日期
   // 备案信息（页脚展示；留空则不渲染）
   icpConfig: {

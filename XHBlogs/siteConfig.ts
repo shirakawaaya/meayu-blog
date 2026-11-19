@@ -51,12 +51,6 @@ export const siteConfig = {
   // 评论（Giscus，基于 GitHub Discussions）
   // 配置步骤：https://giscus.app/zh-CN 填入仓库后，把生成的 repo/repoId/category/categoryId 抄到这里
   // 前置条件：仓库公开 + 已开启 Discussions + 已安装 giscus App
-  giscusConfig: {
-    repo: "meayu-lomie/XinghuisamaBlogs",
-    repoId: "R_kgDOU994Lg",
-    category: "Announcements",
-    categoryId: "DIC_kwDOU994Ls4DHK0P",
-  },
   buildDate: "2026-03-23T00:00:00", // 建站日期
   // 备案信息（页脚展示；留空则不渲染）
   icpConfig: {

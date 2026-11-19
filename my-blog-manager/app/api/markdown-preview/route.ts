@@ -9,6 +9,7 @@ import rehypeStringify from 'rehype-stringify';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import { sanitizeSchema } from '../../../lib/sanitize-schema';
+import { rehypeFigcaption } from '../../../lib/rehype-figcaption';
 
 export const runtime = 'nodejs';
 
@@ -42,6 +43,7 @@ export async function POST(request: Request) {
       })
       .use(rehypeKatex)
       .use(rehypeSanitize, sanitizeSchema)
+      .use(rehypeFigcaption)
       .use(rehypeStringify, { allowDangerousHtml: true })
       .process(markdown);
 

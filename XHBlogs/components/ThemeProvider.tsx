@@ -22,7 +22,8 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [isDark, setIsDark] = useState(false);
 
   useEffect(() => {
-    const nextDark = localStorage.getItem('blog-theme') === 'dark';
+    const saved = localStorage.getItem('blog-theme');
+    const nextDark = saved === 'dark' || (!saved && window.matchMedia('(prefers-color-scheme: dark)').matches);
     // eslint-disable-next-line react-hooks/set-state-in-effect -- 主题只能在挂载后读 localStorage 同步，属外部状态同步而非派生状态
     setIsDark(nextDark);
     applyTheme(nextDark);

@@ -180,16 +180,17 @@ export default function Navbar() {
             <div className="relative">
               <button
                 onClick={() => setIsOpBoxOpen(!isOpBoxOpen)}
-                title="待保存的改动"
-                className="relative h-10 px-4 rounded-xl paper-card flex items-center justify-center text-xs font-bold whitespace-nowrap hover:scale-105 transition-all border border-[var(--card-border)] shadow-sm cursor-pointer"
+                title={operations.length > 0 ? `${operations.length} 项改动尚未写入博客` : '所有改动已写入博客'}
+                className={`relative h-10 px-4 rounded-xl paper-card flex items-center justify-center text-xs font-bold whitespace-nowrap hover:scale-105 transition-all border shadow-sm cursor-pointer ${
+                  operations.length > 0
+                    ? 'border-[var(--warn)] text-[var(--warn)]'
+                    : 'border-[var(--card-border)] text-[var(--ink-soft)]'
+                }`}
               >
-                待保存
+                {operations.length > 0 ? `${operations.length} 项待写入` : '✓ 已同步'}
                 {operations.length > 0 && (
-                  <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-5 w-5 bg-red-500 text-[10px] font-black text-white items-center justify-center border-2 border-white dark:border-slate-900">
-                      {operations.length}
-                    </span>
+                  <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-[var(--warn)] text-[10px] font-black text-white border-2 border-[var(--paper)]">
+                    {operations.length}
                   </span>
                 )}
               </button>

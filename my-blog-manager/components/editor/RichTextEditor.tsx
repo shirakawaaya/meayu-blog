@@ -143,6 +143,8 @@ export interface RichTextEditorHandle {
   setContent: (html: string) => void;
   /** 当前内容的 Markdown 源码（源码模式直接返回编辑框内容，富文本模式由编辑器序列化） */
   getMarkdown: () => string;
+  /** 大纲标题：富文本模式从 tiptap 文档节点读，源码模式从 md 源码读。index 为全局序号，用于精确定位同名标题 */
+  getHeadings: () => { level: number; text: string; index: number }[];
   /** 是否处于 Markdown 源码模式，发布时据此决定 contentFormat */
   isSourceMode: () => boolean;
 }
@@ -230,6 +232,27 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
     loadedContentRef.current = initialContent || null;
   };
 
+  const getHeadingsText = (): { level: number; text: string; index: number }[] => {
+    const out: { level: number; text: string; index: number }[] = [];
+    if (mode === 'source') {
+      // 源码模式：直接扫用户正在写的 md，实时反映输入
+      sourceText.split('\n').forEach((line) => {
+        const m = line.match(/^(#{1,3})\s+(.+?)\s*#*\s*$/);
+        if (m) out.push({ level: m[1].length, text: m[2].trim(), index: out.length });
+      });
+      return out;
+    }
+    // 富文本模式：从 tiptap 文档节点读，避免正则抠 HTML 的转义/嵌套问题
+    if (!editor) return out;
+    editor.state.doc.descendants((node) => {
+      if (node.type.name === 'heading') {
+        const level = (node.attrs.level as number) || 1;
+        if (level <= 3) out.push({ level, text: node.textContent.trim(), index: out.length });
+      }
+    });
+    return out;
+  };
+
   const getMarkdownText = () => {
     if (mode === 'source') return sourceText;
     if (!editor) return '';
@@ -262,6 +285,7 @@ const RichTextEditor = forwardRef<RichTextEditorHandle, EditorProps>(({ title, s
       }
     },
     getMarkdown: getMarkdownText,
+    getHeadings: getHeadingsText,
     isSourceMode: () => mode === 'source',
   }), [editor, onChange, mode, sourceText]);
 

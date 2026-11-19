@@ -6,8 +6,7 @@ import type { MomentListItem } from '../../lib/content-types';
 type ManagerMoment = MomentListItem & { isPending?: boolean; opId?: string };
 import { useState, useMemo, useRef } from 'react';
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion';
-import { MapPin, MessageSquare, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost, Plus, Image as ImageIcon, X, Send, Link as LinkIcon, Zap, Trash2, AlertTriangle, Loader2, RefreshCw, Edit3, Lock } from 'lucide-react';
-import MomentComments from '../../components/MomentComments';
+import { MapPin, Clock, Sparkles, Search, ArrowDownAZ, ArrowUpZA, ChevronLeft, ChevronRight, Ghost, Plus, Image as ImageIcon, X, Send, Link as LinkIcon, Zap, Trash2, AlertTriangle, Loader2, RefreshCw, Edit3, Lock } from 'lucide-react';
 import { useToast } from '../../components/ToastProvider';
 import { resolvePicbedUpload } from '../../lib/picbed';
 import { useOperations } from '../../context/OperationContext';
@@ -27,7 +26,6 @@ function timeAgo(dateStr: string) {
 }
 
 export default function MomentList({ moments, authorName, avatarUrl }: { moments: ManagerMoment[]; authorName: string; avatarUrl: string }) {
-  const [openCommentId, setOpenCommentId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
   const [lightbox, setLightbox] = useState<{ images: string[], index: number } | null>(null);
@@ -430,21 +428,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
         <div className="min-w-0 flex-1">
           {moment.location && <span className="inline-flex items-center gap-1.5 text-[11px] font-bold px-3 py-1.5 rounded-full bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] text-[var(--accent)] max-w-full truncate border border-[var(--accent-soft)]"><MapPin size={12} /> {moment.location}</span>}
         </div>
-        <button onClick={() => setOpenCommentId(openCommentId === moment.id ? null : moment.id)} className={`w-10 h-10 flex items-center justify-center shrink-0 rounded-full transition-all shadow-sm ${openCommentId === moment.id ? 'bg-[var(--accent)] text-white rotate-12' : 'paper-card-strong text-slate-400 hover:text-[var(--accent)] hover:bg-slate-100 dark:hover:bg-slate-700'}`}>
-          <MessageSquare size={16} />
-        </button>
       </div>
-
-      <AnimatePresence>
-        {openCommentId === moment.id && (
-          <motion.div initial={{ height: 0, opacity: 0 }} animate={{ height: 'auto', opacity: 1, marginTop: 24 }} exit={{ height: 0, opacity: 0 }} className="overflow-hidden">
-            <div className="bg-slate-50/50 rounded-2xl p-6 border border-slate-200/50 dark:border-slate-700/50 relative shadow-inner">
-              <div className="absolute -top-2 right-8 w-4 h-4 bg-slate-50/50 rotate-45 border-l border-t border-slate-200/50"></div>
-              <MomentComments id={`/moments/${moment.id}`} />
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
     </motion.div>
   );
 

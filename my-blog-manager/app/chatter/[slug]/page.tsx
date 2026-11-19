@@ -15,6 +15,7 @@ import rehypeStringify from 'rehype-stringify';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import { sanitizeSchema } from '../../../lib/sanitize-schema';
+import { rehypeFigcaption } from '../../../lib/rehype-figcaption';
 import rehypeKatex from 'rehype-katex';
 
 // 引入神仙代码高亮主题（Atom One Dark）
@@ -22,7 +23,6 @@ import 'highlight.js/styles/atom-one-dark.css';
 import { siteConfig } from '../../../siteConfig';
 import ClientSocials from '../../../components/ClientSocials';
 import BackButton from '../../../components/BackButton';
-import Comments from '../../../components/Comments';
 import { getBlogDir } from '../../../lib/blog-paths';
 
 // 管理端详情页要能打开任意一篇（含刚发布的）杂谈，
@@ -96,6 +96,7 @@ async function getChatterData(slug: string) {
     })
     .use(rehypeKatex)
     .use(rehypeSanitize, sanitizeSchema)
+    .use(rehypeFigcaption)
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 
@@ -215,10 +216,6 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                   className="prose prose-slate dark:prose-invert prose-base md:prose-lg max-w-none text-slate-800 dark:text-slate-200 font-serif transition-colors duration-700 leading-relaxed scroll-smooth"
                   dangerouslySetInnerHTML={{ __html: chatterData.contentHtml }}
                 />
-              </div>
-
-              <div className="mt-10 md:mt-12">
-                <Comments />
               </div>
 
             </div>

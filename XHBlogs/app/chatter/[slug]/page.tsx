@@ -16,6 +16,7 @@ import rehypeStringify from 'rehype-stringify';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import { sanitizeSchema } from '../../../lib/sanitize-schema';
+import { rehypeFigcaption } from '../../../lib/rehype-figcaption';
 import rehypeKatex from 'rehype-katex';
 
 // 引入神仙代码高亮主题（Atom One Dark）
@@ -23,7 +24,6 @@ import 'highlight.js/styles/atom-one-dark.css';
 import { siteConfig } from '../../../siteConfig';
 import ClientSocials from '../../../components/ClientSocials';
 import BackButton from '../../../components/BackButton';
-import Comments from '../../../components/Comments';
 import ClientTOC from '../../../components/ClientTOC';
 import CodeCopy from '../../../components/CodeCopy';
 import ReadingProgressBar from '../../../components/ReadingProgressBar';
@@ -127,6 +127,7 @@ const getChatterData = cache(async (slug: string) => {
     })
     .use(rehypeKatex)
     .use(rehypeSanitize, sanitizeSchema)
+    .use(rehypeFigcaption)
     .use(rehypeStringify, { allowDangerousHtml: true })
     .process(content);
 
@@ -356,10 +357,6 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                   )}
                 </div>
               )}
-
-              <div className="mt-10 md:mt-12">
-                <Comments />
-              </div>
 
             </div>
           </article>

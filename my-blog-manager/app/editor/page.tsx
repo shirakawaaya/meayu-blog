@@ -73,33 +73,33 @@ function EditorContent() {
 
   useEscapeClose(isZenMode, () => setIsZenMode(false));
 
-  const getOutlineHeadings = () => {
-    const raw = editorRef.current?.getContent() || '';
-    const headings: { level: number; text: string }[] = [];
-    const htmlRegex = /<h([1-3])[^>]*>(.*?)<\/h\1>/gi;
-    let m;
-    while ((m = htmlRegex.exec(raw)) !== null) {
-      headings.push({ level: parseInt(m[1]), text: m[2].replace(/<[^>]*>/g, '').trim() });
-    }
-    if (headings.length === 0) {
-      for (const line of raw.split('\n')) {
-        const mdM = line.match(/^(#{1,3})\s+(.+)$/);
-        if (mdM) headings.push({ level: mdM[1].length, text: mdM[2].trim() });
-      }
-    }
-    return headings;
-  };
+  // 大纲：实时从编辑器读取标题。富文本读 tiptap 文档节点，源码模式读 md 源码。
+  // 用 outlineVersion 触发重算——RichTextEditor 的 onChange 在两种模式的每次输入都会调用 bumpOutline。
+  const [headings, setHeadings] = useState<{ level: number; text: string; index: number }[]>([]);
+  const [activeHeading, setActiveHeading] = useState<number>(-1);
+  const bumpOutline = () => setHeadings(editorRef.current?.getHeadings() ?? []);
 
-  const scrollToEditorHeading = (text: string) => {
-    const editorDom = document.querySelector('.ProseMirror') || document.querySelector('textarea');
-    if (!editorDom) return;
-    const elements = Array.from(editorDom.querySelectorAll('h1, h2, h3'));
-    for (const el of elements) {
-      if ((el.textContent || '').trim().includes(text)) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        break;
+  const scrollToEditorHeading = (index: number) => {
+    setActiveHeading(index);
+    const isSource = editorRef.current?.isSourceMode() ?? false;
+    if (isSource) {
+      // 源码模式：按行定位 textarea 滚动位置
+      const ta = document.querySelector('textarea') as HTMLTextAreaElement | null;
+      if (!ta) return;
+      const lines = ta.value.split('\n');
+      let target = -1, seen = -1;
+      for (let i = 0; i < lines.length; i++) {
+        if (/^#{1,3}\s+/.test(lines[i])) { seen++; if (seen === index) { target = i; break; } }
       }
+      if (target < 0) return;
+      const lineHeight = 28; // textarea leading-7 ≈ 28px
+      ta.scrollTo({ top: Math.max(0, target * lineHeight - ta.clientHeight / 3), behavior: 'smooth' });
+      return;
     }
+    // 富文本模式：按索引精确定位第 index 个标题（避免同名标题跳错）
+    const els = document.querySelectorAll('.ProseMirror h1, .ProseMirror h2, .ProseMirror h3');
+    const el = els[index] as HTMLElement | undefined;
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   };
 
   // AI 润色
@@ -549,7 +549,7 @@ function EditorContent() {
 
             <div className="flex items-center gap-1.5">
               <button
-                onClick={() => setIsOutlineOpen(!isOutlineOpen)}
+                onClick={() => { setIsOutlineOpen(!isOutlineOpen); if (!isOutlineOpen) setHeadings(editorRef.current?.getHeadings() ?? []); }}
                 aria-pressed={isOutlineOpen}
                 className={`ed-btn-quiet px-3 py-2 text-xs ${isOutlineOpen ? '!border-[var(--accent)] !text-[var(--accent)] !bg-[color-mix(in_oklab,var(--accent)_8%,transparent)]' : ''}`}
                 title="切换文章大纲"
@@ -624,7 +624,7 @@ function EditorContent() {
               onOpenImageTool={() => { setImgToolTarget('editor'); setIsImgToolOpen(true); }}
               onPolishClick={handlePolish}
               isPolishing={isPolishing}
-              onChange={() => setHasUnsavedChanges(true)}
+              onChange={() => { setHasUnsavedChanges(true); bumpOutline(); }}
             />
           </section>
 
@@ -645,16 +645,20 @@ function EditorContent() {
                   </h4>
                   <button onClick={() => setIsOutlineOpen(false)} className="text-[var(--ink-faint)] hover:text-[var(--ink)] text-xs">✕</button>
                 </div>
-                <div className="overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-1.5 py-1">
-                  {getOutlineHeadings().length === 0 ? (
-                    <p className="text-[11px] text-[var(--ink-faint)] py-6 text-center leading-relaxed">暂无标题结构<br />使用 H1~H3 组织文章</p>
+                <div className="overflow-y-auto custom-scrollbar flex-1 flex flex-col gap-1 py-1">
+                  {headings.length === 0 ? (
+                    <p className="text-[11px] text-[var(--ink-faint)] py-6 text-center leading-relaxed">暂无标题结构<br />用工具栏 H1~H3 或 Markdown 的 # 组织文章</p>
                   ) : (
-                    getOutlineHeadings().map((h, i) => (
+                    headings.map((h) => (
                       <button
-                        key={i}
-                        onClick={() => scrollToEditorHeading(h.text)}
-                        className={`text-left text-xs transition-colors py-1.5 px-2 rounded-lg line-clamp-1 hover:bg-[var(--rule)] ${
-                          h.level === 1 ? 'font-bold text-[var(--ink)]' : h.level === 2 ? 'pl-4 text-[var(--ink-soft)]' : 'pl-6 text-[11px] text-[var(--ink-faint)]'
+                        key={h.index}
+                        onClick={() => scrollToEditorHeading(h.index)}
+                        className={`text-left text-xs transition-colors py-1.5 px-2 rounded-lg line-clamp-1 ${
+                          activeHeading === h.index
+                            ? 'bg-[color-mix(in_oklab,var(--accent)_10%,transparent)] text-[var(--accent)] font-bold'
+                            : 'hover:bg-[var(--paper-deep)] ' + (
+                              h.level === 1 ? 'font-bold text-[var(--ink)]' : h.level === 2 ? 'pl-4 text-[var(--ink-soft)]' : 'pl-6 text-[11px] text-[var(--ink-faint)]'
+                            )
                         }`}
                       >
                         {h.text}
@@ -735,7 +739,7 @@ function EditorContent() {
                 onOpenImageTool={() => { setImgToolTarget('editor'); setIsImgToolOpen(true); }}
                 onPolishClick={handlePolish}
                 isPolishing={isPolishing}
-                onChange={() => setHasUnsavedChanges(true)}
+                onChange={() => { setHasUnsavedChanges(true); bumpOutline(); }}
               />
             </div>
           </motion.div>

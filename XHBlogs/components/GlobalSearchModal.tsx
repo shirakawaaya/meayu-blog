@@ -323,7 +323,7 @@ export default function GlobalSearchModal() {
                 <span><kbd className="px-1 py-0.5 rounded bg-[var(--paper)] border border-[var(--card-border)] text-[10px]">↵</kbd> 打开</span>
               </div>
               <div className="flex items-center gap-1">
-                <span>共 {results.length} 条匹配</span>
+                {query.trim() && <span>共 {results.length} 条匹配</span>}
               </div>
             </div>
           </motion.div>

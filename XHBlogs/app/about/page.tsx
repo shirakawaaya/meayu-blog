@@ -13,6 +13,7 @@ import rehypeStringify from 'rehype-stringify';
 import rehypeRaw from 'rehype-raw';
 import rehypeSanitize from 'rehype-sanitize';
 import { sanitizeSchema } from '../../lib/sanitize-schema';
+import { rehypeFigcaption } from '../../lib/rehype-figcaption';
 
 // 引入高亮主题
 import 'highlight.js/styles/atom-one-dark.css';
@@ -90,6 +91,7 @@ export default async function AboutPage() {
       })
       .use(rehypeKatex)
       .use(rehypeSanitize, sanitizeSchema)
+      .use(rehypeFigcaption)
       .use(rehypeStringify, { allowDangerousHtml: true })
       .process(content);
 

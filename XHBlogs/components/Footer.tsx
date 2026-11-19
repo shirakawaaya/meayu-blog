@@ -1,5 +1,4 @@
 import { siteConfig } from '../siteConfig';
-import SiteAge from './SiteAge';
 
 /**
  * 站点页脚。
@@ -22,7 +21,6 @@ export default function Footer() {
       <div className="w-[95%] md:w-[90%] max-w-6xl mx-auto py-8 flex flex-col items-center gap-2 text-center">
         <span className="seal-stamp mb-1" aria-hidden="true">拾</span>
         <p className="text-xs tracking-[0.25em] text-[var(--ink-soft)]">纸短情长 · 慢慢写，慢慢更</p>
-        <SiteAge />
         <p className="text-xs text-[var(--ink-faint)] font-medium">
           © {yearRange} {siteConfig.authorName}
         </p>

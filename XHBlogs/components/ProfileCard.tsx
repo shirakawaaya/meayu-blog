@@ -46,13 +46,17 @@ export default function ProfileCard({ chatterCount, momentCount, photoCount }: {
       </div>
 
       <div className="flex flex-col md:flex-row items-center md:items-end justify-between mt-6 md:mt-8 gap-5 md:gap-6 relative z-10">
-        <div className="flex gap-2 sm:gap-6 w-full md:w-auto justify-between sm:justify-around md:justify-start px-2 sm:px-0">
-          <StatItem count={chatterCount} label="杂谈" color="text-[var(--accent)]" />
-          <div className="w-px h-8 md:h-10 bg-[var(--rule)] hidden md:block"></div>
-          <StatItem count={momentCount} label="说说" color="text-[var(--ok)]" />
-          <div className="w-px h-8 md:h-10 bg-[var(--rule)] hidden md:block"></div>
-          <StatItem count={photoCount} label="照片" color="text-[var(--warn)]" />
-        </div>
+        {(chatterCount + momentCount + photoCount) > 0 ? (
+          <div className="flex gap-2 sm:gap-6 w-full md:w-auto justify-between sm:justify-around md:justify-start px-2 sm:px-0">
+            <StatItem count={chatterCount} label="杂谈" color="text-[var(--accent)]" />
+            <div className="w-px h-8 md:h-10 bg-[var(--rule)] hidden md:block"></div>
+            <StatItem count={momentCount} label="说说" color="text-[var(--ok)]" />
+            <div className="w-px h-8 md:h-10 bg-[var(--rule)] hidden md:block"></div>
+            <StatItem count={photoCount} label="照片" color="text-[var(--warn)]" />
+          </div>
+        ) : (
+          <p className="text-xs tracking-widest text-[var(--ink-faint)] font-medium py-2">这里还空着，等我慢慢写。</p>
+        )}
 
         <div className="flex gap-2 md:gap-3 flex-wrap justify-center md:justify-end w-full md:w-auto" onClick={(e) => e.stopPropagation()}>
           <SocialBtn type="github" url={siteConfig.social?.github} />
