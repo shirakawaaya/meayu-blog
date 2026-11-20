@@ -9,31 +9,38 @@ import type { ChatterListItem } from '../lib/content-types';
 export default function LatestChatterCarousel({ chatters }: { chatters: ChatterListItem[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [manualPause, setManualPause] = useState(false);
   const touchX = useRef<number | null>(null);
 
   useEffect(() => {
-    if (chatters.length <= 1 || paused) return;
+    if (chatters.length <= 1 || paused || manualPause) return;
     const timer = setInterval(() => {
       if (document.hidden) return;
       setCurrentIndex((prev) => (prev + 1) % chatters.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [chatters.length, paused]);
+  }, [chatters.length, paused, manualPause]);
 
   if (!chatters || chatters.length === 0) return null;
 
   const currentChatter = chatters[currentIndex];
 
   const holoVariants = {
-    initial: { opacity: 0, scale: 0.95, filter: "blur(10px)" },
-    animate: { opacity: 1, scale: 1, filter: "blur(0px)" },
-    exit: { opacity: 0, scale: 1.05, filter: "blur(10px)" },
+    initial: { opacity: 0, scale: 0.98 },
+    animate: { opacity: 1, scale: 1 },
+    exit: { opacity: 0, scale: 1.02 },
   };
 
   return (
     // 注意这里：去掉了 md:col-span-8，变成一个纯粹填满父容器的组件
     <div className="w-full h-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden relative group min-h-[220px] flex flex-col transition-all duration-300 hover:-translate-y-1" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }} onTouchEnd={(e) => { if (touchX.current === null) return; const dx = e.changedTouches[0].clientX - touchX.current; if (Math.abs(dx) > 40) setCurrentIndex((prev) => (prev + (dx < 0 ? 1 : -1) + chatters.length) % chatters.length); touchX.current = null; }}>
       <Link href={currentChatter.slug === 'none' ? '/chatter' : `/chatter/${currentChatter.slug}`} className="absolute inset-0 z-20" aria-label={`查看杂谈：${currentChatter.title}`} />
+      <button onClick={(e) => { e.stopPropagation(); setManualPause(v => !v); }} className="absolute top-4 right-4 z-30 w-7 h-7 rounded-full paper-card-strong border border-[var(--card-border)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--accent)] transition-colors" aria-label={manualPause ? "继续轮播" : "暂停轮播"} title={manualPause ? "继续轮播" : "暂停轮播"}>
+        {manualPause
+          ? <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          : <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>}
+      </button>
+
 
       <AnimatePresence mode="wait">
         <motion.div

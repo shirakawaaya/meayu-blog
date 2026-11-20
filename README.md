@@ -1,6 +1,6 @@
 # Meayu の 拾光集
 
-一套纸张风格的个人博客系统：宣纸/手账两套版式 × 明暗四态，印章红强调色，纸片卡片压在全站背景之上。本项目是 [XinghuisamaBlogs](https://github.com/heiehiehi/XinghuisamaBlogs) 的个性化改造版，自带前端展示（`XHBlogs/`）与本地管理控制台（`my-blog-manager/`），支持富文本与 Markdown 沉浸式写作、AI 润色与摘要、草稿管理。
+一套纸张风格的个人博客系统：宣纸/手账两套版式 × 明暗四态，藏青蓝强调色，纸片卡片压在全站背景之上。本项目是 [XinghuisamaBlogs](https://github.com/heiehiehi/XinghuisamaBlogs) 的个性化改造版，自带前端展示（`XHBlogs/`）与本地管理控制台（`my-blog-manager/`），支持富文本与 Markdown 沉浸式写作、AI 润色与摘要、草稿管理。
 
 [![English](https://img.shields.io/badge/Language-English-blue.svg)](README_en.md)
 [![中文](https://img.shields.io/badge/语言-中文-red.svg)](README.md)
@@ -22,7 +22,7 @@
 
 **前端（XHBlogs，Next.js 16 + Tailwind v4）**
 
-- 纸张主题：宣纸（`.theme-xuan`）/ 手账（`.theme-journal`）× 明暗，全站色板重映射（强调色 → 印章红，文字 → 墨色系），`paper-card` 纸片卡 92% 纸色微透
+- 纸张主题：宣纸（`.theme-xuan`）/ 手账（`.theme-journal`）× 明暗，全站色板重映射（强调色 → 藏青蓝，文字 → 墨色系），`paper-card` 纸片卡 92% 纸色微透
 - 首页：个人名片、最近说说轮播、照片墙海报、杂谈轮播、全站搜索（杂谈 + 说说双源）
 - 杂谈详情：阅读时长与字数、目录 TOC、代码块一键复制、上一篇/下一篇、标签徽标直达聚合页、AI 摘要卡、giscus 评论
 - 页面切换：View Transitions 过渡（250ms，封面与头像共享元素，不支持的浏览器自动降级入场动画）

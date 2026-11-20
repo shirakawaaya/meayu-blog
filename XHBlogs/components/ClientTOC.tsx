@@ -130,7 +130,7 @@ export default function ClientTOC({ toc }: { toc: TocItem[] }) {
     <>
       {/* 桌面端常驻侧栏目录 */}
       <div className="hidden lg:block paper-card rounded-2xl p-6 border border-[var(--card-border)] transition-colors duration-700">
-        <h3 className="font-black text-slate-900 dark:text-white mb-4 border-l-4 border-[var(--accent)] pl-2 text-sm uppercase tracking-widest flex items-center gap-2">
+        <h3 className="font-bold text-slate-900 dark:text-white mb-4 border-l-4 border-[var(--accent)] pl-2 text-sm uppercase tracking-widest flex items-center gap-2">
           <span>目录</span>
           <span className="text-[10px] text-slate-400 font-normal">TOC</span>
         </h3>
@@ -194,7 +194,7 @@ export default function ClientTOC({ toc }: { toc: TocItem[] }) {
                 className="relative paper-card-strong border-t border-[var(--card-border)] rounded-t-3xl p-6 max-h-[70vh] flex flex-col z-10 shadow-2xl"
               >
                 <div className="flex items-center justify-between pb-4 border-b border-[var(--rule)] mb-3">
-                  <h3 className="font-black text-slate-900 dark:text-white text-base flex items-center gap-2">
+                  <h3 className="font-bold text-slate-900 dark:text-white text-base flex items-center gap-2">
                     <span className="seal-mark rounded-[1px]" />
                     <span>文章目录</span>
                   </h3>

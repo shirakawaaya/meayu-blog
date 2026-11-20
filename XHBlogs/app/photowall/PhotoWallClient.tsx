@@ -163,7 +163,7 @@ export default function PhotoWallClient() {
 
                 {!activeQuery && albums.length === 0 && (
                   <div className="text-center py-24">
-                    <h2 className="text-xl md:text-2xl font-black text-[var(--ink)] mb-2">还没有照片</h2>
+                    <h2 className="text-xl md:text-2xl font-extrabold text-[var(--ink)] mb-2">还没有照片</h2>
                     <p className="text-slate-500 font-medium text-sm">相册整理好就会放上来</p>
                   </div>
                 )}

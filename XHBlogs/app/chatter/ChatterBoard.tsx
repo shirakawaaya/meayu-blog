@@ -95,8 +95,8 @@ export default function ChatterBoard({ chatters }: { chatters: Chatter[] }) {
         <div className="text-center py-20 rounded-2xl paper-card border border-[var(--card-border)]">
           <p className="text-[var(--ink-faint)] font-bold">
             {chatters.length === 0
-              ? "还没有内容"
-              : "没有匹配的杂谈，换个关键词或标签试试"}
+              ? "这里还空着，等我慢慢写。"
+              : "没找到相关内容，换个关键词或标签试试"}
           </p>
         </div>
       )}

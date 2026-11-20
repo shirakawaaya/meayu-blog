@@ -1,6 +1,6 @@
 # Meayu の 拾光集
 
-A paper-textured personal blog system: Xuan-paper / Journal layouts × light/dark, seal-red accent, paper cards layered over a site-wide background slideshow. This is a personalized fork of [XinghuisamaBlogs](https://github.com/heiehiehi/XinghuisamaBlogs), with a frontend (`XHBlogs/`) and a local management console (`my-blog-manager/`) supporting rich-text writing, AI polishing & summarizing, and draft management.
+A paper-textured personal blog system: Xuan-paper / Journal layouts × light/dark, indigo-blue accent, paper cards layered over a site-wide background slideshow. This is a personalized fork of [XinghuisamaBlogs](https://github.com/heiehiehi/XinghuisamaBlogs), with a frontend (`XHBlogs/`) and a local management console (`my-blog-manager/`) supporting rich-text writing, AI polishing & summarizing, and draft management.
 
 [![English](https://img.shields.io/badge/Language-English-blue.svg)](README_en.md)
 [![中文](https://img.shields.io/badge/语言-中文-red.svg)](README.md)
@@ -22,7 +22,7 @@ Only two content types, with fixed names:
 
 **Frontend (XHBlogs, Next.js 16 + Tailwind v4)**
 
-- Paper theme: Xuan-paper (`.theme-xuan`) / Journal (`.theme-journal`) × light/dark; site-wide palette remapping (accents → seal red, text → ink tones); `paper-card` utility at 92% paper translucency
+- Paper theme: Xuan-paper (`.theme-xuan`) / Journal (`.theme-journal`) × light/dark; site-wide palette remapping (accents → indigo blue, text → ink tones); `paper-card` utility at 92% paper translucency
 - Home: profile card, latest-moments carousel, photo-wall banner, chatter carousel, site-wide search (chatter + moments)
 - Chatter detail: reading time & word count, table of contents, code copy button, prev/next navigation, clickable tag badges, AI summary card, giscus comments
 - Page transitions: View Transitions API (250ms, shared cover/avatar elements, graceful fallback)

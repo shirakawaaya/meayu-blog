@@ -14,16 +14,17 @@ import { MapPin } from 'lucide-react';
 export default function LatestMomentsCarousel({ moments }: { moments: MomentListItem[] }) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [paused, setPaused] = useState(false);
+  const [manualPause, setManualPause] = useState(false);
   const touchX = useRef<number | null>(null);
 
   useEffect(() => {
-    if (moments.length <= 1 || paused) return;
+    if (moments.length <= 1 || paused || manualPause) return;
     const timer = setInterval(() => {
       if (document.hidden) return;
       setCurrentIndex((prev) => (prev + 1) % moments.length);
     }, 6000);
     return () => clearInterval(timer);
-  }, [moments.length, paused]);
+  }, [moments.length, paused, manualPause]);
 
   if (!moments || moments.length === 0) return null;
 
@@ -33,6 +34,12 @@ export default function LatestMomentsCarousel({ moments }: { moments: MomentList
   return (
     <div className="w-full h-full rounded-2xl paper-card border border-[var(--card-border)] overflow-hidden relative group min-h-[220px] flex flex-col transition-all duration-300 hover:-translate-y-1" onMouseEnter={() => setPaused(true)} onMouseLeave={() => setPaused(false)} onTouchStart={(e) => { touchX.current = e.touches[0].clientX; }} onTouchEnd={(e) => { if (touchX.current === null) return; const dx = e.changedTouches[0].clientX - touchX.current; if (Math.abs(dx) > 40) setCurrentIndex((prev) => (prev + (dx < 0 ? 1 : -1) + moments.length) % moments.length); touchX.current = null; }}>
       <Link href="/moments" className="absolute inset-0 z-20" aria-label="查看说说" />
+      <button onClick={(e) => { e.stopPropagation(); setManualPause(v => !v); }} className="absolute top-4 right-4 z-30 w-7 h-7 rounded-full paper-card-strong border border-[var(--card-border)] flex items-center justify-center text-[var(--ink-soft)] hover:text-[var(--accent)] transition-colors" aria-label={manualPause ? "继续轮播" : "暂停轮播"} title={manualPause ? "继续轮播" : "暂停轮播"}>
+        {manualPause
+          ? <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+          : <svg className="w-3 h-3" viewBox="0 0 24 24" fill="currentColor"><path d="M6 5h4v14H6zm8 0h4v14h-4z"/></svg>}
+      </button>
+
 
       <AnimatePresence mode="wait">
         <motion.div

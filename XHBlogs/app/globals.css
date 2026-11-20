@@ -58,7 +58,7 @@
 
 
 /* ========================================================
-   2b. 色板重映射：Tailwind 强调色族 → 印章红
+   2b. 色板重映射：Tailwind 强调色族 → 藏青蓝
    --------------------------------------------------------
    Tailwind v4 把 bg-indigo-500 编译为 var(--color-indigo-500)，
    把 bg-indigo-500/5 编译为 color-mix(... var(--color-indigo-500) 5% ...)。
@@ -323,11 +323,14 @@
    ======================================================== */
 @layer base {
   :root {
-    --font-serif: "Source Han Serif SC", "Noto Serif SC", "Songti SC", "SimSun", "STSong", serif;
+    /* next/font 在 <html> 注入同名 --font-serif（Noto Serif SC，subsets 仅 latin），
+       此处若再定义一次会互相覆盖、使 web 字体可能不生效。改名并用完整栈承接：
+       拉丁走 web font、中文回落系统衬线，两者不再打架。 */
+    --font-reading: var(--font-serif-latin), "Noto Serif CJK SC", "Source Han Serif SC", "Songti SC", "SimSun", "STSong", serif;
   }
 
   body {
-    font-family: var(--font-serif);
+    font-family: var(--font-reading);
     background-color: var(--paper);
     color: var(--ink);
     @apply transition-colors duration-300;
@@ -336,10 +339,11 @@
   }
 
 
-  h1, h2, h3, h4 {
-    font-weight: 900;
-    letter-spacing: -0.02em;
-  }
+  /* 字重分级：靠粗细差拉出标题层次，避免一路 900 全员喊话。
+     prose 内 h1/h2/h3 自带更具体的分级规则，不受此处影响。 */
+  h1 { font-weight: 900; letter-spacing: -0.02em; }
+  h2 { font-weight: 800; letter-spacing: -0.018em; }
+  h3, h4 { font-weight: 700; letter-spacing: -0.01em; }
 
   .dark .prose {
     --tw-prose-body: var(--ink);
@@ -487,7 +491,7 @@
   color: var(--ink-faint) !important;
 }
 
-/* —— 强调色实心块上的文字（背景已由色板重映射为印章红） —— */
+/* —— 强调色实心块上的文字（背景已由色板重映射为藏青蓝） —— */
 [class~="bg-indigo-500"] [class~="text-white"],
 [class~="bg-indigo-600"] [class~="text-white"],
 [class~="bg-pink-500"] [class~="text-white"],
@@ -610,6 +614,16 @@ textarea::placeholder {
   box-shadow: var(--card-shadow);
 }
 
+/* 纸片阴影归一：paper-card / paper-card-strong 上仍叠着 Tailwind shadow-md/lg/xl/2xl
+   （Material 浮起阴影），与纸片压在背景上的设计冲突。这里把静态阴影压回纸张薄边；
+   hover:shadow-* 与灯箱/弹窗等非 paper-card 覆盖层不受影响，仍保留强阴影做层级。 */
+.paper-card[class*="shadow-"], .paper-card-strong[class*="shadow-"] {
+  box-shadow: var(--card-shadow) !important;
+}
+.paper-card[class*="hover:shadow-"]:hover, .paper-card-strong[class*="hover:shadow-"]:hover {
+  box-shadow: var(--card-shadow-hover) !important;
+}
+
 /* 古风两端渐隐细墨线 */
 @utility rule-fade {
   height: 1px;
@@ -622,7 +636,7 @@ textarea::placeholder {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: var(--font-sans, inherit);
+  font-family: var(--font-geist-sans, system-ui, sans-serif);
   font-size: 0.625rem;
   font-weight: 800;
   letter-spacing: 0.24em;
@@ -638,7 +652,7 @@ textarea::placeholder {
   }
 }
 @utility ed-title {
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
   font-weight: 900;
   letter-spacing: -0.02em;
   line-height: 1.12;
@@ -795,7 +809,7 @@ textarea::placeholder {
 .prose ol ol, .prose ul ol { list-style-type: lower-alpha; }
 .prose del { text-decoration-color: inherit; opacity: 0.6; }
 
-/* 链接：印章红下划线，hover 变实线并加浅底 */
+/* 链接：藏青蓝下划线，hover 变实线并加浅底 */
 .prose a {
   color: var(--accent);
   text-decoration: none;
@@ -816,7 +830,7 @@ textarea::placeholder {
   background-color: color-mix(in srgb, var(--accent) 15%, transparent);
 }
 
-/* 引用块：左侧印章红细线 + 微透底，圆角收敛到纸张尺度 */
+/* 引用块：左侧藏青蓝细线 + 微透底，圆角收敛到纸张尺度 */
 .prose blockquote {
   border-left: 3px solid var(--accent);
   background-color: color-mix(in srgb, var(--paper-deep) 65%, transparent);
@@ -858,7 +872,7 @@ textarea::placeholder {
 }
 .prose code::before,
 .prose code::after { content: none; }
-/* 行内代码：印章红微底 */
+/* 行内代码：藏青蓝微底 */
 .prose p code,
 .prose li code {
   background-color: color-mix(in srgb, var(--accent) 10%, transparent);
@@ -899,7 +913,7 @@ textarea::placeholder {
   line-height: 1.6;
   color: var(--ink-faint);
   letter-spacing: 0.02em;
-  font-family: var(--font-serif);
+  font-family: var(--font-reading);
 }
 
 /* 代码高亮配色（Atom One Dark 色板，仅用于深色代码块内部） */
@@ -1044,7 +1058,7 @@ textarea::placeholder {
      （原写法里的 `md:width: 12px` 是把 Tailwind 语法误写进裸
      CSS，浏览器不识别，等于从未生效，故直接去掉。）
    - 原 thumb 渐变里混了 `#c084fc`（上游「果冻极客风」的紫色），
-     改为印章红同色系渐变；并去掉 2px 透明边框 + padding-box
+     改为藏青蓝同色系渐变；并去掉 2px 透明边框 + padding-box
      裁剪（宽度收到 6px 后那样只剩 2px 可见，与其它滚动条不一致）。
    ======================================================== */
 .cyber-scrollbar::-webkit-scrollbar {

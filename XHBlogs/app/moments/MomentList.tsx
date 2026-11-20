@@ -161,7 +161,7 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
             {avatarUrl ? <img loading="lazy" decoding="async" src={avatarUrl} alt="avatar" className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center bg-[var(--accent)] text-white font-black">{authorName.charAt(0)}</div>}
           </div>
           <div className="flex flex-col">
-            <h3 className="text-sm md:text-base font-black text-[var(--accent)] tracking-wide flex items-center gap-1.5">
+            <h3 className="text-sm md:text-base font-bold text-[var(--accent)] tracking-wide flex items-center gap-1.5">
               <span>{authorName}</span>
               <span className="seal-mark rounded-[1px]" />
             </h3>
@@ -310,8 +310,8 @@ export default function MomentList({ moments, authorName, avatarUrl }: { moments
         ) : (
           <div className="flex-1 flex flex-col items-center justify-center py-12 md:py-24 min-h-[300px] md:min-h-[450px]">
             <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="flex flex-col items-center text-center px-6 md:px-10 py-12 md:py-20 paper-card rounded-2xl border border-[var(--card-border)] shadow-lg max-w-lg w-full mx-auto">
-              <h2 className="text-xl md:text-3xl font-black text-slate-900 dark:text-white mb-2 md:mb-4 tracking-tight">{searchQuery ? "没找到相关记忆" : "还没有发布过说说"}</h2>
-              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-lg leading-relaxed px-2 md:px-4">{searchQuery ? `换个关键词再试试` : `这里很快就会有内容`}</p>
+              <h2 className="text-xl md:text-3xl font-extrabold text-slate-900 dark:text-white mb-2 md:mb-4 tracking-tight">{searchQuery ? "没找到相关内容" : "这里还空着，等我慢慢写。"}</h2>
+              <p className="text-slate-500 dark:text-slate-400 font-medium text-sm md:text-lg leading-relaxed px-2 md:px-4">{searchQuery ? `换个关键词或地点试试` : `慢慢写，慢慢更。`}</p>
             </motion.div>
           </div>
         )}

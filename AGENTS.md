@@ -29,8 +29,8 @@
 ## 4. 主题与样式
 
 - 纸张主题：只有宣纸一套（`.theme-xuan`），× 明/暗；手账版式已于 2026-11-19 下线（变量层与切换 UI 均已删除，导航只保留明暗切换按钮），不要恢复双版式。
-- CSS 变量：`--paper`、`--paper-deep`、`--ink`、`--ink-soft`、`--ink-faint`、`--rule`、`--accent`（印章红）、`--accent-soft`、`--card`、`--card-border`、`--code-bg`、`--paper-grain-*`、`--grid`、`--tape-*`。
-- **`indigo/pink/purple` 色族已重映射到 `--accent`**，所以 `bg-indigo-500` / `text-indigo-500` 就是强调色（印章红）。新增 UI 用这些工具类表达强调色，不要写死 hex。
+- CSS 变量：`--paper`、`--paper-deep`、`--ink`、`--ink-soft`、`--ink-faint`、`--rule`、`--accent`（藏青蓝）、`--accent-soft`、`--card`、`--card-border`、`--code-bg`、`--paper-grain-*`、`--grid`、`--tape-*`。
+- **`indigo/pink/purple` 色族已重映射到 `--accent`**，所以 `bg-indigo-500` / `text-indigo-500` 就是强调色（藏青蓝）。新增 UI 用这些工具类表达强调色，不要写死 hex。
 - 层级：**背景轮播 `z-0`** ← 纸纹 `body::after` `z-1` ← 内容 `z-10`。
 - **禁止 emoji**，界面文案中文。
 - 保留英文装饰标签时格式：`中文 · English`（如 `杂谈 · Records`、`说说 · Moments`）。

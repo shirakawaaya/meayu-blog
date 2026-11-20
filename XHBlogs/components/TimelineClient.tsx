@@ -276,7 +276,7 @@ export default function TimelineClient({ posts: initialPosts, tags }: { posts: T
 
               {timelinePosts.length === 0 && (
                  <div className="text-center py-20 text-slate-500 dark:text-slate-400 font-bold uppercase tracking-widest text-sm">
-                    这里还没有内容
+                    这里还空着，等我慢慢写。
                  </div>
               )}
             </div>

@@ -60,7 +60,7 @@ export default function Home() {
   } catch {}
   const top5Chatters = allChatters.length > 0
     ? allChatters.slice(0, 5)
-    : [{ slug: 'none', title: '还没有内容', description: '还没有发布过杂谈', cover: siteConfig.defaultPostCover, date: '', formattedDate: '' }];
+    : [{ slug: 'none', title: '这里还空着', description: '等我慢慢写。', cover: siteConfig.defaultPostCover, date: '', formattedDate: '' }];
 
   // ---- 说说（moments）----
   const momentsDirectory = path.join(process.cwd(), 'moments');
@@ -104,7 +104,7 @@ export default function Home() {
             <header className="mb-10 sm:mb-14">
               <span className="ed-label page-enter-soft">拾光手记 · Notes</span>
               <h1 className="ed-title page-enter mt-4 text-4xl sm:text-5xl md:text-6xl">{siteConfig.title}</h1>
-              <p className="mt-4 text-sm sm:text-base text-[var(--ink-soft)] font-medium max-w-2xl leading-relaxed page-enter-soft">把这些日子，慢慢记下来。</p>
+              <p className="mt-4 text-sm sm:text-base text-[var(--ink-soft)] font-normal text-base sm:text-lg max-w-2xl leading-relaxed page-enter-soft">把这些日子，慢慢记下来。</p>
               <div className="ed-rule mt-7 sm:mt-9" />
             </header>
 

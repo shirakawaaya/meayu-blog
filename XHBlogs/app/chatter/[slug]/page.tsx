@@ -183,16 +183,6 @@ const getRecentChatters = cache((currentSlug: string) => {
     .slice(0, 3);
 });
 
-function generateCalendarMatrix(year: number, month: number, targetDay: number) {
-  const firstDayOfMonth = new Date(year, month - 1, 1).getDay();
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const startDay = firstDayOfMonth === 0 ? 6 : firstDayOfMonth - 1;
-  const days = [];
-  for (let i = 0; i < startDay; i++) { days.push(null); }
-  for (let i = 1; i <= daysInMonth; i++) { days.push(i); }
-  return { days, targetDay };
-}
-
 /**
  * 每篇杂谈独立生成 metadata。
  *
@@ -237,14 +227,6 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
   const chatterData = await getChatterData(resolvedParams.slug);
   const recentChatters = getRecentChatters(resolvedParams.slug);
   const { prev, next } = getPrevNext(resolvedParams.slug);
-
-  const dateObj = new Date(chatterData.date || '2026-03-24');
-  const yearStr = dateObj.getFullYear();
-  const monthNum = dateObj.getMonth() + 1;
-  const dayNum = dateObj.getDate();
-
-  const { days: calendarDays } = generateCalendarMatrix(yearStr, monthNum, dayNum);
-  const weekDays = ['一', '二', '三', '四', '五', '六', '日'];
 
   // 封面可能是站内相对路径（/images/x.jpg），也可能是历史外链。
   // 只有相对路径才需要拼站点域名，否则会拼成坏 URL。
@@ -305,7 +287,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
                   </div>
 
                   {chatterData.mood && (
-                    <div className="flex items-center gap-1.5 md:gap-2 text-pink-600 dark:text-pink-400 font-black bg-pink-500/5 dark:bg-pink-400/10 px-3 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs md:text-sm border border-pink-500/10">
+                    <div className="flex items-center gap-1.5 md:gap-2 text-[var(--warn)] font-bold bg-[color-mix(in_oklab,var(--warn)_8%,transparent)] px-3 md:px-4 py-1.5 md:py-2 rounded-2xl text-xs md:text-sm border border-[color-mix(in_oklab,var(--warn)_25%,transparent)]">
                       心情：{chatterData.mood}
                     </div>
                   )}
@@ -382,28 +364,7 @@ export default async function ChatterDetail({ params }: { params: Promise<{ slug
             </div>
 
             <div className="paper-card rounded-2xl p-6 border border-[var(--card-border)] shadow-md">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-black text-slate-800 dark:text-white tracking-wider">{yearStr}年{monthNum}月</h3>
-              </div>
-              <div className="grid grid-cols-7 gap-1 mb-4 text-center">
-                {weekDays.map(day => <div key={day} className="text-[10px] font-black text-slate-400 uppercase">{day}</div>)}
-              </div>
-              <div className="grid grid-cols-7 gap-y-3 gap-x-1 text-center">
-                {calendarDays.map((day, index) => (
-                  <div key={index} className="flex justify-center items-center">
-                    {day ? (
-                      <div className={`w-8 h-8 flex items-center justify-center rounded-xl text-xs font-black transition-all duration-300
-                        ${day === dayNum ? 'bg-[var(--accent)] text-white shadow-lg scale-110' : 'text-slate-600 dark:text-slate-400 hover:paper-card dark:hover:bg-slate-700'}`}>
-                        {day}
-                      </div>
-                    ) : <div className="w-8 h-8"></div>}
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="paper-card rounded-2xl p-6 border border-[var(--card-border)] shadow-md">
-              <h3 className="font-black text-[var(--ink)] mb-4 border-l-4 border-[var(--accent)] pl-2 text-xs tracking-widest uppercase">近期杂谈 · Recent Records</h3>
+              <h3 className="font-bold text-[var(--ink)] mb-4 border-l-4 border-[var(--accent)] pl-2 text-xs tracking-widest uppercase">近期杂谈 · Recent Records</h3>
               <div className="space-y-4">
                 {recentChatters.map(p => (
                   <Link key={p.slug} href={`/chatter/${p.slug}`} className="group block">

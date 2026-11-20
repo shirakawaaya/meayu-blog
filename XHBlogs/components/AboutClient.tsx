@@ -170,7 +170,7 @@ export default function AboutClient({
             <motion.div key="activity" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.3 }}>
 
               <div className="mb-12 p-5 md:p-8 bg-slate-100/50 dark:bg-white/5 rounded-2xl border border-[var(--card-border)]">
-                <h3 className="text-lg font-black text-slate-800 dark:text-white mb-6 flex items-center gap-2">
+                <h3 className="text-lg font-bold text-slate-800 dark:text-white mb-6 flex items-center gap-2">
                   <Activity size={20} className="text-[var(--accent)]" />
                   过去一年 {activities.length} 次记录 · Contributions in the last year
                 </h3>
