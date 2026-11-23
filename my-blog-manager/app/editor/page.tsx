@@ -53,6 +53,16 @@ function EditorContent() {
     return `editor_snapshot_${docType}_${currentDocId || 'new'}`;
   }, [docType, currentDocId]);
 
+  // 编辑器复用同一个 /editor 路由，仅 query 不同（如从杂谈编辑器直接跳到"编辑关于页"）。
+  // 这种情况组件不会重新挂载，useState 初始值也不会重算，必须监听 URL 参数同步，
+  // 否则 docType/id 停在上一篇的值，加载出旧文章或空白。
+  const urlType = searchParams.get('type') || 'chatter';
+  const urlId = searchParams.get('type') === 'about' ? 'about' : (searchParams.get('id') || 'new');
+  useEffect(() => {
+    setDocType(urlType);
+    setCurrentDocId(urlId);
+  }, [urlType, urlId]);
+
   const [historyPostTags, setHistoryPostTags] = useState<string[]>([]);
   const [historyChatterTags, setHistoryChatterTags] = useState<string[]>([]);
   const [isLoadingTags, setIsLoadingTags] = useState(true);

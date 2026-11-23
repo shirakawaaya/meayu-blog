@@ -91,8 +91,10 @@ export default function Home() {
 
   const chatterCount = allChatters.length;
   const momentCount = allMoments.length;
-  const realPhotoCount = albums.reduce((total, album) => total + album.photos.length, 0);
-  const latestAlbum = albums.length > 0 ? albums[0] : { id: '', title: '照片墙', description: '查看摄影', cover: siteConfig.photoWallImage, date: '' };
+  // 私密相册只在管理端可见，首页统计与预览一律排除
+  const publicAlbums = albums.filter(album => !album.private);
+  const realPhotoCount = publicAlbums.reduce((total, album) => total + album.photos.length, 0);
+  const latestAlbum = publicAlbums.length > 0 ? publicAlbums[0] : { id: '', title: '照片墙', description: '查看摄影', cover: siteConfig.photoWallImage, date: '' };
 
   return (
     <ToastProvider>

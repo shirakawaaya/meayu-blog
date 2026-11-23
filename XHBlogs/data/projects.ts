@@ -4,8 +4,8 @@ export type Project = {
   id: string;
   name: string;
   description: string;
-  icon: string; // 兼容旧数据的 emoji 标识
-  cover?: string; // 项目封面图 URL（优先展示）
+  icon: string;
+  cover?: string;
   githubUrl: string;
   tags: string[];
 };
@@ -17,6 +17,7 @@ export const projectsData: Project[] = [
     "githubUrl": "https://github.com/meayu-lomie/gift",
     "description": "情侣回忆录",
     "icon": "",
-    "tags": []
+    "tags": [],
+    "cover": "https://pub-fb69f942aae94d15ae8765a54b31b18c.r2.dev/20261123_163731_963163.jpg"
   }
 ];

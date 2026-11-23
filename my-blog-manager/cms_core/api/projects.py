@@ -38,6 +38,7 @@ async def sync_projects(request: Request):
             "  name: string;\n"
             "  description: string;\n"
             "  icon: string;\n"
+            "  cover?: string;\n"
             "  githubUrl: string;\n"
             "  tags: string[];\n"
             "};\n\n"

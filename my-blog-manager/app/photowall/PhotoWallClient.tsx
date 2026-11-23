@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
  import type { Album, Photo } from '../../data/albums';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Plus, Pencil, Trash2, Search, X, Save, AlertTriangle, Edit3, CloudUpload } from 'lucide-react';
+import { Plus, Pencil, Trash2, Search, X, Save, AlertTriangle, Edit3, CloudUpload, Lock } from 'lucide-react';
 import { useOperations } from '../../context/OperationContext';
 import { useToast } from '../../components/ToastProvider';
 import FloatingImageTool from '../../components/editor/FloatingImageTool';
@@ -133,6 +133,21 @@ import { useEscapeClose } from '../../lib/use-escape-close';
                       <CloudUpload size={18} />
                    </button>
                 </div>
+
+                {/* 私密相册：前台博客完全隐藏，仅管理端可见 */}
+                <label className="flex items-center justify-between gap-4 cursor-pointer select-none p-3 bg-black/5 dark:bg-white/5 rounded-xl border border-[var(--card-border)] hover:bg-black/10 dark:hover:bg-white/10 transition-colors">
+                  <span className="flex items-center gap-2 text-sm font-bold text-slate-700 dark:text-slate-200">
+                    <Lock size={15} className={albumModal.data.private ? 'text-amber-500' : 'text-slate-400'} />
+                    私密相册（博客前台完全隐藏）
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setAlbumModal(prev => ({ ...prev, data: { ...prev.data, private: !prev.data.private } }))}
+                    className={`w-12 h-7 rounded-full transition-colors relative shrink-0 ${albumModal.data.private ? 'bg-amber-500' : 'bg-slate-300 dark:bg-slate-600'}`}
+                  >
+                    <span className={`absolute top-1 w-5 h-5 rounded-full bg-white shadow transition-all ${albumModal.data.private ? 'left-6' : 'left-1'}`} />
+                  </button>
+                </label>
               </div>
               <div className="mt-8 flex gap-3">
                 <button onClick={() => setAlbumModal({ ...albumModal, isOpen: false })} className="flex-1 py-3 text-slate-500 font-bold uppercase text-xs hover:text-slate-800 dark:hover:text-white transition-colors">取消</button>
@@ -254,6 +269,11 @@ import { useEscapeClose } from '../../lib/use-escape-close';
                       <div className="text-center px-4 w-full" onClick={() => setCurrentAlbum(album)}>
                         <div className="flex items-center justify-center gap-2 mb-1">
                           <h2 className="text-xl font-bold text-slate-900 dark:text-white transition-colors group-hover:text-[var(--accent)]">{album.title}</h2>
+                          {album.private && (
+                            <span title="私密相册，博客前台不显示" className="inline-flex items-center gap-1 text-[10px] font-black text-amber-600 dark:text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20">
+                              <Lock size={10} /> 私密
+                            </span>
+                          )}
                         </div>
                         <p className="text-sm text-slate-600 dark:text-slate-400 line-clamp-1">{album.description}</p>
                       </div>

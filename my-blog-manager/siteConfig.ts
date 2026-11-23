@@ -2,7 +2,7 @@
 
 export const siteConfig = {
   // 0. 站点完整地址（RSS / sitemap / 分享链接用；改成本站实际域名）
-  siteUrl: "https://meayu.loc.cc",
+  siteUrl: "https://meayu.ipv64.net",
 
   // 1. 网站标题与博主信息
   title: "Meayu の 拾光集",
@@ -25,8 +25,8 @@ export const siteConfig = {
   useGradient: false,
   themeColors: ["#a18cd1", "#fbc2eb", "#a1c4fd", "#c2e9fb"], // 呼吸流动的颜色组合
 // 修改这里：变成图片数组
-  bgImages: [],
-  bgEnabled: false, // 全站背景轮播开关（在管理端【视觉背景配置】里切换）
+  bgImages: ["https://pub-fb69f942aae94d15ae8765a54b31b18c.r2.dev/20261123_164546_3f7402.jpg", "https://pub-fb69f942aae94d15ae8765a54b31b18c.r2.dev/20261123_164602_627cc2.jpg", "https://pub-fb69f942aae94d15ae8765a54b31b18c.r2.dev/20261123_164613_434360.jpg"],
+  bgEnabled: true, // 全站背景轮播开关（在管理端【视觉背景配置】里切换）
 
   // 4. 文章默认封面图 (当 Markdown 没写 cover 时显示)
   defaultPostCover: "",

@@ -78,7 +78,11 @@ export default function ProjectsBoard() {
 
                 <div className="flex items-start justify-between mb-4 relative z-10">
                   <div className="flex items-center gap-4">
-                    <span className="text-4xl">{project.icon}</span>
+                    {project.cover ? (
+                      <img src={project.cover} alt="" className="w-12 h-12 rounded-xl object-cover shadow-md shrink-0" />
+                    ) : (
+                      <span className="text-4xl">{project.icon}</span>
+                    )}
                     <h2 className="text-2xl font-bold text-slate-900 dark:text-white group-hover:text-[var(--accent)] transition-colors">
                       {project.name}
                     </h2>

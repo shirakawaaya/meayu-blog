@@ -39,7 +39,7 @@ async def sync_gallery(request: Request):
         ts_content = (
             "// 本文件由控制台自动生成，请勿手动修改\n"
             "export interface Photo { url: string; caption?: string; }\n"
-            "export interface Album { id: string; title: string; description: string; cover: string; date: string; photos: Photo[]; }\n\n"
+            "export interface Album { id: string; title: string; description: string; cover: string; date: string; private?: boolean; photos: Photo[]; }\n\n"
             f"export const albums: Album[] = {json_str};"
         )
 

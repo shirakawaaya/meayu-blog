@@ -2,6 +2,9 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { albums, Album } from '../../data/albums';
+
+// 私密相册只在管理端可见，博客前台一律过滤（与说说/杂谈的私密机制一致）
+const publicAlbums = albums.filter(album => !album.private);
 import { useEscapeClose } from '../../lib/use-escape-close';
 
 export default function PhotoWallClient() {
@@ -43,14 +46,14 @@ export default function PhotoWallClient() {
   }, [searchQuery]);
 
   const { matchedAlbums, matchedPhotos } = useMemo(() => {
-    if (!activeQuery) return { matchedAlbums: albums, matchedPhotos: [] };
+    if (!activeQuery) return { matchedAlbums: publicAlbums, matchedPhotos: [] };
 
-    const matchedAlbums = albums.filter(album =>
+    const matchedAlbums = publicAlbums.filter(album =>
       album.title.toLowerCase().includes(activeQuery) ||
       album.description.toLowerCase().includes(activeQuery)
     );
 
-    const matchedPhotos = albums.flatMap(album =>
+    const matchedPhotos = publicAlbums.flatMap(album =>
       album.photos.map(p => ({ ...p, albumName: album.title }))
     ).filter(photo => photo.caption?.toLowerCase().includes(activeQuery));
 
@@ -161,7 +164,7 @@ export default function PhotoWallClient() {
                   </div>
                 )}
 
-                {!activeQuery && albums.length === 0 && (
+                {!activeQuery && publicAlbums.length === 0 && (
                   <div className="text-center py-24">
                     <h2 className="text-xl md:text-2xl font-extrabold text-[var(--ink)] mb-2">还没有照片</h2>
                     <p className="text-slate-500 font-medium text-sm">相册整理好就会放上来</p>
