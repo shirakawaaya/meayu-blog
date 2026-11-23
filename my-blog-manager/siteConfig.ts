@@ -6,7 +6,7 @@ export const siteConfig = {
 
   // 1. 网站标题与博主信息
   title: "Meayu の 拾光集",
-  faviconUrl: "https://pub-fb69f942aae94d15ae8765a54b31b18c.r2.dev/20261119_163026_592f72.jpg",
+  faviconUrl: "https://pub-fb69f942aae94d15ae8765a54b31b18c.r2.dev/20261123_192934_4210c3.jpg",
   authorName: "Meayu",
   bio: "记录代码、生活与沿途的光。",
 
