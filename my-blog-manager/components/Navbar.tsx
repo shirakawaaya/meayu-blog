@@ -4,7 +4,7 @@ import Link from 'next/link';
 import { useState, useEffect, useRef } from 'react';
 import { usePathname } from 'next/navigation';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Loader2 } from 'lucide-react';
+import { Loader2, CloudUpload } from 'lucide-react';
 import { useOperations } from '../context/OperationContext';
 import { useToast } from './ToastProvider';
 import { siteConfig } from '../siteConfig';
@@ -30,11 +30,13 @@ export default function Navbar() {
   const pathname = usePathname();
   const { operations, removeOperation, clearOperations } = useOperations();
   const [isWriting, setIsWriting] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
   const { showToast } = useToast();
 
   // 防重入：写入是逐条 POST，网络慢时连点会并发跑两轮循环，
   // 同一份内容被写两次（后端按 id 命名，两轮的 id 可能不同）→ 博客端出现重复。
   const writingRef = useRef(false);
+  const publishingRef = useRef(false);
   // 待保存弹窗：点击面板外部关闭（点一次开、再点按钮关的体验太别扭）
   const opBoxRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -171,6 +173,36 @@ export default function Navbar() {
     }
   };
 
+  // 独立发布按钮：把已写入 XHBlogs/ 的内容提交并推送到部署仓库（VM 轮询上线）。
+  // 与「保存到博客」分离——写入是本地落盘，推送才是对外发布，避免误触发上线。
+  const handlePublish = async () => {
+    if (publishingRef.current) return;
+    if (operations.length > 0) {
+      showToast(`还有 ${operations.length} 项改动未写入博客，请先点「保存到博客」`, "warning");
+      return;
+    }
+    publishingRef.current = true;
+    setIsPublishing(true);
+    try {
+      const configRes = await fetch(`/backend_config.json?t=${Date.now()}`);
+      const config = await configRes.json();
+      const res = await fetch(`http://127.0.0.1:${config.api_port}/api/git/publish`, {
+        method: 'POST',
+      });
+      const data = await res.json();
+      if (data.success) {
+        showToast(data.message || "已推送到 GitHub，等待自动上线", "success");
+      } else {
+        showToast(data.message || "推送失败", "error");
+      }
+    } catch {
+      showToast("推送请求失败，请确认管理端后端在运行", "error");
+    } finally {
+      publishingRef.current = false;
+      setIsPublishing(false);
+    }
+  };
+
   return (
     <>
       <header className={`w-full fixed top-0 left-0 right-0 z-[100] transition-all duration-500 border-b ${showNav ? 'translate-y-0' : '-translate-y-full'} bg-[color-mix(in_oklab,var(--paper)_88%,transparent)] border-[var(--rule)] shadow-sm pywebview-drag-region`}>
@@ -252,6 +284,17 @@ export default function Navbar() {
                 )}
               </AnimatePresence>
             </div>
+
+            {/* 独立发布按钮：提交 XHBlogs/ 内容并推送到 GitHub，VM 自动构建上线 */}
+            <button
+              onClick={handlePublish}
+              disabled={isPublishing}
+              title="把已写入博客的内容提交并推送到 GitHub，等待 VM 自动构建上线"
+              className="relative h-10 px-4 ml-2 rounded-xl paper-card flex items-center justify-center gap-1.5 text-xs font-bold whitespace-nowrap hover:scale-105 transition-all border border-[var(--accent)] text-[var(--accent)] shadow-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {isPublishing ? <Loader2 size={14} className="animate-spin" /> : <CloudUpload size={14} />}
+              {isPublishing ? "推送中..." : "推送到 GitHub"}
+            </button>
 
             {/* 窗口控件（Windows 风格） */}
             <div className="flex items-center ml-2 pl-4 border-l" style={{ borderColor: 'var(--rule)' }}>

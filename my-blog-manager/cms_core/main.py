@@ -10,6 +10,7 @@ from fastapi.responses import JSONResponse
 from cms_core.api import config, picbed, drafts, moments, model_config, r2_config
 from cms_core.api import gallery, projects
 from cms_core.api import deploy
+from cms_core.api import git_publish
 
 app = FastAPI(title="拾光集 控制台后端", version="1.0.0")
 
@@ -83,3 +84,4 @@ app.include_router(gallery.router, prefix="/api/gallery", tags=["Gallery"])
 app.include_router(projects.router, prefix="/api/projects", tags=["Projects"])
 app.include_router(moments.router, prefix="/api/moments", tags=["Moments"])
 app.include_router(deploy.router, prefix="/api/deploy", tags=["Deploy"])
+app.include_router(git_publish.router, prefix="/api/git", tags=["GitPublish"])
